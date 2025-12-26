@@ -34,36 +34,36 @@ const InvoiceFilters: React.FC<InvoiceFiltersProps> = ({
     <Card className="mb-6">
       <CardContent className="py-4 flex flex-wrap gap-4 items-center">
         <div className="flex-1">
-          <label className="block text-sm font-medium mb-1">Status</label>
+          <label className="block text-sm font-medium mb-1">Estado</label>
           <Select
             value={statusFilter}
             onValueChange={setStatusFilter}
           >
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="Filter by status" />
+              <SelectValue placeholder="Filtrar por estado" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Statuses</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="paid">Paid</SelectItem>
-              <SelectItem value="overdue">Overdue</SelectItem>
+              <SelectItem value="all">Todos los Estados</SelectItem>
+              <SelectItem value="pending">Pendiente</SelectItem>
+              <SelectItem value="paid">Pagada</SelectItem>
+              <SelectItem value="overdue">Vencida</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         {setSortOrder && (
           <div className="flex-1">
-            <label className="block text-sm font-medium mb-1">Sort Order</label>
+            <label className="block text-sm font-medium mb-1">Orden</label>
             <Select
               value={sortOrder || "newest"}
               onValueChange={setSortOrder}
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Sort by date" />
+                <SelectValue placeholder="Ordenar por fecha" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="newest">Newest First</SelectItem>
-                <SelectItem value="oldest">Oldest First</SelectItem>
+                <SelectItem value="newest">Más Recientes Primero</SelectItem>
+                <SelectItem value="oldest">Más Antiguas Primero</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -71,18 +71,18 @@ const InvoiceFilters: React.FC<InvoiceFiltersProps> = ({
 
         {setSortBy && (
           <div className="flex-1">
-            <label className="block text-sm font-medium mb-1">Sort By</label>
+            <label className="block text-sm font-medium mb-1">Ordenar Por</label>
             <Select
               value={sortBy || "date"}
               onValueChange={setSortBy}
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Sort by" />
+                <SelectValue placeholder="Ordenar por" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="date">Date</SelectItem>
-                <SelectItem value="amount">Amount</SelectItem>
-                <SelectItem value="client">Client</SelectItem>
+                <SelectItem value="date">Fecha</SelectItem>
+                <SelectItem value="amount">Monto</SelectItem>
+                <SelectItem value="client">Cliente</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -90,17 +90,17 @@ const InvoiceFilters: React.FC<InvoiceFiltersProps> = ({
 
         {setDirection && (
           <div className="flex-1">
-            <label className="block text-sm font-medium mb-1">Direction</label>
+            <label className="block text-sm font-medium mb-1">Dirección</label>
             <Select
               value={direction || "desc"}
               onValueChange={setDirection}
             >
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Direction" />
+                <SelectValue placeholder="Dirección" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="asc">Ascending</SelectItem>
-                <SelectItem value="desc">Descending</SelectItem>
+                <SelectItem value="asc">Ascendente</SelectItem>
+                <SelectItem value="desc">Descendente</SelectItem>
               </SelectContent>
             </Select>
           </div>

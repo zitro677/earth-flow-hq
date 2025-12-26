@@ -39,9 +39,9 @@ const LoginPage: React.FC = () => {
       >
         <Card>
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold">Landscape Irrigation</CardTitle>
+            <CardTitle className="text-2xl font-bold">Riego de Paisajes</CardTitle>
             <CardDescription>
-              Sign in to access your account
+              Inicia sesión para acceder a tu cuenta
             </CardDescription>
           </CardHeader>
           
@@ -59,7 +59,7 @@ const LoginPage: React.FC = () => {
             />
 
             <div className="relative flex justify-center text-xs uppercase my-4">
-              <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+              <span className="bg-background px-2 text-muted-foreground">O continuar con</span>
               <div className="absolute inset-x-0 top-1/2 h-px bg-muted"></div>
             </div>
             
@@ -89,13 +89,13 @@ const LoginPage: React.FC = () => {
                 />
                 <path fill="none" d="M1 1h22v22H1z" />
               </svg>
-              Sign in with Google
+              Iniciar sesión con Google
             </Button>
           </CardContent>
           
           <CardFooter className="flex justify-center border-t pt-4">
             <p className="text-sm text-muted-foreground">
-              Powered by Arkana Tech
+              Desarrollado por Arkana Tech
             </p>
           </CardFooter>
         </Card>

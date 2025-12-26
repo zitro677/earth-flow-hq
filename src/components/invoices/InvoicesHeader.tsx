@@ -15,9 +15,9 @@ const InvoicesHeader: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <h1 className="text-3xl font-bold">Invoices</h1>
+        <h1 className="text-3xl font-bold">Facturas</h1>
         <p className="text-muted-foreground mt-1">
-          Manage and track your client invoices
+          Administra y da seguimiento a las facturas de tus clientes
         </p>
       </motion.div>
 
@@ -31,7 +31,7 @@ const InvoicesHeader: React.FC = () => {
           onClick={() => navigate("/invoices/new")}
           className="w-full md:w-auto"
         >
-          <Plus className="h-4 w-4 mr-2" /> Create Invoice
+          <Plus className="h-4 w-4 mr-2" /> Crear Factura
         </Button>
       </motion.div>
     </div>

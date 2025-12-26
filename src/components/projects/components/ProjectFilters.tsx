@@ -35,14 +35,14 @@ const ProjectFilters: React.FC<ProjectFiltersProps> = ({
       <div className="flex gap-2">
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filter by status" />
+            <SelectValue placeholder="Filtrar por estado" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="completed">Completed</SelectItem>
-            <SelectItem value="in progress">In Progress</SelectItem>
-            <SelectItem value="planning">Planning</SelectItem>
-            <SelectItem value="on hold">On Hold</SelectItem>
+            <SelectItem value="all">Todos los Estados</SelectItem>
+            <SelectItem value="completed">Completado</SelectItem>
+            <SelectItem value="in progress">En Progreso</SelectItem>
+            <SelectItem value="planning">Planificación</SelectItem>
+            <SelectItem value="on hold">En Espera</SelectItem>
           </SelectContent>
         </Select>
 
@@ -50,25 +50,25 @@ const ProjectFilters: React.FC<ProjectFiltersProps> = ({
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="gap-1">
               <Filter className="h-4 w-4" />
-              <span className="hidden sm:inline">More Filters</span>
+              <span className="hidden sm:inline">Más Filtros</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
             <DropdownMenuCheckboxItem checked>
-              Show Client Name
+              Mostrar Nombre del Cliente
             </DropdownMenuCheckboxItem>
             <DropdownMenuCheckboxItem checked>
-              Show Progress
+              Mostrar Progreso
             </DropdownMenuCheckboxItem>
             <DropdownMenuCheckboxItem checked>
-              Show Due Date
+              Mostrar Fecha de Entrega
             </DropdownMenuCheckboxItem>
             <DropdownMenuSeparator />
             <DropdownMenuCheckboxItem>
-              Upcoming Deadlines Only
+              Solo Próximas Fechas de Entrega
             </DropdownMenuCheckboxItem>
             <DropdownMenuCheckboxItem>
-              High Budget Projects
+              Proyectos de Alto Presupuesto
             </DropdownMenuCheckboxItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -76,12 +76,12 @@ const ProjectFilters: React.FC<ProjectFiltersProps> = ({
 
       <Select value={sortOrder} onValueChange={setSortOrder}>
         <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="Sort by" />
+          <SelectValue placeholder="Ordenar por" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="dueDate">Due Date</SelectItem>
-          <SelectItem value="progress">Progress</SelectItem>
-          <SelectItem value="budget">Budget</SelectItem>
+          <SelectItem value="dueDate">Fecha de Entrega</SelectItem>
+          <SelectItem value="progress">Progreso</SelectItem>
+          <SelectItem value="budget">Presupuesto</SelectItem>
         </SelectContent>
       </Select>
     </div>

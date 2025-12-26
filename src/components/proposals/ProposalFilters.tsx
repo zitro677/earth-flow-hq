@@ -38,14 +38,14 @@ const ProposalFilters: React.FC<ProposalFiltersProps> = ({
           onValueChange={setStatusFilter}
         >
           <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filter by status" />
+            <SelectValue placeholder="Filtrar por estado" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Statuses</SelectItem>
-            <SelectItem value="approved">Approved</SelectItem>
-            <SelectItem value="pending">Pending</SelectItem>
-            <SelectItem value="rejected">Rejected</SelectItem>
-            <SelectItem value="draft">Draft</SelectItem>
+            <SelectItem value="all">Todos los Estados</SelectItem>
+            <SelectItem value="approved">Aprobada</SelectItem>
+            <SelectItem value="pending">Pendiente</SelectItem>
+            <SelectItem value="rejected">Rechazada</SelectItem>
+            <SelectItem value="draft">Borrador</SelectItem>
           </SelectContent>
         </Select>
 
@@ -53,25 +53,25 @@ const ProposalFilters: React.FC<ProposalFiltersProps> = ({
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="gap-1">
               <Filter className="h-4 w-4" />
-              <span className="hidden sm:inline">More Filters</span>
+              <span className="hidden sm:inline">Más Filtros</span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
             <DropdownMenuCheckboxItem checked>
-              Show Client Name
+              Mostrar Nombre del Cliente
             </DropdownMenuCheckboxItem>
             <DropdownMenuCheckboxItem checked>
-              Show Expiration Date
+              Mostrar Fecha de Vencimiento
             </DropdownMenuCheckboxItem>
             <DropdownMenuCheckboxItem checked>
-              Show Amount
+              Mostrar Monto
             </DropdownMenuCheckboxItem>
             <DropdownMenuSeparator />
             <DropdownMenuCheckboxItem>
-              This Month Only
+              Solo Este Mes
             </DropdownMenuCheckboxItem>
             <DropdownMenuCheckboxItem>
-              This Year Only
+              Solo Este Año
             </DropdownMenuCheckboxItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -79,11 +79,11 @@ const ProposalFilters: React.FC<ProposalFiltersProps> = ({
 
       <Select value={sortOrder} onValueChange={setSortOrder}>
         <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="Sort by" />
+          <SelectValue placeholder="Ordenar por" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="newest">Newest First</SelectItem>
-          <SelectItem value="oldest">Oldest First</SelectItem>
+          <SelectItem value="newest">Más Recientes Primero</SelectItem>
+          <SelectItem value="oldest">Más Antiguas Primero</SelectItem>
         </SelectContent>
       </Select>
     </div>

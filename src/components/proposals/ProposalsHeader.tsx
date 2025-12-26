@@ -15,9 +15,9 @@ const ProposalsHeader: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <h1 className="text-3xl font-bold">Proposals</h1>
+        <h1 className="text-3xl font-bold">Propuestas</h1>
         <p className="text-muted-foreground mt-1">
-          Create and manage project proposals
+          Crea y administra propuestas de proyectos
         </p>
       </motion.div>
 
@@ -31,7 +31,7 @@ const ProposalsHeader: React.FC = () => {
           onClick={() => navigate("/proposals/new")}
           className="w-full md:w-auto"
         >
-          <Plus className="h-4 w-4 mr-2" /> Create Proposal
+          <Plus className="h-4 w-4 mr-2" /> Crear Propuesta
         </Button>
       </motion.div>
     </div>

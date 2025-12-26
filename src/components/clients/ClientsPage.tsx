@@ -37,7 +37,7 @@ const ClientsPage: React.FC = () => {
     console.log("ClientsPage - error:", error);
     
     if (error) {
-      toast.error("Failed to load clients data");
+      toast.error("Error al cargar los datos de clientes");
       console.error("Error loading clients:", error);
     }
 
@@ -53,11 +53,11 @@ const ClientsPage: React.FC = () => {
       <div className="page-container">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-3xl font-bold">Clients</h1>
-            <p className="text-muted-foreground">Manage your clients</p>
+            <h1 className="text-3xl font-bold">Clientes</h1>
+            <p className="text-muted-foreground">Administra tus clientes</p>
           </div>
           <Button onClick={() => navigate("/clients/new")} className="flex items-center gap-1">
-            <PlusCircle className="h-4 w-4" /> Add New Client
+            <PlusCircle className="h-4 w-4" /> Agregar Nuevo Cliente
           </Button>
         </div>
 
@@ -83,12 +83,12 @@ const ClientsPage: React.FC = () => {
           <Card className="shadow-sm border-red-200 bg-red-50">
             <CardContent className="flex flex-col items-center justify-center p-6">
               <div className="text-center py-8">
-                <h3 className="text-lg font-medium mb-2 text-red-600">Error loading clients</h3>
+                <h3 className="text-lg font-medium mb-2 text-red-600">Error al cargar clientes</h3>
                 <p className="text-muted-foreground mb-4">
-                  There was a problem retrieving client data
+                  Hubo un problema al recuperar los datos de clientes
                 </p>
                 <Button onClick={() => refetch()} className="flex items-center gap-1">
-                  Try Again
+                  Intentar de Nuevo
                 </Button>
               </div>
             </CardContent>
@@ -110,18 +110,18 @@ const ClientsPage: React.FC = () => {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="outline" size="sm">
-                        Actions
+                        Acciones
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="bg-white">
                       <DropdownMenuItem onClick={() => navigate(`/clients/edit/${client.id}`)}>
-                        <Edit className="mr-2 h-4 w-4" /> Edit
+                        <Edit className="mr-2 h-4 w-4" /> Editar
                       </DropdownMenuItem>
                       <DropdownMenuItem 
                         onClick={() => deleteClient(client.id)}
                         className="text-red-600 focus:text-red-600"
                       >
-                        <Trash2 className="mr-2 h-4 w-4" /> Delete
+                        <Trash2 className="mr-2 h-4 w-4" /> Eliminar
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
@@ -133,12 +133,12 @@ const ClientsPage: React.FC = () => {
           <Card className="shadow-sm border-dashed border-2 border-gray-200">
             <CardContent className="flex flex-col items-center justify-center p-6">
               <div className="text-center py-12">
-                <h3 className="text-lg font-medium mb-2">No clients yet</h3>
+                <h3 className="text-lg font-medium mb-2">Aún no hay clientes</h3>
                 <p className="text-muted-foreground mb-4">
-                  Add your first client to get started with invoicing
+                  Agrega tu primer cliente para comenzar con la facturación
                 </p>
                 <Button onClick={() => navigate("/clients/new")} className="flex items-center gap-1">
-                  <PlusCircle className="h-4 w-4" /> Add New Client
+                  <PlusCircle className="h-4 w-4" /> Agregar Nuevo Cliente
                 </Button>
               </div>
             </CardContent>

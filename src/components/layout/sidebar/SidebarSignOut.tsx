@@ -16,7 +16,7 @@ const SidebarSignOut: React.FC<SidebarSignOutProps> = ({ onSignOut }) => {
         onClick={onSignOut}
       >
         <LogOut className="mr-2 h-4 w-4" />
-        Sign Out
+        Cerrar Sesión
       </Button>
     </div>
   );

@@ -29,10 +29,10 @@ const InvoiceStats: React.FC<InvoiceStatsProps> = ({ invoices }) => {
         transition={{ duration: 0.5, delay: 0.2 }}
         className="bg-primary/10 rounded-lg p-6"
       >
-        <h3 className="text-sm font-medium text-primary">Total Amount</h3>
-        <p className="text-3xl font-bold mt-2">${totalAmount.toLocaleString()}</p>
+        <h3 className="text-sm font-medium text-primary">Monto Total</h3>
+        <p className="text-3xl font-bold mt-2">${totalAmount.toLocaleString('es-ES')}</p>
         <p className="text-sm text-muted-foreground mt-1">
-          From {invoicesCount} invoices
+          De {invoicesCount} facturas
         </p>
       </motion.div>
 
@@ -43,11 +43,11 @@ const InvoiceStats: React.FC<InvoiceStatsProps> = ({ invoices }) => {
         className="bg-yellow-500/10 rounded-lg p-6"
       >
         <h3 className="text-sm font-medium text-yellow-600 dark:text-yellow-400">
-          Pending Amount
+          Monto Pendiente
         </h3>
-        <p className="text-3xl font-bold mt-2">${pendingAmount.toLocaleString()}</p>
+        <p className="text-3xl font-bold mt-2">${pendingAmount.toLocaleString('es-ES')}</p>
         <p className="text-sm text-muted-foreground mt-1">
-          {pendingCount} unpaid invoices
+          {pendingCount} facturas sin pagar
         </p>
       </motion.div>
     </div>

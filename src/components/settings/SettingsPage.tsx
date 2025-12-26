@@ -33,10 +33,10 @@ const SettingsPage = () => {
   const handleSignOut = async () => {
     try {
       await signOut();
-      toast.success("You have been signed out successfully");
+      toast.success("Has cerrado sesión exitosamente");
     } catch (error) {
       console.error("Error signing out:", error);
-      toast.error("Failed to sign out");
+      toast.error("Error al cerrar sesión");
     }
   };
 
@@ -47,7 +47,7 @@ const SettingsPage = () => {
       onClick={handleSignOut}
     >
       <LogOut className="h-4 w-4" />
-      Sign Out
+      Cerrar Sesión
     </Button>
   );
 
@@ -56,9 +56,9 @@ const SettingsPage = () => {
       <div className="container mx-auto py-6 space-y-4 max-w-5xl">
         <div className="flex justify-between items-center">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight">Settings</h2>
+            <h2 className="text-3xl font-bold tracking-tight">Configuración</h2>
             <p className="text-muted-foreground">
-              Manage your account settings and preferences
+              Administra la configuración de tu cuenta y preferencias
             </p>
           </div>
           
@@ -83,7 +83,7 @@ const SettingsPage = () => {
                       className="w-full max-w-xs flex items-center justify-center gap-2"
                     >
                       <LogOut className="h-4 w-4" />
-                      Sign Out
+                      Cerrar Sesión
                     </Button>
                   </div>
                 </SheetContent>
@@ -94,10 +94,10 @@ const SettingsPage = () => {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid grid-cols-2 md:grid-cols-4 w-full max-w-2xl">
-            <TabsTrigger value="account">Account</TabsTrigger>
-            <TabsTrigger value="preferences">Preferences</TabsTrigger>
-            <TabsTrigger value="notifications">Notifications</TabsTrigger>
-            {isAdmin && <TabsTrigger value="users">User Management</TabsTrigger>}
+            <TabsTrigger value="account">Cuenta</TabsTrigger>
+            <TabsTrigger value="preferences">Preferencias</TabsTrigger>
+            <TabsTrigger value="notifications">Notificaciones</TabsTrigger>
+            {isAdmin && <TabsTrigger value="users">Gestión de Usuarios</TabsTrigger>}
           </TabsList>
           
           <div className="mt-6">

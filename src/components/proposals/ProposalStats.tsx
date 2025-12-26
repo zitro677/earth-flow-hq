@@ -32,10 +32,10 @@ const ProposalStats: React.FC<ProposalStatsProps> = ({ proposals }) => {
         transition={{ duration: 0.5, delay: 0.2 }}
         className="bg-primary/10 rounded-lg p-6"
       >
-        <h3 className="text-sm font-medium text-primary">Total Amount</h3>
-        <p className="text-3xl font-bold mt-2">${totalAmount.toLocaleString()}</p>
+        <h3 className="text-sm font-medium text-primary">Monto Total</h3>
+        <p className="text-3xl font-bold mt-2">${totalAmount.toLocaleString('es-ES')}</p>
         <p className="text-sm text-muted-foreground mt-1">
-          From {proposals.length} proposals
+          De {proposals.length} propuestas
         </p>
       </motion.div>
 
@@ -46,11 +46,11 @@ const ProposalStats: React.FC<ProposalStatsProps> = ({ proposals }) => {
         className="bg-purple-500/10 rounded-lg p-6"
       >
         <h3 className="text-sm font-medium text-purple-600 dark:text-purple-400">
-          Pending Amount
+          Monto Pendiente
         </h3>
-        <p className="text-3xl font-bold mt-2">${pendingAmount.toLocaleString()}</p>
+        <p className="text-3xl font-bold mt-2">${pendingAmount.toLocaleString('es-ES')}</p>
         <p className="text-sm text-muted-foreground mt-1">
-          {proposals.filter((proposal) => proposal.status === "Pending").length} pending proposals
+          {proposals.filter((proposal) => proposal.status === "Pending").length} propuestas pendientes
         </p>
       </motion.div>
     </div>
