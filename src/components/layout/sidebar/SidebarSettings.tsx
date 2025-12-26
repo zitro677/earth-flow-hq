@@ -8,7 +8,7 @@ const SidebarSettings: React.FC = () => {
   return (
     <div className="mt-6">
       <p className="mb-2 text-xs font-medium text-sidebar-foreground/70 px-3">
-        Settings
+        Configuración
       </p>
       <nav className="flex flex-col gap-1">
         <NavLink
@@ -23,7 +23,7 @@ const SidebarSettings: React.FC = () => {
           }
         >
           <Settings className="h-5 w-5" />
-          <span>Settings</span>
+          <span>Configuración</span>
         </NavLink>
       </nav>
     </div>

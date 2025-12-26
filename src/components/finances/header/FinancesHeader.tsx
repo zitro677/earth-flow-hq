@@ -29,9 +29,9 @@ const FinancesHeader: React.FC<FinancesHeaderProps> = ({
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <h1 className="text-3xl font-bold">Finances</h1>
+        <h1 className="text-3xl font-bold">Finanzas</h1>
         <p className="text-muted-foreground mt-1">
-          Track income, expenses, and financial performance
+          Seguimiento de ingresos, gastos y rendimiento financiero
         </p>
       </motion.div>
 
@@ -43,18 +43,18 @@ const FinancesHeader: React.FC<FinancesHeaderProps> = ({
       >
         <Select value={timeFilter} onValueChange={setTimeFilter}>
           <SelectTrigger className="w-[120px]">
-            <SelectValue placeholder="Time Period" />
+            <SelectValue placeholder="Período" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="month">Month</SelectItem>
-            <SelectItem value="quarter">Quarter</SelectItem>
-            <SelectItem value="year">Year</SelectItem>
+            <SelectItem value="month">Mes</SelectItem>
+            <SelectItem value="quarter">Trimestre</SelectItem>
+            <SelectItem value="year">Año</SelectItem>
           </SelectContent>
         </Select>
 
         <Select value={yearFilter} onValueChange={setYearFilter}>
           <SelectTrigger className="w-[120px]">
-            <SelectValue placeholder="Year" />
+            <SelectValue placeholder="Año" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="2021">2021</SelectItem>

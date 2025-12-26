@@ -26,22 +26,22 @@ const EmailLoginForm: React.FC<EmailLoginFormProps> = ({
   return (
     <form onSubmit={handleEmailLogin} className="space-y-4 mb-4">
       <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">Correo electrónico</Label>
         <Input 
           id="email" 
           type="email" 
-          placeholder="Enter your email"
+          placeholder="Ingresa tu correo electrónico"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password">Contraseña</Label>
         <Input 
           id="password" 
           type="password" 
-          placeholder="Enter your password"
+          placeholder="Ingresa tu contraseña"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
@@ -54,7 +54,7 @@ const EmailLoginForm: React.FC<EmailLoginFormProps> = ({
           variant="default"
           disabled={isLoading}
         >
-          {isLoading ? "Logging in..." : "Sign In"}
+          {isLoading ? "Iniciando sesión..." : "Iniciar Sesión"}
         </Button>
         
         <Button
@@ -63,7 +63,7 @@ const EmailLoginForm: React.FC<EmailLoginFormProps> = ({
           onClick={handleSignUp}
           disabled={isLoading}
         >
-          Sign Up
+          Registrarse
         </Button>
       </div>
     </form>

@@ -19,32 +19,32 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   {
-    name: "Dashboard",
+    name: "Panel",
     path: "/",
     icon: <LayoutDashboard className="h-5 w-5" />,
   },
   {
-    name: "Invoices",
+    name: "Facturas",
     path: "/invoices",
     icon: <FileText className="h-5 w-5" />,
   },
   {
-    name: "Proposals",
+    name: "Propuestas",
     path: "/proposals",
     icon: <PenTool className="h-5 w-5" />,
   },
   {
-    name: "Finances",
+    name: "Finanzas",
     path: "/finances",
     icon: <BarChart3 className="h-5 w-5" />,
   },
   {
-    name: "Projects",
+    name: "Proyectos",
     path: "/projects",
     icon: <FolderKanban className="h-5 w-5" />,
   },
   {
-    name: "Clients",
+    name: "Clientes",
     path: "/clients",
     icon: <Users className="h-5 w-5" />,
   },

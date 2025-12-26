@@ -32,7 +32,7 @@ const FinancesPage: React.FC = () => {
       <AnimatedPage>
         <div className="page-container">
           <div className="flex items-center justify-center h-64">
-            <div className="text-lg">Loading financial data...</div>
+            <div className="text-lg">Cargando datos financieros...</div>
           </div>
         </div>
       </AnimatedPage>
@@ -59,10 +59,10 @@ const FinancesPage: React.FC = () => {
 
         <Tabs defaultValue="overview" className="mb-6">
           <TabsList className="w-full md:w-auto">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="expenses">Expense Tracking</TabsTrigger>
-            <TabsTrigger value="taxes">Tax Calculator</TabsTrigger>
-            <TabsTrigger value="inventory">Inventory</TabsTrigger>
+            <TabsTrigger value="overview">Resumen</TabsTrigger>
+            <TabsTrigger value="expenses">Seguimiento de Gastos</TabsTrigger>
+            <TabsTrigger value="taxes">Calculadora de Impuestos</TabsTrigger>
+            <TabsTrigger value="inventory">Inventario</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6 pt-4">

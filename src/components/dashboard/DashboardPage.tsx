@@ -30,11 +30,11 @@ const DashboardPage: React.FC = () => {
     },
     {
       accessorKey: "name",
-      header: "Client",
+      header: "Cliente",
     },
     {
       accessorKey: "status",
-      header: "Status",
+      header: "Estado",
       cell: ({ row }: any) => {
         const status = row.getValue("status");
         const colorMap: Record<string, string> = {
@@ -44,33 +44,40 @@ const DashboardPage: React.FC = () => {
           "On Hold": "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300"
         };
         
+        const statusTranslations: Record<string, string> = {
+          "Completed": "Completado",
+          "In Progress": "En Progreso",
+          "Planning": "Planificación",
+          "On Hold": "En Espera"
+        };
+        
         return (
           <Badge className={`${colorMap[status] || ""} hover:${colorMap[status] || ""}`}>
-            {status}
+            {statusTranslations[status] || status}
           </Badge>
         );
       },
     },
     {
       accessorKey: "end_date",
-      header: "Due Date",
+      header: "Fecha de Entrega",
       cell: ({ row }: any) => {
         const date = row.getValue("end_date");
-        return date ? new Date(date).toLocaleDateString() : "Not set";
+        return date ? new Date(date).toLocaleDateString('es-ES') : "No definida";
       },
     },
     {
       accessorKey: "budget",
-      header: "Value",
+      header: "Valor",
       cell: ({ row }: any) => {
         const budget = row.getValue("budget");
-        return budget ? `$${Number(budget).toLocaleString()}` : "Not set";
+        return budget ? `$${Number(budget).toLocaleString('es-ES')}` : "No definido";
       },
     },
   ];
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('es-ES', {
       style: 'currency',
       currency: 'USD',
     }).format(amount);
@@ -84,44 +91,44 @@ const DashboardPage: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <h1 className="text-3xl font-bold">Panel de Control</h1>
           <p className="text-muted-foreground mt-1 mb-6">
-            Overview of your landscape business
+            Resumen de tu negocio de paisajismo
           </p>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
           <OverviewCard
-            title="Total Revenue"
+            title="Ingresos Totales"
             value={formatCurrency(overviewStats.totalRevenue)}
-            description="vs. last month"
+            description="vs. mes anterior"
             icon={BarChart3}
             trend={overviewStats.revenueTrend}
             delay={0}
             isLoading={isLoading}
           />
           <OverviewCard
-            title="Active Projects"
+            title="Proyectos Activos"
             value={overviewStats.activeProjects.toString()}
-            description={`${overviewStats.dueSoonProjects} due this week`}
+            description={`${overviewStats.dueSoonProjects} vencen esta semana`}
             icon={FolderKanban}
             trend={0}
             delay={1}
             isLoading={isLoading}
           />
           <OverviewCard
-            title="Pending Invoices"
+            title="Facturas Pendientes"
             value={overviewStats.pendingInvoices.toString()}
-            description={`${overviewStats.pendingInvoicesCount} invoices pending`}
+            description={`${overviewStats.pendingInvoicesCount} facturas pendientes`}
             icon={FileText}
             trend={-4}
             delay={2}
             isLoading={isLoading}
           />
           <OverviewCard
-            title="New Proposals"
+            title="Nuevas Propuestas"
             value={overviewStats.newProposals.toString()}
-            description={`${overviewStats.pendingApprovals} awaiting approval`}
+            description={`${overviewStats.pendingApprovals} esperando aprobación`}
             icon={PenTool}
             trend={24}
             delay={3}
@@ -137,9 +144,9 @@ const DashboardPage: React.FC = () => {
         <div className="grid grid-cols-1 gap-6">
           <Card className="card-shadow">
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Recent Projects</CardTitle>
+              <CardTitle>Proyectos Recientes</CardTitle>
               <Button variant="outline" size="sm" onClick={() => navigate("/projects")}>
-                View All
+                Ver Todos
               </Button>
             </CardHeader>
             <CardContent>
@@ -147,7 +154,7 @@ const DashboardPage: React.FC = () => {
                 columns={columns}
                 data={recentProjects}
                 searchColumn="name"
-                searchPlaceholder="Search projects..."
+                searchPlaceholder="Buscar proyectos..."
               />
             </CardContent>
           </Card>

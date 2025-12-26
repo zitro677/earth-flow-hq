@@ -36,7 +36,7 @@ const ProjectStatistics: React.FC<ProjectStatisticsProps> = ({
       >
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-medium text-muted-foreground">
-            Completed
+            Completados
           </h3>
           <Badge className={getStatusColor("Completed")}>
             {completedProjects}
@@ -56,7 +56,7 @@ const ProjectStatistics: React.FC<ProjectStatisticsProps> = ({
       >
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-medium text-muted-foreground">
-            In Progress
+            En Progreso
           </h3>
           <Badge className={getStatusColor("In Progress")}>
             {inProgressProjects}
@@ -76,7 +76,7 @@ const ProjectStatistics: React.FC<ProjectStatisticsProps> = ({
       >
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-medium text-muted-foreground">
-            Planning
+            Planificación
           </h3>
           <Badge className={getStatusColor("Planning")}>
             {planningProjects}
@@ -96,7 +96,7 @@ const ProjectStatistics: React.FC<ProjectStatisticsProps> = ({
       >
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-medium text-muted-foreground">
-            On Hold
+            En Espera
           </h3>
           <Badge className={getStatusColor("On Hold")}>
             {onHoldProjects}
