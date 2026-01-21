@@ -1,4 +1,3 @@
-
 import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
 import { Proposal } from "./types";
@@ -7,9 +6,11 @@ import { format } from "date-fns";
 import {
   addHeaderSection,
   addClientInformationSection,
-  addProposalDetailsSection,
+  addServiceSummarySection,
   addPricingSummarySection,
+  addPaymentTermsSection,
   addContentSections,
+  addFooterSection,
 } from "./utils/pdfSections";
 
 interface ProposalPdfGeneratorProps {
@@ -22,60 +23,70 @@ const ProposalPdfGenerator = ({ proposal }: ProposalPdfGeneratorProps) => {
       const doc = new jsPDF();
       let yPosition = 20;
       const pageWidth = doc.internal.pageSize.width;
-      const margin = 20;
+      const pageHeight = doc.internal.pageSize.height;
+      const margin = 15;
       const contentWidth = pageWidth - (margin * 2);
 
-      // Updated: More professional header style (now async)
-      yPosition = await addHeaderSection(doc, "PROPOSAL", yPosition, pageWidth);
+      // Calculate total for payment terms
+      const amount = Number(proposal.amount || proposal.subtotal || 0);
+      const tax = amount * 0.19;
+      const total = amount + tax;
 
-      // Key Information row: client info and proposal info, now styled
-      const clientBoxY = yPosition;
-      const proposalBoxY = yPosition;
-      // Side-by-side boxes for client (left) and proposal (right)
-      addClientInformationSection(doc, proposal, clientBoxY, margin);
-      addProposalDetailsSection(doc, proposal, proposalBoxY, pageWidth);
+      // Header section with logo and company info
+      yPosition = await addHeaderSection(doc, "PROPUESTA COMERCIAL", yPosition, pageWidth);
 
-      // Drop position after both info boxes for pricing/summary
-      // Increase spacing to account for additional client info (phone & address)
-      yPosition += 50; // Increased from 47 to give more space for the client info
+      // Client and dates section (two columns)
+      yPosition = addClientInformationSection(doc, proposal, yPosition, margin, pageWidth);
 
-      // Updated: improved pricing summary section
+      // Service summary section
+      yPosition = addServiceSummarySection(doc, proposal, margin, contentWidth, yPosition);
+
+      // Pricing section with items
       yPosition = addPricingSummarySection(
         doc,
-        Number(proposal.amount || 0),
+        proposal,
         margin,
         yPosition,
         pageWidth,
         contentWidth
       );
 
-      // Add content sections if available
-      if (proposal.content) {
-        yPosition = addContentSections(doc, proposal.content, margin, contentWidth, yPosition);
+      // Payment terms section (30%/70%)
+      yPosition = addPaymentTermsSection(doc, total, margin, contentWidth, yPosition);
+
+      // Notes and guarantees section
+      yPosition = addContentSections(doc, proposal, margin, contentWidth, yPosition);
+
+      // Footer with accept button
+      // Check if we have enough space, if not just add minimal footer
+      if (yPosition < pageHeight - 50) {
+        addFooterSection(doc, margin, pageWidth, yPosition);
       }
 
-      // Footer with page numbers and generated date
+      // Page numbers
       const pageCount = doc.getNumberOfPages();
       for (let i = 1; i <= pageCount; i++) {
         doc.setPage(i);
-        doc.setFontSize(8);
-        doc.setTextColor(160, 160, 160);
+        doc.setFontSize(7);
+        doc.setTextColor(150, 150, 150);
         doc.text(
-          `Generated on ${format(new Date(), 'MMM dd, yyyy')}   —   Page ${i} of ${pageCount}`,
+          `Generado: ${format(new Date(), 'dd/MM/yyyy')} | Página ${i} de ${pageCount}`,
           pageWidth / 2,
-          doc.internal.pageSize.height - 10,
+          pageHeight - 5,
           { align: "center" }
         );
       }
       doc.setTextColor(0, 0, 0);
 
       // Save the PDF
-      doc.save(`Proposal_${proposal.id.substring(0, 8)}.pdf`);
-      toast.success("PDF generated successfully");
+      const clientName = proposal.client_name || proposal.clients?.name || "cliente";
+      const safeClientName = clientName.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 20);
+      doc.save(`Propuesta_${safeClientName}_${proposal.id.substring(0, 6)}.pdf`);
+      toast.success("PDF generado exitosamente");
       return doc;
     } catch (error) {
       console.error("Error generating PDF:", error);
-      toast.error("Failed to generate PDF");
+      toast.error("Error al generar el PDF");
       return null;
     }
   };
