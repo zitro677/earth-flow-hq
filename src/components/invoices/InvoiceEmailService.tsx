@@ -81,7 +81,7 @@ const InvoiceEmailService = ({ invoice }: InvoiceEmailServiceProps) => {
       doc.setFontSize(9);
       doc.setTextColor(100, 100, 100);
       doc.text("AutoseguroDJ S.A.S", 20, pageHeight - 20);
-      doc.text("Teléfono: (Pendiente) | Email: info@autosegurodj.com", 20, pageHeight - 15);
+      doc.text("Teléfono: +57 304 257 61 04 | Email: gerencia@autosegurodj.com", 20, pageHeight - 15);
       doc.text("Web: www.autosegurodj.com", 20, pageHeight - 10);
       doc.setTextColor(0, 0, 0);
       
@@ -95,7 +95,7 @@ const InvoiceEmailService = ({ invoice }: InvoiceEmailServiceProps) => {
 
   const sendEmail = async () => {
     try {
-      const companyEmail = "info@autosegurodj.com";
+      const companyEmail = "gerencia@autosegurodj.com";
       const subject = `Factura ${invoice.invoice_number} de AutoseguroDJ S.A.S`;
       const body = `Estimado/a ${invoice.client_name},
 
@@ -109,8 +109,8 @@ Gracias por su preferencia.
 
 Atentamente,
 AutoseguroDJ S.A.S
-Teléfono: (Pendiente)
-Email: info@autosegurodj.com
+Teléfono: +57 304 257 61 04
+Email: gerencia@autosegurodj.com
 Web: www.autosegurodj.com`;
       
       const doc = await createPdf();

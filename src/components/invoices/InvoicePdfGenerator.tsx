@@ -89,7 +89,7 @@ const InvoicePdfGenerator = ({ invoice }: InvoicePdfGeneratorProps) => {
       doc.setFontSize(9);
       doc.setTextColor(100, 100, 100);
       doc.text("AutoseguroDJ S.A.S", 20, pageHeight - 20);
-      doc.text("Teléfono: (Pendiente) | Email: info@autosegurodj.com", 20, pageHeight - 15);
+      doc.text("Teléfono: +57 304 257 61 04 | Email: gerencia@autosegurodj.com", 20, pageHeight - 15);
       doc.text("Web: www.autosegurodj.com", 20, pageHeight - 10);
       doc.setTextColor(0, 0, 0);
       

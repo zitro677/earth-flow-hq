@@ -71,7 +71,7 @@ export const addHeaderSection = async (doc: jsPDF, title: string, yPositionIniti
   doc.setFontSize(9);
   doc.setFont(undefined, "normal");
   doc.setTextColor(120, 120, 120);
-  doc.text("Teléfono: (Pendiente)    Email: info@autosegurodj.com", nameX, companyY, { align });
+  doc.text("Teléfono: +57 304 257 61 04    Email: gerencia@autosegurodj.com", nameX, companyY, { align });
   companyY += 5;
   doc.text("Web: www.autosegurodj.com", nameX, companyY, { align });
 
