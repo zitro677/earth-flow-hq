@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Navigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -9,6 +8,7 @@ import EmailLoginForm from "./components/EmailLoginForm";
 import LoginErrorMessage from "./components/LoginErrorMessage";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import Logo from "@/components/shared/Logo";
 
 const LoginPage: React.FC = () => {
   const { user, loading } = useAuth();
@@ -39,8 +39,10 @@ const LoginPage: React.FC = () => {
       >
         <Card>
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold">AutoseguroDJ S.A.S</CardTitle>
-            <CardDescription>
+            <div className="flex justify-center mb-4 p-4 bg-[#1a2744] rounded-lg">
+              <Logo size="lg" />
+            </div>
+            <CardDescription className="text-center">
               Inicia sesión para acceder a tu cuenta
             </CardDescription>
           </CardHeader>
