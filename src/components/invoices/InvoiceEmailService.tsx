@@ -64,8 +64,8 @@ const InvoiceEmailService = ({ invoice }: InvoiceEmailServiceProps) => {
       
       let currentY = finalY + 6;
       if (invoice.tax_rate && Number(invoice.tax_rate) > 0) {
-        const taxAmount = Number(invoice.amount) * 0.07;
-        doc.text(`Tax (7%): ${formatCurrency(taxAmount)}`, 190, currentY, { align: "right" });
+        const taxAmount = Number(invoice.amount) * 0.19; // IVA 19%
+        doc.text(`IVA (19%): ${formatCurrency(taxAmount)}`, 190, currentY, { align: "right" });
         currentY += 6;
         doc.text(`Total: ${formatCurrency(Number(invoice.amount) + taxAmount)}`, 190, currentY, { align: "right" });
       } else {

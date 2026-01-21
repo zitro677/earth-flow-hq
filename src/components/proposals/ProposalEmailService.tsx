@@ -12,7 +12,7 @@ const ProposalEmailService = ({ proposal }: { proposal: Proposal }) => {
       
       // Calculate pricing
       const subtotal = Number(proposal.amount || 0);
-      const tax = subtotal * 0.07; // Corrected to 7%
+      const tax = subtotal * 0.19; // IVA 19%
       const total = subtotal + tax;
       
       // Build email body with key information first
@@ -42,7 +42,7 @@ const ProposalEmailService = ({ proposal }: { proposal: Proposal }) => {
       body += `PRICING SUMMARY\n`;
       body += `---------------\n`;
       body += `Subtotal: ${formatCurrency(subtotal)}\n`;
-      body += `Tax (7%): ${formatCurrency(tax)}\n`;
+      body += `IVA (19%): ${formatCurrency(tax)}\n`;
       body += `Total Amount: ${formatCurrency(total)}\n\n`;
       
       // Add content sections

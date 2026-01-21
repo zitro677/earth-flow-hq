@@ -11,7 +11,7 @@ export const addPricingSummarySection = (
   contentWidth: number
 ) => {
   const subtotal = amount;
-  const tax = subtotal * 0.07;
+  const tax = subtotal * 0.19; // IVA 19%
   const total = subtotal + tax;
 
   // === Removed: Outer box with highlight ===
@@ -34,7 +34,7 @@ export const addPricingSummarySection = (
   doc.text(formatCurrency(subtotal), pageWidth - margin - 8, yPosition, { align: "right" });
 
   yPosition += 7;
-  doc.text("Tax (7%):", margin + 8, yPosition);
+  doc.text("IVA (19%):", margin + 8, yPosition);
   doc.text(formatCurrency(tax), pageWidth - margin - 8, yPosition, { align: "right" });
 
   // Decorative line separator with more emphasis
