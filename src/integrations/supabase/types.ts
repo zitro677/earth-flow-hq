@@ -85,6 +85,7 @@ export type Database = {
           proposal_id: string
           quantity: number
           total: number
+          type: string | null
           unit_price: number
         }
         Insert: {
@@ -94,6 +95,7 @@ export type Database = {
           proposal_id: string
           quantity?: number
           total?: number
+          type?: string | null
           unit_price?: number
         }
         Update: {
@@ -103,6 +105,7 @@ export type Database = {
           proposal_id?: string
           quantity?: number
           total?: number
+          type?: string | null
           unit_price?: number
         }
         Relationships: [
@@ -117,7 +120,9 @@ export type Database = {
       }
       proposals: {
         Row: {
+          amount: number | null
           client_id: string | null
+          content: string | null
           created_at: string
           description: string | null
           id: string
@@ -133,7 +138,9 @@ export type Database = {
           valid_until: string | null
         }
         Insert: {
+          amount?: number | null
           client_id?: string | null
+          content?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -149,7 +156,9 @@ export type Database = {
           valid_until?: string | null
         }
         Update: {
+          amount?: number | null
           client_id?: string | null
+          content?: string | null
           created_at?: string
           description?: string | null
           id?: string
