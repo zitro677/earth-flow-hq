@@ -26,7 +26,7 @@ export const SummarySection: React.FC<SummarySectionProps> = ({ subtotal, tax, t
               <span>${subtotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Tax (7%)</span>
+              <span className="text-muted-foreground">IVA (19%)</span>
               <span>${tax.toFixed(2)}</span>
             </div>
             <Separator />

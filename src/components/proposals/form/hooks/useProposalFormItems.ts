@@ -12,7 +12,7 @@ export function useProposalFormItems(
     (sum, item) => sum + item.quantity * item.unitPrice,
     0
   );
-  const taxRate = 0.07; // 7% tax
+  const taxRate = 0.19; // IVA 19%
   const tax = subtotal * taxRate;
   const total = subtotal + tax;
 

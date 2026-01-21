@@ -7,7 +7,7 @@ export const useInvoiceCalculations = (items: InvoiceItemType[]) => {
     0
   );
   
-  const taxRate = 0.07; // Corrected to 7%
+  const taxRate = 0.19; // IVA 19%
   const tax = subtotal * taxRate;
   const total = subtotal + tax;
 
