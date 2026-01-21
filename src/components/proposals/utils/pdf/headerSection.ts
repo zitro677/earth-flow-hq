@@ -1,7 +1,7 @@
 import { jsPDF } from "jspdf";
 
-// Updated logo URL to use the new Green Landscape Irrigation tree logo
-const logoUrl = "/lovable-uploads/d13d02a7-c0f4-4b0a-828d-cc566f2b3d02.png";
+// AutoseguroDJ S.A.S logo
+const logoUrl = "/lovable-uploads/autoseguro-dj-logo.png";
 
 /**
  * Load an image url to dataUrl (base64). This is async but for PDF export, we want users to wait a split second if needed for best logo quality.
