@@ -88,9 +88,9 @@ const InvoicePdfGenerator = ({ invoice }: InvoicePdfGeneratorProps) => {
       const pageHeight = doc.internal.pageSize.height;
       doc.setFontSize(9);
       doc.setTextColor(100, 100, 100);
-      doc.text("Green Landscape Irrigation", 20, pageHeight - 20);
-      doc.text("Phone: (727) 484-5516 | Email: greenplanetlandscaping01@gmail.com", 20, pageHeight - 15);
-      doc.text("Web: www.greenlandscapeirrigation.com", 20, pageHeight - 10);
+      doc.text("AutoseguroDJ S.A.S", 20, pageHeight - 20);
+      doc.text("Teléfono: (Pendiente) | Email: info@autosegurodj.com", 20, pageHeight - 15);
+      doc.text("Web: www.autosegurodj.com", 20, pageHeight - 10);
       doc.setTextColor(0, 0, 0);
       
       doc.save(`Invoice_${invoice.invoice_number}.pdf`);

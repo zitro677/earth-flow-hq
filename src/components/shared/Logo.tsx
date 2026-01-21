@@ -19,7 +19,7 @@ const Logo = ({ className, size = 'md' }: LogoProps) => {
       <AspectRatio ratio={16/9}>
         <img
           src="https://images.unsplash.com/photo-1485827404703-89b55fcc595e"
-          alt="Company Logo"
+          alt="AutoseguroDJ S.A.S"
           className="object-contain w-full h-full"
         />
       </AspectRatio>
