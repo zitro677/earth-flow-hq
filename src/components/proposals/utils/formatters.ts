@@ -1,17 +1,20 @@
 
 import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
 export const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('es-CO', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'COP',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
   }).format(amount);
 };
 
 export const formatDate = (dateString?: string) => {
   if (!dateString) return "N/A";
   try {
-    return format(new Date(dateString), 'MMM dd, yyyy');
+    return format(new Date(dateString), "d 'de' MMMM 'de' yyyy", { locale: es });
   } catch (e) {
     return dateString;
   }
@@ -20,20 +23,20 @@ export const formatDate = (dateString?: string) => {
 // Parse proposal content into sections
 export const parseProposalContent = (content?: string) => {
   if (!content) return {
-    "Project Scope": "",
-    "Project Timeline": "",
-    "Items & Services": "",
-    "Terms & Notes": ""
+    "Alcance del Servicio": "",
+    "Tiempo de Entrega": "",
+    "Servicios Incluidos": "",
+    "Términos y Notas": ""
   };
   
   console.log("Parsing content:", content);
   
   // Initialize with empty sections
   const sections: Record<string, string> = {
-    "Project Scope": "",
-    "Project Timeline": "",
-    "Items & Services": "",
-    "Terms & Notes": ""
+    "Alcance del Servicio": "",
+    "Tiempo de Entrega": "",
+    "Servicios Incluidos": "",
+    "Términos y Notas": ""
   };
 
   // Check if the content has the timeline, items, and notes markers
@@ -43,7 +46,7 @@ export const parseProposalContent = (content?: string) => {
   
   // If no markers exist, put all content in Project Scope
   if (!hasTimeline && !hasItems && !hasNotes) {
-    sections["Project Scope"] = content.trim();
+    sections["Alcance del Servicio"] = content.trim();
     return sections;
   }
   
@@ -59,7 +62,7 @@ export const parseProposalContent = (content?: string) => {
     scopeEndIndex = Math.min(scopeEndIndex, content.indexOf("Notes:"));
   }
   
-  sections["Project Scope"] = content.substring(0, scopeEndIndex).trim();
+  sections["Alcance del Servicio"] = content.substring(0, scopeEndIndex).trim();
   
   // Extract timeline section if it exists
   if (hasTimeline) {
@@ -71,7 +74,7 @@ export const parseProposalContent = (content?: string) => {
     if (hasNotes) {
       timelineEndIndex = Math.min(timelineEndIndex, content.indexOf("Notes:"));
     }
-    sections["Project Timeline"] = content.substring(timelineStartIndex, timelineEndIndex).trim();
+    sections["Tiempo de Entrega"] = content.substring(timelineStartIndex, timelineEndIndex).trim();
   }
   
   // Extract items section if it exists
@@ -81,43 +84,42 @@ export const parseProposalContent = (content?: string) => {
     if (hasNotes) {
       itemsEndIndex = Math.min(itemsEndIndex, content.indexOf("Notes:"));
     }
-    sections["Items & Services"] = content.substring(itemsStartIndex, itemsEndIndex).trim();
+    sections["Servicios Incluidos"] = content.substring(itemsStartIndex, itemsEndIndex).trim();
   }
   
   // Extract notes section if it exists
   if (hasNotes) {
     const notesStartIndex = content.indexOf("Notes:") + "Notes:".length;
-    sections["Terms & Notes"] = content.substring(notesStartIndex).trim();
+    sections["Términos y Notas"] = content.substring(notesStartIndex).trim();
   }
   
   // Additional check: search for data from proposal_items table
-  // This is a fallback in case the content doesn't have the expected markers
   if (!hasTimeline && !hasItems && !hasNotes) {
     if (content.includes("scope:")) {
       const scopeMatch = content.match(/scope:(.*?)(?=timeline:|items:|notes:|$)/is);
       if (scopeMatch && scopeMatch[1]) {
-        sections["Project Scope"] = scopeMatch[1].trim();
+        sections["Alcance del Servicio"] = scopeMatch[1].trim();
       }
     }
     
     if (content.includes("timeline:")) {
       const timelineMatch = content.match(/timeline:(.*?)(?=items:|notes:|$)/is);
       if (timelineMatch && timelineMatch[1]) {
-        sections["Project Timeline"] = timelineMatch[1].trim();
+        sections["Tiempo de Entrega"] = timelineMatch[1].trim();
       }
     }
     
     if (content.includes("items:")) {
       const itemsMatch = content.match(/items:(.*?)(?=notes:|$)/is);
       if (itemsMatch && itemsMatch[1]) {
-        sections["Items & Services"] = itemsMatch[1].trim();
+        sections["Servicios Incluidos"] = itemsMatch[1].trim();
       }
     }
     
     if (content.includes("notes:")) {
       const notesMatch = content.match(/notes:(.*?)$/is);
       if (notesMatch && notesMatch[1]) {
-        sections["Terms & Notes"] = notesMatch[1].trim();
+        sections["Términos y Notas"] = notesMatch[1].trim();
       }
     }
   }

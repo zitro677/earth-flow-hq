@@ -1,59 +1,73 @@
-
 import { jsPDF } from "jspdf";
 import { parseProposalContent } from "../formatters";
+import { Proposal } from "../../types";
+
+// Brand colors
+const BRAND_GREEN = { r: 21, g: 128, b: 61 }; // #15803d
 
 export const addContentSections = (
   doc: jsPDF,
-  content: string,
+  proposal: Proposal,
   margin: number,
   contentWidth: number,
   startY: number
 ) => {
   let yPosition = startY;
-  const sectionBg = [255, 255, 248];
-  const sections = parseProposalContent(content);
-
-  Object.entries(sections).forEach(([title, content]) => {
-    // New page?
-    if (yPosition > doc.internal.pageSize.height - 60) {
-      doc.addPage();
-      yPosition = 20;
-    }
-
-    // Section header highlight
-    doc.setFillColor(sectionBg[0], sectionBg[1], sectionBg[2]);
-    doc.roundedRect(margin, yPosition, contentWidth, 11, 3, 3, "F");
-    doc.setFontSize(12);
-    doc.setFont(undefined, "bold");
-    doc.setTextColor(93, 144, 73);
-    doc.text(title, margin + 4, yPosition + 8);
-
-    yPosition += 15;
-
-    doc.setTextColor(80,80,80);
-    doc.setFont(undefined, "normal");
-    doc.setFontSize(10);
-    const textToDisplay = content && content.trim() ? content : `No ${title.toLowerCase()} provided`;
-    const lines = doc.splitTextToSize(textToDisplay, contentWidth);
-    doc.text(lines, margin + 1, yPosition);
-    yPosition += lines.length * 5 + 10;
-    doc.setTextColor(0,0,0);
+  
+  // Get notes from proposal
+  const sections = parseProposalContent(proposal.content);
+  const notes = proposal.notes || sections["Términos y Notas"] || "";
+  
+  // Section title
+  doc.setFontSize(11);
+  doc.setFont(undefined, 'bold');
+  doc.setTextColor(BRAND_GREEN.r, BRAND_GREEN.g, BRAND_GREEN.b);
+  doc.text("NOTAS Y GARANTIAS", margin, yPosition);
+  
+  yPosition += 6;
+  
+  // Notes box
+  doc.setFillColor(250, 252, 250);
+  doc.setDrawColor(BRAND_GREEN.r, BRAND_GREEN.g, BRAND_GREEN.b);
+  doc.setLineWidth(0.3);
+  
+  // Default guarantees
+  const defaultNotes = [
+    "Incluye garantía por 1 año en material y mano de obra",
+    "Homologación ante el Ministerio de Transporte (si aplica)",
+    "Entrega en punto de servicio o a domicilio (por acordar)"
+  ];
+  
+  // Calculate box height based on content
+  const allNotes = notes ? notes.split('\n').filter(n => n.trim()) : defaultNotes;
+  const boxHeight = Math.max(24, allNotes.length * 7 + 10);
+  
+  doc.roundedRect(margin, yPosition, contentWidth, boxHeight, 2, 2, 'FD');
+  
+  doc.setTextColor(40, 40, 40);
+  doc.setFont(undefined, "normal");
+  doc.setFontSize(8);
+  
+  yPosition += 6;
+  
+  allNotes.forEach((note) => {
+    // Checkmark circle
+    doc.setFillColor(BRAND_GREEN.r, BRAND_GREEN.g, BRAND_GREEN.b);
+    doc.circle(margin + 5, yPosition - 1, 1.5, 'F');
+    
+    // Checkmark symbol
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(6);
+    doc.text("✓", margin + 4, yPosition);
+    
+    // Note text
+    doc.setTextColor(40, 40, 40);
+    doc.setFontSize(8);
+    const noteText = note.length > 80 ? note.substring(0, 80) + "..." : note;
+    doc.text(noteText, margin + 12, yPosition);
+    
+    yPosition += 6;
   });
 
-  // Footer
-  if (yPosition > doc.internal.pageSize.height - 30) {
-    doc.addPage();
-    yPosition = 20;
-  }
-
-  doc.setFontSize(9);
-  doc.setTextColor(145, 175, 140);
-  doc.text("Green Landscape Irrigation", margin, yPosition);
-  yPosition += 4;
-  doc.text("Phone: (727) 484-5516 | Email: greenplanetlandscaping01@gmail.com", margin, yPosition);
-  yPosition += 4;
-  doc.text("Web: www.greenlandscapeirrigation.com", margin, yPosition);
-
-  doc.setTextColor(0,0,0);
-  return yPosition;
+  return yPosition + 4;
 };

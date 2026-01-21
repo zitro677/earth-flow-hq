@@ -3,8 +3,12 @@ import { jsPDF } from "jspdf";
 // AutoseguroDJ S.A.S logo
 const logoUrl = "/lovable-uploads/autoseguro-dj-logo.png";
 
+// Brand colors
+const BRAND_GREEN = { r: 21, g: 128, b: 61 }; // #15803d
+const BRAND_GREEN_LIGHT = { r: 220, g: 252, b: 231 }; // #dcfce7
+
 /**
- * Load an image url to dataUrl (base64). This is async but for PDF export, we want users to wait a split second if needed for best logo quality.
+ * Load an image url to dataUrl (base64)
  */
 const getImageDataUrl = (url: string): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -31,17 +35,17 @@ const getImageDataUrl = (url: string): Promise<string> => {
 
 export const addHeaderSection = async (doc: jsPDF, title: string, yPositionInitial: number, pageWidth: number) => {
   let yPosition = yPositionInitial;
-  const marginLeft = 20;
+  const marginLeft = 15;
+  const marginRight = 15;
 
-  // Add green line under header
-  doc.setDrawColor(93, 144, 73);
-  doc.setLineWidth(1.5);
-  doc.line(marginLeft, yPosition - 7, pageWidth - marginLeft, yPosition - 7);
+  // Header background bar
+  doc.setFillColor(BRAND_GREEN.r, BRAND_GREEN.g, BRAND_GREEN.b);
+  doc.rect(0, 0, pageWidth, 8, 'F');
 
   // Logo configuration
-  const logoHeight = 40;
-  const logoWidth = 40;
-  const logoY = yPosition - 2;
+  const logoHeight = 28;
+  const logoWidth = 28;
+  const logoY = yPosition - 5;
   const logoX = marginLeft;
   let logoLoaded = false;
 
@@ -54,38 +58,49 @@ export const addHeaderSection = async (doc: jsPDF, title: string, yPositionIniti
     }
   } catch (error) {
     console.warn("Failed to load logo for PDF:", error);
-    // Continue without logo
   }
 
-  // Company name next to logo - left aligned, shifted right, or centered if logo invisible
-  let companyY = yPosition + 10;
-  let nameX = logoLoaded ? marginLeft + logoWidth + 10 : pageWidth / 2;
-  let align: "left" | "center" | "right" | "justify" = logoLoaded ? "left" : "center";
+  // Company name - next to logo
+  let nameX = logoLoaded ? marginLeft + logoWidth + 6 : marginLeft;
+  let companyY = yPosition + 5;
 
-  doc.setFontSize(18);
-  doc.setTextColor(33, 53, 34);
-  doc.text("AutoseguroDJ S.A.S", nameX, companyY, { align });
-
-  // Company contact info under name
-  companyY += 7;
-  doc.setFontSize(9);
-  doc.setFont(undefined, "normal");
-  doc.setTextColor(120, 120, 120);
-  doc.text("Teléfono: +57 304 257 61 04    Email: gerencia@autosegurodj.com", nameX, companyY, { align });
-  companyY += 5;
-  doc.text("Web: www.autosegurodj.com", nameX, companyY, { align });
-
-  // Title centered under logo+company
-  companyY += 15;
+  doc.setFontSize(16);
   doc.setFont(undefined, "bold");
-  doc.setFontSize(22);
-  doc.setTextColor(93, 144, 73);
+  doc.setTextColor(BRAND_GREEN.r, BRAND_GREEN.g, BRAND_GREEN.b);
+  doc.text("AUTOSEGURODJ S.A.S", nameX, companyY);
+
+  // Company tagline
+  companyY += 5;
+  doc.setFontSize(8);
+  doc.setFont(undefined, "normal");
+  doc.setTextColor(100, 100, 100);
+  doc.text("Blindaje y Seguridad Vehicular", nameX, companyY);
+
+  // Contact info on the right
+  const contactX = pageWidth - marginRight;
+  let contactY = yPosition + 2;
+  
+  doc.setFontSize(8);
+  doc.setTextColor(60, 60, 60);
+  doc.text("Tel: +57 304 257 61 04", contactX, contactY, { align: "right" });
+  contactY += 4;
+  doc.text("gerencia@autosegurodj.com", contactX, contactY, { align: "right" });
+  contactY += 4;
+  doc.text("www.autosegurodj.com", contactX, contactY, { align: "right" });
+
+  // Divider line
+  companyY += 10;
+  doc.setDrawColor(BRAND_GREEN.r, BRAND_GREEN.g, BRAND_GREEN.b);
+  doc.setLineWidth(0.5);
+  doc.line(marginLeft, companyY, pageWidth - marginRight, companyY);
+
+  // Main title centered
+  companyY += 12;
+  doc.setFont(undefined, "bold");
+  doc.setFontSize(20);
+  doc.setTextColor(BRAND_GREEN.r, BRAND_GREEN.g, BRAND_GREEN.b);
   doc.text(title, pageWidth / 2, companyY, { align: "center" });
-  // Light line under title
-  doc.setDrawColor(222, 232, 222);
-  doc.setLineWidth(1);
-  doc.line(pageWidth / 2 - 28, companyY + 2, pageWidth / 2 + 28, companyY + 2);
 
   doc.setTextColor(0, 0, 0);
-  return companyY + 12;
+  return companyY + 10;
 };
