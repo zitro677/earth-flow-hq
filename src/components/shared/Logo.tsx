@@ -1,6 +1,6 @@
 import React from 'react';
-import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { cn } from "@/lib/utils";
+import logoImage from "@/assets/autoseguro-dj-logo.png";
 
 interface LogoProps {
   className?: string;
@@ -9,21 +9,17 @@ interface LogoProps {
 
 const Logo = ({ className, size = 'md' }: LogoProps) => {
   const sizeClasses = {
-    sm: 'w-24',
-    md: 'w-32',
-    lg: 'w-40'
+    sm: 'h-8',
+    md: 'h-10',
+    lg: 'h-14'
   };
 
   return (
-    <div className={cn("inline-block", sizeClasses[size], className)}>
-      <AspectRatio ratio={16/9}>
-        <img
-          src="https://images.unsplash.com/photo-1485827404703-89b55fcc595e"
-          alt="AutoseguroDJ S.A.S"
-          className="object-contain w-full h-full"
-        />
-      </AspectRatio>
-    </div>
+    <img
+      src={logoImage}
+      alt="AutoseguroDJ S.A.S"
+      className={cn("object-contain", sizeClasses[size], className)}
+    />
   );
 };
 
