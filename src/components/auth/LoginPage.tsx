@@ -39,7 +39,7 @@ const LoginPage: React.FC = () => {
       >
         <Card>
           <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold">Riego de Paisajes</CardTitle>
+            <CardTitle className="text-2xl font-bold">AutoseguroDJ S.A.S</CardTitle>
             <CardDescription>
               Inicia sesión para acceder a tu cuenta
             </CardDescription>

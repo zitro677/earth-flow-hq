@@ -80,9 +80,9 @@ const InvoiceEmailService = ({ invoice }: InvoiceEmailServiceProps) => {
       const pageHeight = doc.internal.pageSize.height;
       doc.setFontSize(9);
       doc.setTextColor(100, 100, 100);
-      doc.text("Green Landscape Irrigation", 20, pageHeight - 20);
-      doc.text("Phone: (727) 484-5516 | Email: greenplanetlandscaping01@gmail.com", 20, pageHeight - 15);
-      doc.text("Web: www.greenlandscapeirrigation.com", 20, pageHeight - 10);
+      doc.text("AutoseguroDJ S.A.S", 20, pageHeight - 20);
+      doc.text("Teléfono: (Pendiente) | Email: info@autosegurodj.com", 20, pageHeight - 15);
+      doc.text("Web: www.autosegurodj.com", 20, pageHeight - 10);
       doc.setTextColor(0, 0, 0);
       
       return doc;
@@ -95,23 +95,23 @@ const InvoiceEmailService = ({ invoice }: InvoiceEmailServiceProps) => {
 
   const sendEmail = async () => {
     try {
-      const companyEmail = "greenplanetlandscaping01@gmail.com";
-      const subject = `Invoice ${invoice.invoice_number} from Green Landscape Irrigation`;
-      const body = `Dear ${invoice.client_name},
+      const companyEmail = "info@autosegurodj.com";
+      const subject = `Factura ${invoice.invoice_number} de AutoseguroDJ S.A.S`;
+      const body = `Estimado/a ${invoice.client_name},
 
-Thank you for choosing Green Landscape Irrigation. Please find attached invoice ${invoice.invoice_number} for ${formatCurrency(Number(invoice.amount))}.
+Gracias por elegir AutoseguroDJ S.A.S. Adjunto encontrará la factura ${invoice.invoice_number} por ${formatCurrency(Number(invoice.amount))}.
 
-Due date: ${new Date(invoice.due_date).toLocaleDateString()}
+Fecha de vencimiento: ${new Date(invoice.due_date).toLocaleDateString()}
 
-If you have any questions regarding this invoice, please don't hesitate to contact us.
+Si tiene alguna pregunta sobre esta factura, no dude en contactarnos.
 
-Thank you for your business.
+Gracias por su preferencia.
 
-Regards,
-Green Landscape Irrigation
-Phone: (727) 484-5516
-Email: greenplanetlandscaping01@gmail.com
-Web: www.greenlandscapeirrigation.com`;
+Atentamente,
+AutoseguroDJ S.A.S
+Teléfono: (Pendiente)
+Email: info@autosegurodj.com
+Web: www.autosegurodj.com`;
       
       const doc = await createPdf();
       if (doc) {

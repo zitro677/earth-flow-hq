@@ -64,16 +64,16 @@ export const addHeaderSection = async (doc: jsPDF, title: string, yPositionIniti
 
   doc.setFontSize(18);
   doc.setTextColor(33, 53, 34);
-  doc.text("Green Landscape Irrigation", nameX, companyY, { align });
+  doc.text("AutoseguroDJ S.A.S", nameX, companyY, { align });
 
   // Company contact info under name
   companyY += 7;
   doc.setFontSize(9);
   doc.setFont(undefined, "normal");
   doc.setTextColor(120, 120, 120);
-  doc.text("Phone: (727) 484-5516    Email: greenplanetlandscaping01@gmail.com", nameX, companyY, { align });
+  doc.text("Teléfono: (Pendiente)    Email: info@autosegurodj.com", nameX, companyY, { align });
   companyY += 5;
-  doc.text("Web: www.greenlandscapeirrigation.com", nameX, companyY, { align });
+  doc.text("Web: www.autosegurodj.com", nameX, companyY, { align });
 
   // Title centered under logo+company
   companyY += 15;
