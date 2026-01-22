@@ -25,7 +25,7 @@ const RevenueChart: React.FC<RevenueChartProps> = ({ data, isLoading = false }) 
   return (
     <Card className="col-span-full lg:col-span-2 card-shadow">
       <CardHeader>
-        <CardTitle>Revenue & Expenses</CardTitle>
+        <CardTitle>Ganancias & Gastos</CardTitle>
       </CardHeader>
       <CardContent className="h-[300px]">
         {isLoading ? (
