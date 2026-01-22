@@ -1,123 +1,140 @@
 
-# Plan: Sistema de Categorías y Subcategorías de Gastos Deducibles
+# Plan: Sistema de Cálculos Tributarios Colombianos
 
 ## Objetivo
-Implementar un sistema jerárquico de categorías y subcategorías para gastos deducibles, específico para el negocio de blindaje de vehículos AutoSeguro DJ.
+Implementar cálculos automáticos de retenciones, IVA y deducciones según el régimen tributario colombiano (régimen común, municipio Bogotá con ICA 0.5%).
 
 ---
 
-## Estructura de Categorías Propuesta
+## Configuración Tributaria Colombia
 
 ```text
-┌─────────────────────────────────────────────────────────────────┐
-│  CATEGORÍA PRINCIPAL          │  SUBCATEGORÍAS                  │
-├─────────────────────────────────────────────────────────────────┤
-│  1. Compra y Transformación   │  - Adquisición de vehículos     │
-│     de Vehículos              │  - Materiales de blindaje       │
-│                               │  - Repuestos y adaptación       │
-│                               │  - Mano de obra directa         │
-│                               │  - Consumibles de taller        │
-│                               │  - Servicios (energía/gas/agua) │
-│                               │  - Arrendamiento taller         │
-│                               │  - Depreciación maquinaria      │
-│                               │  - Mantenimiento equipos        │
-├─────────────────────────────────────────────────────────────────┤
-│  2. Venta y Comercialización  │  - Comisiones vendedores        │
-│                               │  - Publicidad y marketing       │
-│                               │  - Traslado de unidades         │
-│                               │  - Preparación vehículos        │
-│                               │  - Gastos de entrega            │
-│                               │  - Gastos de garantía           │
-├─────────────────────────────────────────────────────────────────┤
-│  3. Trámites e Intermediación │  - Derechos y registros         │
-│                               │  - Transporte y almacenamiento  │
-│                               │  - Licencias y software         │
-│                               │  - Comisiones gestores          │
-├─────────────────────────────────────────────────────────────────┤
-│  4. Administración y Finanzas │  - Sueldos administrativos      │
-│                               │  - Aportes parafiscales         │
-│                               │  - Arrendamiento oficinas       │
-│                               │  - Servicios públicos           │
-│                               │  - Licencias software           │
-│                               │  - Material de oficina          │
-│                               │  - Uniformes y EPP              │
-│                               │  - Viajes y hospedaje           │
-│                               │  - Seguros                      │
-│                               │  - Depreciación activos         │
-│                               │  - Mantenimiento inmuebles      │
-│                               │  - Reparaciones locativas       │
-├─────────────────────────────────────────────────────────────────┤
-│  5. Marketing y RRPP          │  - Eventos VIP                  │
-│                               │  - Merchandising                │
-│                               │  - Membresías y gremios         │
-│                               │  - Certificaciones              │
-├─────────────────────────────────────────────────────────────────┤
-│  6. Financieros y Tributarios │  - Intereses préstamos          │
-│                               │  - Comisiones bancarias         │
-│                               │  - Auditoría externa            │
-│                               │  - Timbres y registros          │
-├─────────────────────────────────────────────────────────────────┤
-│  7. Kilometraje               │  - Kilometraje (deducible)      │
-└─────────────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────────────┐
+│  TASAS DE RETENCIÓN EN LA FUENTE (Rete-Renta)                    │
+├───────────────────────────────────────────────────────────────────┤
+│  Compras / Inventario            →  2.5%                         │
+│  Servicios                       →  4.0%                         │
+│  Arrendamiento Inmueble          →  3.5%                         │
+│  Publicidad / Transporte         →  1.0%                         │
+├───────────────────────────────────────────────────────────────────┤
+│  IVA                             →  19%                          │
+│  Rete-IVA (50% del IVA)          →  9.5% efectivo                │
+│  ICA Bogotá                      →  0.5%                         │
+└───────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Flujo de Cálculo Automático
+
+```text
+ENTRADA: Valor Bruto (sin IVA)
+         ↓
+┌────────────────────────────────────────────────────────────────┐
+│  1. DETECTAR TIPO DE GASTO                                     │
+│     → Mapear categoría/subcategoría a concepto tributario      │
+│       (inventario, servicio, arrendamiento, publicidad, etc.)  │
+└────────────────────────────────────────────────────────────────┘
+         ↓
+┌────────────────────────────────────────────────────────────────┐
+│  2. CALCULAR IVA                                               │
+│     IVA = Valor Bruto × 19%                                    │
+│     Valor Total = Valor Bruto + IVA                            │
+└────────────────────────────────────────────────────────────────┘
+         ↓
+┌────────────────────────────────────────────────────────────────┐
+│  3. CALCULAR RETENCIONES                                       │
+│     Rete-Fuente = Valor Bruto × % según concepto               │
+│     Rete-IVA = IVA × 50% (si proveedor responsable)            │
+│     Rete-ICA = Valor Bruto × 0.5%                              │
+└────────────────────────────────────────────────────────────────┘
+         ↓
+┌────────────────────────────────────────────────────────────────┐
+│  4. CALCULAR NETO A PAGAR                                      │
+│     Neto = Valor Bruto + IVA - Rete-Fuente - Rete-IVA - ICA    │
+└────────────────────────────────────────────────────────────────┘
+         ↓
+┌────────────────────────────────────────────────────────────────┐
+│  5. CALCULAR BENEFICIOS FISCALES                               │
+│     Costo Deducible = Valor Bruto (100%)                       │
+│     IVA Descontable = IVA - Rete-IVA                           │
+│     Crédito Renta = Rete-Fuente                                │
+│     Crédito ICA = Rete-ICA                                     │
+└────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## Cambios Requeridos
 
-### 1. Crear archivo de configuración de categorías
+### 1. Crear archivo de configuración tributaria
 
-**Nuevo archivo:** `src/components/finances/expense-tracker/data/expenseCategories.ts`
+**Nuevo archivo:** `src/components/finances/expense-tracker/utils/colombianTaxConfig.ts`
 
-Este archivo contendrá la estructura de categorías y subcategorías, facilitando futuras modificaciones sin tocar el código del formulario.
+Define tasas oficiales y mapeo de categorías a conceptos tributarios:
 
 ```typescript
-export interface ExpenseSubcategory {
-  id: string;
-  label: string;
-  description?: string;
-}
+// Tasas de retención según concepto
+export const RETENTION_RATES = {
+  compras: 0.025,        // 2.5% inventario/materiales
+  servicios: 0.04,       // 4.0% servicios generales
+  arrendamiento: 0.035,  // 3.5% arrendamiento inmueble
+  publicidad: 0.01,      // 1.0% publicidad/transporte
+  honorarios: 0.10,      // 10% honorarios (opcional)
+};
 
-export interface ExpenseCategory {
-  id: string;
-  label: string;
-  icon?: string;
-  subcategories: ExpenseSubcategory[];
-}
+export const IVA_RATE = 0.19;          // 19%
+export const RETE_IVA_RATE = 0.50;     // 50% del IVA
+export const ICA_BOGOTA_RATE = 0.005;  // 0.5%
+```
 
-export const EXPENSE_CATEGORIES: ExpenseCategory[] = [
-  {
-    id: "transformacion",
-    label: "Compra y Transformación de Vehículos",
-    subcategories: [
-      { id: "adquisicion_vehiculos", label: "Adquisición de vehículos" },
-      { id: "materiales_blindaje", label: "Materiales de blindaje" },
-      // ... más subcategorías
-    ]
-  },
-  // ... más categorías
-];
+Incluye función de mapeo de categorías:
+
+```typescript
+export function getRetentionType(categoryId: string, subcategoryId: string): string {
+  // Mapea cada subcategoría al tipo de retención aplicable
+  const mappings = {
+    'adquisicion_vehiculos': 'compras',
+    'materiales_blindaje': 'compras',
+    'mano_obra_directa': 'servicios',
+    'arrendamiento_taller': 'arrendamiento',
+    'publicidad_marketing': 'publicidad',
+    // ... etc
+  };
+  return mappings[subcategoryId] || 'servicios';
+}
 ```
 
 ---
 
-### 2. Actualizar el tipo `NewExpense`
+### 2. Crear hook de cálculos tributarios
 
-**Archivo:** `src/components/finances/expense-tracker/hooks/useExpenseTracker.ts`
+**Nuevo archivo:** `src/components/finances/expense-tracker/hooks/useColombianTaxCalculations.ts`
 
-Agregar campo `subcategory` al tipo:
+Hook reutilizable que calcula todo automáticamente:
 
 ```typescript
-export interface NewExpense {
-  date: string;
-  category: string;
-  subcategory: string;  // NUEVO
-  amount: string;
-  vendor: string;
-  description: string;
-  deductible: boolean;
-  miles?: string;
+export interface TaxCalculationResult {
+  valorBruto: number;
+  iva: number;
+  valorTotal: number;
+  reteFuente: number;
+  reteIva: number;
+  reteIca: number;
+  totalRetenciones: number;
+  netoAPagar: number;
+  costoDeducible: number;
+  ivaDescontable: number;
+  creditoRenta: number;
+  creditoIca: number;
 }
+
+export function calculateColombianTaxes(
+  valorBruto: number,
+  categoryId: string,
+  subcategoryId: string,
+  proveedorResponsableIva: boolean = true
+): TaxCalculationResult { ... }
 ```
 
 ---
@@ -126,80 +143,144 @@ export interface NewExpense {
 
 **Archivo:** `src/components/finances/expense-tracker/components/ExpenseForm.tsx`
 
-Cambios principales:
-- Importar las categorías desde el nuevo archivo de configuración
-- Agregar selector de categoría principal con grupos visuales
-- Agregar selector de subcategoría dependiente de la categoría seleccionada
-- Las subcategorías se actualizarán dinámicamente según la categoría elegida
+Agregar:
+- Campo para indicar si el proveedor es responsable de IVA (checkbox)
+- Panel de cálculos que muestre en tiempo real:
+  - IVA calculado
+  - Retención en la fuente
+  - Rete-IVA  
+  - Rete-ICA
+  - **Neto a pagar al proveedor**
 
 ```text
-Diseño del formulario actualizado:
-┌────────────────────────────────────────────────────────────┐
-│  Agregar Nuevo Gasto                                       │
-├────────────────────────────────────────────────────────────┤
-│  Fecha: [___________]     Categoría: [▼ Seleccionar    ]   │
-│                                                            │
-│  Subcategoría: [▼ Seleccionar subcategoría          ]      │
-│                                                            │
-│  Monto ($): [_________]   Proveedor: [________________]    │
-│                                                            │
-│  Descripción: [_______________________________________]    │
-│                                                            │
-│  [✓] Deducible de impuestos                                │
-│                                                            │
-│                          [Cancelar]  [Guardar Gasto]       │
-└────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────┐
+│  NUEVO GASTO                                                   │
+├────────────────────────────────────────────────────────────────┤
+│  Valor Bruto (sin IVA): [_______________]                      │
+│                                                                │
+│  Categoría: [▼ Compra y Transformación ]                       │
+│  Subcategoría: [▼ Materiales de blindaje ]                     │
+│                                                                │
+│  [✓] Proveedor responsable de IVA                              │
+├────────────────────────────────────────────────────────────────┤
+│  CÁLCULOS AUTOMÁTICOS                                          │
+│  ─────────────────────────────────────────────────────────────│
+│  + IVA (19%):                           $ 1,900,000            │
+│  = Valor Total:                         $11,900,000            │
+│  ─────────────────────────────────────────────────────────────│
+│  - Rete-Fuente (2.5%):                  $   250,000            │
+│  - Rete-IVA (50% IVA):                  $   950,000            │
+│  - Rete-ICA (0.5%):                     $    50,000            │
+│  ─────────────────────────────────────────────────────────────│
+│  = NETO A PAGAR:                        $10,650,000            │
+└────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-### 4. Actualizar base de datos (opcional pero recomendado)
+### 4. Migración de base de datos
 
-Agregar columna `subcategory` a la tabla `expenses`:
+Agregar columnas para almacenar cálculos tributarios:
 
 ```sql
-ALTER TABLE expenses ADD COLUMN subcategory text;
+ALTER TABLE expenses ADD COLUMN valor_bruto numeric DEFAULT 0;
+ALTER TABLE expenses ADD COLUMN iva numeric DEFAULT 0;
+ALTER TABLE expenses ADD COLUMN rete_fuente numeric DEFAULT 0;
+ALTER TABLE expenses ADD COLUMN rete_iva numeric DEFAULT 0;
+ALTER TABLE expenses ADD COLUMN rete_ica numeric DEFAULT 0;
+ALTER TABLE expenses ADD COLUMN neto_pagar numeric DEFAULT 0;
+ALTER TABLE expenses ADD COLUMN proveedor_responsable_iva boolean DEFAULT true;
+ALTER TABLE expenses ADD COLUMN tipo_retencion text DEFAULT 'servicios';
 ```
-
-Esto permitirá almacenar y filtrar por subcategoría en reportes futuros.
 
 ---
 
-### 5. Actualizar operaciones de guardado
+### 5. Actualizar tipos e interfaces
 
 **Archivo:** `src/components/finances/expense-tracker/hooks/useExpenseTracker.ts`
 
-- Incluir `subcategory` en las operaciones de INSERT y UPDATE
-- Transformar los datos recuperados para incluir subcategoría
+Extender interfaces para incluir campos tributarios:
+
+```typescript
+export interface Expense {
+  // ... campos existentes
+  valorBruto: number;
+  iva: number;
+  reteFuente: number;
+  reteIva: number;
+  reteIca: number;
+  netoPagar: number;
+  proveedorResponsableIva: boolean;
+  tipoRetencion: string;
+}
+```
 
 ---
 
-## Archivos a Modificar/Crear
+### 6. Actualizar estadísticas con datos fiscales
+
+**Archivo:** `src/components/finances/expense-tracker/components/ExpenseStats.tsx`
+
+Nuevas tarjetas de estadísticas:
+
+```text
+┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
+│  Total Gastos   │ │  IVA Descontable│ │  Crédito Renta  │
+│  $XX,XXX,XXX    │ │  $X,XXX,XXX     │ │  $X,XXX,XXX     │
+└─────────────────┘ └─────────────────┘ └─────────────────┘
+┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
+│  Crédito ICA    │ │  Total Retenido │ │  Neto Pagado    │
+│  $XXX,XXX       │ │  $X,XXX,XXX     │ │  $XX,XXX,XXX    │
+└─────────────────┘ └─────────────────┘ └─────────────────┘
+```
+
+---
+
+### 7. Actualizar la tabla de gastos
+
+**Archivo:** `src/components/finances/expense-tracker/components/ExpenseTableColumns.tsx`
+
+Agregar columnas para mostrar:
+- Valor Bruto
+- IVA
+- Retenciones (tooltip con detalle)
+- Neto Pagado
+
+---
+
+## Archivos a Crear/Modificar
 
 | Archivo | Acción | Descripción |
 |---------|--------|-------------|
-| `src/components/finances/expense-tracker/data/expenseCategories.ts` | **CREAR** | Configuración de categorías y subcategorías |
-| `src/components/finances/expense-tracker/hooks/useExpenseTracker.ts` | Modificar | Agregar subcategory al tipo y operaciones |
-| `src/components/finances/expense-tracker/components/ExpenseForm.tsx` | Modificar | UI con selectores jerárquicos |
-| Base de datos | Migración | Agregar columna subcategory |
+| `src/components/finances/expense-tracker/utils/colombianTaxConfig.ts` | **CREAR** | Configuración de tasas y mapeos |
+| `src/components/finances/expense-tracker/hooks/useColombianTaxCalculations.ts` | **CREAR** | Hook de cálculos tributarios |
+| `src/components/finances/expense-tracker/components/ExpenseForm.tsx` | Modificar | Agregar campo proveedor IVA y panel de cálculos |
+| `src/components/finances/expense-tracker/hooks/useExpenseTracker.ts` | Modificar | Extender interfaces y operaciones DB |
+| `src/components/finances/expense-tracker/components/ExpenseStats.tsx` | Modificar | Nuevas tarjetas de estadísticas fiscales |
+| `src/components/finances/expense-tracker/components/ExpenseTableColumns.tsx` | Modificar | Columnas de IVA, retenciones, neto |
+| Base de datos | Migración | Agregar 8 columnas tributarias |
 
 ---
 
-## Beneficios de esta Implementación
+## Formato de Moneda
 
-1. **Fácil de usar**: El usuario selecciona primero la categoría principal y luego la subcategoría específica
-2. **Organizado**: Las categorías están agrupadas lógicamente según el tipo de gasto
-3. **Mantenible**: Las categorías están en un archivo de configuración separado, fácil de modificar
-4. **Extensible**: Se pueden agregar nuevas categorías o subcategorías sin cambiar el código del formulario
-5. **Reportes precisos**: Permitirá generar reportes fiscales detallados por categoría y subcategoría
+Todos los valores se mostrarán en **Pesos Colombianos (COP)** usando el formato `es-CO`:
+
+```typescript
+valor.toLocaleString('es-CO', { 
+  style: 'currency', 
+  currency: 'COP',
+  minimumFractionDigits: 0 
+})
+// Ejemplo: $10.650.000
+```
 
 ---
 
-## Experiencia de Usuario
+## Beneficios
 
-1. El usuario abre el formulario de nuevo gasto
-2. Selecciona la **categoría principal** (ej: "Compra y Transformación de Vehículos")
-3. El selector de subcategoría se actualiza mostrando solo las opciones relevantes
-4. Selecciona la **subcategoría** (ej: "Materiales de blindaje")
-5. Completa el resto del formulario
-6. Todos los gastos quedan etiquetados con ambos niveles para reportes fiscales
+1. **Cálculo automático** - El usuario solo ingresa el valor bruto sin IVA
+2. **Cumplimiento tributario** - Retenciones calculadas según normativa colombiana vigente
+3. **Control fiscal** - Visualización clara de créditos tributarios (IVA descontable, anticipos de renta e ICA)
+4. **Auditoría** - Todos los cálculos quedan almacenados en la base de datos para reportes
+5. **Simplicidad** - El usuario final ve exactamente cuánto debe pagar al proveedor
