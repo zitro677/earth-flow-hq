@@ -55,10 +55,18 @@ export type Database = {
           description: string
           expense_date: string
           id: string
+          iva: number | null
+          neto_pagar: number | null
           notes: string | null
+          proveedor_responsable_iva: boolean | null
+          rete_fuente: number | null
+          rete_ica: number | null
+          rete_iva: number | null
           subcategory: string | null
+          tipo_retencion: string | null
           updated_at: string
           user_id: string
+          valor_bruto: number | null
           vendor: string | null
         }
         Insert: {
@@ -68,10 +76,18 @@ export type Database = {
           description: string
           expense_date?: string
           id?: string
+          iva?: number | null
+          neto_pagar?: number | null
           notes?: string | null
+          proveedor_responsable_iva?: boolean | null
+          rete_fuente?: number | null
+          rete_ica?: number | null
+          rete_iva?: number | null
           subcategory?: string | null
+          tipo_retencion?: string | null
           updated_at?: string
           user_id: string
+          valor_bruto?: number | null
           vendor?: string | null
         }
         Update: {
@@ -81,10 +97,18 @@ export type Database = {
           description?: string
           expense_date?: string
           id?: string
+          iva?: number | null
+          neto_pagar?: number | null
           notes?: string | null
+          proveedor_responsable_iva?: boolean | null
+          rete_fuente?: number | null
+          rete_ica?: number | null
+          rete_iva?: number | null
           subcategory?: string | null
+          tipo_retencion?: string | null
           updated_at?: string
           user_id?: string
+          valor_bruto?: number | null
           vendor?: string | null
         }
         Relationships: []

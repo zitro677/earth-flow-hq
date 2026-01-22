@@ -1,8 +1,8 @@
-
 import React, { useMemo } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   DialogContent,
   DialogHeader,
@@ -19,6 +19,8 @@ import {
 } from "@/components/ui/select";
 import type { NewExpense } from "../hooks/useExpenseTracker";
 import { EXPENSE_CATEGORIES, getSubcategoriesByCategoryId } from "../data/expenseCategories";
+import { calculateColombianTaxes } from "../hooks/useColombianTaxCalculations";
+import { TaxCalculationPanel } from "./TaxCalculationPanel";
 
 interface ExpenseFormProps {
   newExpense: NewExpense;
@@ -26,6 +28,8 @@ interface ExpenseFormProps {
   onSubmit: () => void;
   isEditMode?: boolean;
 }
+
+const MILEAGE_RATE = 0.67;
 
 export const ExpenseForm: React.FC<ExpenseFormProps> = ({
   newExpense,
@@ -38,13 +42,27 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
     return getSubcategoriesByCategoryId(newExpense.category);
   }, [newExpense.category]);
 
+  // Calculate taxes in real-time
+  const taxCalculation = useMemo(() => {
+    let valorBruto = 0;
+    if (newExpense.category === "kilometraje" && newExpense.miles) {
+      valorBruto = parseFloat(newExpense.miles) * MILEAGE_RATE;
+    } else if (newExpense.amount) {
+      valorBruto = parseFloat(newExpense.amount);
+    }
+    
+    return calculateColombianTaxes(
+      valorBruto,
+      newExpense.subcategory,
+      newExpense.proveedorResponsableIva
+    );
+  }, [newExpense.amount, newExpense.miles, newExpense.category, newExpense.subcategory, newExpense.proveedorResponsableIva]);
+
   const handleCategoryChange = (categoryId: string) => {
-    // Reset subcategory when category changes
     onExpenseChange({ 
       ...newExpense, 
       category: categoryId, 
       subcategory: "",
-      // Reset miles if not kilometraje category
       miles: categoryId === "kilometraje" ? newExpense.miles : "",
     });
   };
@@ -56,7 +74,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
   const isKilometraje = newExpense.category === "kilometraje";
 
   return (
-    <DialogContent className="sm:max-w-[550px]">
+    <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
       <DialogHeader>
         <DialogTitle>{isEditMode ? "Editar Gasto" : "Agregar Nuevo Gasto"}</DialogTitle>
       </DialogHeader>
@@ -94,7 +112,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
           </Select>
         </div>
 
-        {/* Row 3: Subcategory (only shown when category is selected) */}
+        {/* Row 3: Subcategory */}
         {newExpense.category && subcategories.length > 0 && (
           <div>
             <Label htmlFor="subcategory">Subcategoría</Label>
@@ -113,7 +131,6 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
                 ))}
               </SelectContent>
             </Select>
-            {/* Show description hint for selected subcategory */}
             {newExpense.subcategory && (
               <p className="text-xs text-muted-foreground mt-1">
                 {subcategories.find(s => s.id === newExpense.subcategory)?.description}
@@ -122,11 +139,11 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
           </div>
         )}
 
-        {/* Row 4: Amount or Miles + Vendor */}
+        {/* Row 4: Amount/Miles + Vendor */}
         <div className="grid grid-cols-2 gap-4">
           {isKilometraje ? (
             <div>
-              <Label htmlFor="miles">Millas Recorridas</Label>
+              <Label htmlFor="miles">Kilómetros Recorridos</Label>
               <Input
                 id="miles"
                 type="number"
@@ -135,30 +152,30 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
                 onChange={(e) =>
                   onExpenseChange({ ...newExpense, miles: e.target.value })
                 }
-                placeholder="Ingrese millas"
+                placeholder="Ingrese kilómetros"
               />
               <span className="text-xs text-muted-foreground mt-1">
-                Tarifa: $0.67 por milla
+                Tarifa: $0.67 por km
               </span>
             </div>
           ) : (
             <div>
-              <Label htmlFor="amount">Monto ($)</Label>
+              <Label htmlFor="amount">Valor Bruto (sin IVA)</Label>
               <Input
                 id="amount"
                 type="number"
-                step="0.01"
+                step="1"
                 min="0"
                 value={newExpense.amount}
                 onChange={(e) =>
                   onExpenseChange({ ...newExpense, amount: e.target.value })
                 }
-                placeholder="0.00"
+                placeholder="0"
               />
             </div>
           )}
           <div>
-            <Label htmlFor="vendor">Proveedor/Ubicación</Label>
+            <Label htmlFor="vendor">Proveedor</Label>
             <Input
               id="vendor"
               value={newExpense.vendor}
@@ -183,19 +200,38 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({
           />
         </div>
 
-        {/* Row 6: Deductible checkbox */}
+        {/* Row 6: Provider IVA responsibility */}
         <div className="flex items-center space-x-2">
-          <input
-            type="checkbox"
+          <Checkbox
+            id="proveedorIva"
+            checked={newExpense.proveedorResponsableIva}
+            onCheckedChange={(checked) =>
+              onExpenseChange({ ...newExpense, proveedorResponsableIva: checked === true })
+            }
+          />
+          <Label htmlFor="proveedorIva" className="text-sm font-normal">
+            Proveedor responsable de IVA (aplica Rete-IVA 50%)
+          </Label>
+        </div>
+
+        {/* Row 7: Deductible checkbox */}
+        <div className="flex items-center space-x-2">
+          <Checkbox
             id="deductible"
             checked={newExpense.deductible}
-            onChange={(e) =>
-              onExpenseChange({ ...newExpense, deductible: e.target.checked })
+            onCheckedChange={(checked) =>
+              onExpenseChange({ ...newExpense, deductible: checked === true })
             }
-            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
           />
-          <Label htmlFor="deductible">Deducible de Impuestos</Label>
+          <Label htmlFor="deductible" className="text-sm font-normal">
+            Deducible de Impuestos
+          </Label>
         </div>
+
+        {/* Tax Calculation Panel */}
+        {newExpense.subcategory && taxCalculation.valorBruto > 0 && (
+          <TaxCalculationPanel taxCalculation={taxCalculation} />
+        )}
       </div>
       <DialogFooter>
         <DialogClose asChild>

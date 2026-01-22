@@ -1,9 +1,8 @@
-
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { DataTable } from "../ui/data-table";
-import { DialogTrigger, Dialog } from "@/components/ui/dialog";
+import { Dialog } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, FileDown, Pencil, Trash2 } from "lucide-react";
 import { ExpenseStats } from "./expense-tracker/components/ExpenseStats";
@@ -19,32 +18,34 @@ const ExpenseTracker: React.FC = () => {
     newExpense,
     setNewExpense,
     addExpense,
+    isEditMode: hookIsEditMode,
     totalExpenses,
     deductibleExpenses,
     potentialTaxSavings,
     totalMiles,
     totalMileageDeduction,
+    taxStats,
   } = useExpenseTracker();
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false);
+  const [localIsEditMode, setLocalIsEditMode] = useState(false);
 
   const handleExport = () => {
     try {
       exportToCSV(expenses);
-      toast.success("Expenses exported successfully");
+      toast.success("Gastos exportados correctamente");
     } catch (error) {
-      toast.error("Failed to export expenses");
+      toast.error("Error al exportar gastos");
     }
   };
 
   const handleOpenEditDialog = () => {
-    setIsEditMode(true);
+    setLocalIsEditMode(true);
     setIsDialogOpen(true);
   };
 
   const handleOpenAddDialog = () => {
-    setIsEditMode(false);
+    setLocalIsEditMode(false);
     setIsDialogOpen(true);
   };
 
@@ -100,10 +101,11 @@ const ExpenseTracker: React.FC = () => {
         potentialTaxSavings={potentialTaxSavings}
         totalMiles={totalMiles}
         totalMileageDeduction={totalMileageDeduction}
+        taxStats={taxStats}
       />
 
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold">Expense Records</h2>
+        <h2 className="text-xl font-semibold">Registro de Gastos</h2>
         <div className="flex gap-2">
           <Button 
             variant="outline" 
@@ -111,7 +113,7 @@ const ExpenseTracker: React.FC = () => {
             onClick={handleExport}
           >
             <FileDown className="h-4 w-4" />
-            <span>Export CSV</span>
+            <span>Exportar CSV</span>
           </Button>
 
           <Button 
@@ -119,7 +121,7 @@ const ExpenseTracker: React.FC = () => {
             onClick={handleOpenAddDialog}
           >
             <Plus className="h-4 w-4" />
-            <span>Add Expense</span>
+            <span>Agregar Gasto</span>
           </Button>
         </div>
       </div>
@@ -130,7 +132,7 @@ const ExpenseTracker: React.FC = () => {
             columns={columnsWithActions}
             data={expenses}
             searchColumns={["vendor", "category", "description"]}
-            searchPlaceholder="Search expenses by vendor, category or description..."
+            searchPlaceholder="Buscar gastos por proveedor, categoría o descripción..."
           />
         </CardContent>
       </Card>
@@ -143,7 +145,7 @@ const ExpenseTracker: React.FC = () => {
             addExpense();
             setIsDialogOpen(false);
           }}
-          isEditMode={isEditMode}
+          isEditMode={localIsEditMode || hookIsEditMode}
         />
       </Dialog>
     </motion.div>
