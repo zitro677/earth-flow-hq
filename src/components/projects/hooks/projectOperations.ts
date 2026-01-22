@@ -30,30 +30,40 @@ export const addProject = async (projectData: any) => {
   try {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user?.id) {
-      toast.error("You must be logged in to create projects");
+      toast.error("Debes iniciar sesión para crear proyectos");
       return null;
     }
 
+    // Map form fields to database columns
+    const dbData = {
+      name: projectData.name,
+      description: projectData.description,
+      status: projectData.status,
+      budget: projectData.budget ? parseFloat(projectData.budget) : null,
+      start_date: projectData.startDate,
+      end_date: projectData.dueDate,
+      user_id: session.user.id,
+      // client_id would need to be a UUID from clients table, not a string name
+      // For now we'll leave it null - user should select from existing clients
+    };
+
     const { data, error } = await supabase
       .from('projects')
-      .insert({
-        ...projectData,
-        user_id: session.user.id,
-      })
+      .insert(dbData)
       .select()
       .single();
 
     if (error) {
       console.error("Error creating project:", error);
-      toast.error("Failed to create project");
+      toast.error("Error al crear el proyecto");
       return null;
     }
 
-    toast.success("Project created successfully");
+    toast.success("Proyecto creado exitosamente");
     return data;
   } catch (error) {
     console.error("Error creating project:", error);
-    toast.error("Failed to create project");
+    toast.error("Error al crear el proyecto");
     return null;
   }
 };
