@@ -95,7 +95,7 @@ const DashboardPage: React.FC = () => {
         >
           <h1 className="text-3xl font-bold">Panel de Control</h1>
           <p className="text-muted-foreground mt-1 mb-6">
-            Resumen de tu negocio de paisajismo
+            Resumen de tu negocio de blindadora Auto seguro DJ
           </p>
         </motion.div>
 
