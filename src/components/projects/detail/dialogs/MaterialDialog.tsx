@@ -35,58 +35,58 @@ const MaterialDialog: React.FC<MaterialDialogProps> = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add New Material</DialogTitle>
+          <DialogTitle>Agregar Nuevo Material</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
-            <Label htmlFor="material-name">Material Name</Label>
+            <Label htmlFor="material-name">Nombre del Material</Label>
             <Input 
               id="material-name" 
               value={newMaterial.name} 
               onChange={e => setNewMaterial({...newMaterial, name: e.target.value})}
-              placeholder="Enter material name" 
+              placeholder="Ingresa el nombre del material" 
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="material-quantity">Quantity</Label>
+            <Label htmlFor="material-quantity">Cantidad</Label>
             <Input 
               id="material-quantity" 
               value={newMaterial.quantity} 
               onChange={e => setNewMaterial({...newMaterial, quantity: e.target.value})}
-              placeholder="e.g., 5 units, 10 sq ft" 
+              placeholder="Ej: 5 unidades, 10 m²" 
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="material-cost">Cost</Label>
+            <Label htmlFor="material-cost">Costo</Label>
             <Input 
               id="material-cost" 
               value={newMaterial.cost} 
               onChange={e => setNewMaterial({...newMaterial, cost: e.target.value})}
-              placeholder="e.g., $500" 
+              placeholder="Ej: $500.000" 
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="material-status">Status</Label>
+            <Label htmlFor="material-status">Estado</Label>
             <Select 
               value={newMaterial.status} 
               onValueChange={value => setNewMaterial({...newMaterial, status: value})}
             >
               <SelectTrigger id="material-status">
-                <SelectValue placeholder="Select status" />
+                <SelectValue placeholder="Seleccionar estado" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Pending Delivery">Pending Delivery</SelectItem>
-                <SelectItem value="Delivered">Delivered</SelectItem>
-                <SelectItem value="On Hold">On Hold</SelectItem>
+                <SelectItem value="Pendiente de Entrega">Pendiente de Entrega</SelectItem>
+                <SelectItem value="Entregado">Entregado</SelectItem>
+                <SelectItem value="En Espera">En Espera</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
+            <Button variant="outline">Cancelar</Button>
           </DialogClose>
-          <Button onClick={handleAddMaterial} disabled={!newMaterial.name}>Add Material</Button>
+          <Button onClick={handleAddMaterial} disabled={!newMaterial.name}>Agregar Material</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

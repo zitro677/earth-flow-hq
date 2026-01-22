@@ -54,18 +54,18 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
     
     // Show success toast
     toast({
-      title: "Material Updated",
-      description: `Material status updated to "${newStatus}".`,
+      title: "Material Actualizado",
+      description: `El estado del material se actualizó a "${newStatus}".`,
     });
   };
 
   return (
     <Card className="card-shadow">
       <CardHeader className="flex-row justify-between items-center">
-        <CardTitle>Materials</CardTitle>
+        <CardTitle>Materiales</CardTitle>
         <Button size="sm" className="gap-1" onClick={onAddMaterialClick}>
           <Plus className="h-4 w-4" />
-          <span>Add Material</span>
+          <span>Agregar Material</span>
         </Button>
       </CardHeader>
       <CardContent>
@@ -74,10 +74,10 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
             <TableHeader>
               <TableRow>
                 <TableHead>Material</TableHead>
-                <TableHead>Quantity</TableHead>
-                <TableHead>Cost</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="w-[100px]">Actions</TableHead>
+                <TableHead>Cantidad</TableHead>
+                <TableHead>Costo</TableHead>
+                <TableHead>Estado</TableHead>
+                <TableHead className="w-[160px]">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -96,14 +96,14 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
                       defaultValue={material.status}
                       onValueChange={(value) => handleStatusChange(index, value)}
                     >
-                      <SelectTrigger className="h-8 w-[130px]">
+                      <SelectTrigger className="h-8 w-[160px]">
                         <Edit2 className="h-3.5 w-3.5 mr-1" />
-                        <span>Change Status</span>
+                        <span>Cambiar Estado</span>
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Pending Delivery">Pending Delivery</SelectItem>
-                        <SelectItem value="Delivered">Delivered</SelectItem>
-                        <SelectItem value="On Hold">On Hold</SelectItem>
+                        <SelectItem value="Pendiente de Entrega">Pendiente de Entrega</SelectItem>
+                        <SelectItem value="Entregado">Entregado</SelectItem>
+                        <SelectItem value="En Espera">En Espera</SelectItem>
                       </SelectContent>
                     </Select>
                   </TableCell>
@@ -112,7 +112,7 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
             </TableBody>
           </Table>
         ) : (
-          <p className="text-muted-foreground text-center py-4">No materials added yet</p>
+          <p className="text-muted-foreground text-center py-4">No hay materiales agregados aún</p>
         )}
       </CardContent>
     </Card>

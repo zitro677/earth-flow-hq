@@ -53,18 +53,18 @@ const TasksTab: React.FC<TasksTabProps> = ({
     
     // Show success toast
     toast({
-      title: "Task Updated",
-      description: `Task status updated to "${newStatus}".`,
+      title: "Tarea Actualizada",
+      description: `El estado de la tarea se actualizó a "${newStatus}".`,
     });
   };
 
   return (
     <Card className="card-shadow">
       <CardHeader className="flex-row justify-between items-center">
-        <CardTitle>Project Tasks</CardTitle>
+        <CardTitle>Tareas del Proyecto</CardTitle>
         <Button size="sm" className="gap-1" onClick={onAddTaskClick}>
           <Plus className="h-4 w-4" />
-          <span>Add Task</span>
+          <span>Agregar Tarea</span>
         </Button>
       </CardHeader>
       <CardContent>
@@ -72,11 +72,11 @@ const TasksTab: React.FC<TasksTabProps> = ({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Task Name</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Due Date</TableHead>
-                <TableHead>Assignee</TableHead>
-                <TableHead className="w-[100px]">Actions</TableHead>
+                <TableHead>Nombre de la Tarea</TableHead>
+                <TableHead>Estado</TableHead>
+                <TableHead>Fecha de Vencimiento</TableHead>
+                <TableHead>Asignado a</TableHead>
+                <TableHead className="w-[140px]">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -95,15 +95,15 @@ const TasksTab: React.FC<TasksTabProps> = ({
                       defaultValue={task.status}
                       onValueChange={(value) => handleStatusChange(index, value)}
                     >
-                      <SelectTrigger className="h-8 w-[130px]">
+                      <SelectTrigger className="h-8 w-[140px]">
                         <Edit2 className="h-3.5 w-3.5 mr-1" />
-                        <span>Change Status</span>
+                        <span>Cambiar Estado</span>
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Not Started">Not Started</SelectItem>
-                        <SelectItem value="In Progress">In Progress</SelectItem>
-                        <SelectItem value="Completed">Completed</SelectItem>
-                        <SelectItem value="On Hold">On Hold</SelectItem>
+                        <SelectItem value="Sin Iniciar">Sin Iniciar</SelectItem>
+                        <SelectItem value="En Progreso">En Progreso</SelectItem>
+                        <SelectItem value="Completada">Completada</SelectItem>
+                        <SelectItem value="En Espera">En Espera</SelectItem>
                       </SelectContent>
                     </Select>
                   </TableCell>
@@ -112,7 +112,7 @@ const TasksTab: React.FC<TasksTabProps> = ({
             </TableBody>
           </Table>
         ) : (
-          <p className="text-muted-foreground text-center py-4">No tasks added yet</p>
+          <p className="text-muted-foreground text-center py-4">No hay tareas agregadas aún</p>
         )}
       </CardContent>
     </Card>

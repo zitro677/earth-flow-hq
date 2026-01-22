@@ -35,37 +35,37 @@ const TaskDialog: React.FC<TaskDialogProps> = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add New Task</DialogTitle>
+          <DialogTitle>Agregar Nueva Tarea</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
-            <Label htmlFor="task-name">Task Name</Label>
+            <Label htmlFor="task-name">Nombre de la Tarea</Label>
             <Input 
               id="task-name" 
               value={newTask.name} 
               onChange={e => setNewTask({...newTask, name: e.target.value})}
-              placeholder="Enter task name" 
+              placeholder="Ingresa el nombre de la tarea" 
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="task-status">Status</Label>
+            <Label htmlFor="task-status">Estado</Label>
             <Select 
               value={newTask.status} 
               onValueChange={value => setNewTask({...newTask, status: value})}
             >
               <SelectTrigger id="task-status">
-                <SelectValue placeholder="Select status" />
+                <SelectValue placeholder="Seleccionar estado" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Not Started">Not Started</SelectItem>
-                <SelectItem value="In Progress">In Progress</SelectItem>
-                <SelectItem value="Completed">Completed</SelectItem>
-                <SelectItem value="On Hold">On Hold</SelectItem>
+                <SelectItem value="Sin Iniciar">Sin Iniciar</SelectItem>
+                <SelectItem value="En Progreso">En Progreso</SelectItem>
+                <SelectItem value="Completada">Completada</SelectItem>
+                <SelectItem value="En Espera">En Espera</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="task-due-date">Due Date</Label>
+            <Label htmlFor="task-due-date">Fecha de Vencimiento</Label>
             <Input 
               id="task-due-date" 
               type="date" 
@@ -74,20 +74,20 @@ const TaskDialog: React.FC<TaskDialogProps> = ({
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="task-assignee">Assignee</Label>
+            <Label htmlFor="task-assignee">Asignado a</Label>
             <Input 
               id="task-assignee" 
               value={newTask.assignee} 
               onChange={e => setNewTask({...newTask, assignee: e.target.value})}
-              placeholder="Assignee name" 
+              placeholder="Nombre del asignado" 
             />
           </div>
         </div>
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
+            <Button variant="outline">Cancelar</Button>
           </DialogClose>
-          <Button onClick={handleAddTask} disabled={!newTask.name}>Add Task</Button>
+          <Button onClick={handleAddTask} disabled={!newTask.name}>Agregar Tarea</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
