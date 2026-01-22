@@ -2,31 +2,41 @@ import { ColumnDef } from "@tanstack/react-table";
 import type { Expense } from "../hooks/useExpenseTracker";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
+import { getCategoryLabel, getSubcategoryLabel } from "../data/expenseCategories";
 
 export const expenseColumns: ColumnDef<Expense>[] = [
   {
-    accessorKey: "id",
-    header: "ID",
-  },
-  {
     accessorKey: "date",
-    header: "Date",
+    header: "Fecha",
   },
   {
     accessorKey: "category",
-    header: "Category",
+    header: "Categoría",
+    cell: ({ row }) => {
+      const categoryId = row.getValue<string>("category");
+      return getCategoryLabel(categoryId);
+    },
+  },
+  {
+    accessorKey: "subcategory",
+    header: "Subcategoría",
+    cell: ({ row }) => {
+      const categoryId = row.original.category;
+      const subcategoryId = row.getValue<string>("subcategory");
+      return getSubcategoryLabel(categoryId, subcategoryId);
+    },
   },
   {
     accessorKey: "vendor",
-    header: "Vendor",
+    header: "Proveedor",
   },
   {
     accessorKey: "description",
-    header: "Description",
+    header: "Descripción",
   },
   {
     accessorKey: "amount",
-    header: "Amount",
+    header: "Monto",
     cell: ({ row }) => {
       return `$${row.getValue<number>("amount").toLocaleString(undefined, {
         minimumFractionDigits: 2,
@@ -36,13 +46,14 @@ export const expenseColumns: ColumnDef<Expense>[] = [
   },
   {
     accessorKey: "deductible",
-    header: "Deductible",
+    header: "Deducible",
     cell: ({ row }) => {
-      return row.getValue<boolean>("deductible") ? "Yes" : "No";
+      return row.getValue<boolean>("deductible") ? "Sí" : "No";
     },
   },
   {
     id: "actions",
+    header: "Acciones",
     cell: ({ row }) => {
       const expense = row.original;
       

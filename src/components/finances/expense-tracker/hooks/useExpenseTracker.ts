@@ -8,6 +8,7 @@ export interface Expense {
   id: string;
   date: string;
   category: string;
+  subcategory: string;
   amount: number;
   vendor: string;
   description: string;
@@ -20,6 +21,7 @@ export interface Expense {
 export interface NewExpense {
   date: string;
   category: string;
+  subcategory: string;
   amount: string;
   vendor: string;
   description: string;
@@ -36,7 +38,8 @@ export const useExpenseTracker = () => {
 
   const [newExpense, setNewExpense] = useState<NewExpense>({
     date: format(new Date(), "yyyy-MM-dd"),
-    category: "Materials",
+    category: "",
+    subcategory: "",
     amount: "",
     vendor: "",
     description: "",
@@ -72,11 +75,12 @@ export const useExpenseTracker = () => {
           id: expense.id,
           date: expense.expense_date,
           category: expense.category,
+          subcategory: expense.subcategory || '',
           amount: parseFloat(expense.amount),
           vendor: expense.vendor || 'Unknown Vendor',
           description: expense.description || '',
           deductible: true, // Default to true, could be added to database schema
-          miles: expense.category === 'Mileage' ? Math.round(parseFloat(expense.amount) / MILEAGE_RATE) : undefined,
+          miles: expense.category === 'kilometraje' ? Math.round(parseFloat(expense.amount) / MILEAGE_RATE) : undefined,
         }));
 
         setExpenses(transformedExpenses);
@@ -115,6 +119,7 @@ export const useExpenseTracker = () => {
           .update({
             expense_date: newExpense.date,
             category: newExpense.category,
+            subcategory: newExpense.subcategory,
             amount: finalAmount,
             vendor: newExpense.vendor,
             description: newExpense.description || '',
@@ -133,11 +138,12 @@ export const useExpenseTracker = () => {
               ...expense,
               date: newExpense.date,
               category: newExpense.category,
+              subcategory: newExpense.subcategory,
               amount: finalAmount,
               vendor: newExpense.vendor,
               description: newExpense.description,
               deductible: newExpense.deductible,
-              miles: newExpense.category === "Mileage" ? parseFloat(newExpense.miles || "0") : undefined,
+              miles: newExpense.category === "kilometraje" ? parseFloat(newExpense.miles || "0") : undefined,
             };
           }
           return expense;
@@ -154,6 +160,7 @@ export const useExpenseTracker = () => {
             user_id: session.user.id,
             expense_date: newExpense.date,
             category: newExpense.category,
+            subcategory: newExpense.subcategory,
             amount: finalAmount,
             vendor: newExpense.vendor,
             description: newExpense.description || '',
@@ -171,11 +178,12 @@ export const useExpenseTracker = () => {
           id: data.id,
           date: newExpense.date,
           category: newExpense.category,
+          subcategory: newExpense.subcategory,
           amount: finalAmount,
           vendor: newExpense.vendor,
           description: newExpense.description,
           deductible: newExpense.deductible,
-          miles: newExpense.category === "Mileage" ? parseFloat(newExpense.miles || "0") : undefined,
+          miles: newExpense.category === "kilometraje" ? parseFloat(newExpense.miles || "0") : undefined,
         };
 
         setExpenses([expense, ...expenses]);
@@ -185,7 +193,8 @@ export const useExpenseTracker = () => {
       // Reset form
       setNewExpense({
         date: format(new Date(), "yyyy-MM-dd"),
-        category: "Materials",
+        category: "",
+        subcategory: "",
         amount: "",
         vendor: "",
         description: "",
@@ -203,6 +212,7 @@ export const useExpenseTracker = () => {
     setNewExpense({
       date: expense.date,
       category: expense.category,
+      subcategory: expense.subcategory,
       amount: expense.amount.toString(),
       vendor: expense.vendor,
       description: expense.description,
