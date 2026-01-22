@@ -1,97 +1,70 @@
 
 
-# Plan: Corrección del Error "Failed to create invoice"
+# Plan: Corrección del Error de Columnas Inexistentes
 
 ## Problema Identificado
 
-Al intentar crear una factura, el error "Failed to create invoice" ocurre debido a varios problemas en el flujo de datos:
-
-1. **Campo `total` no se envía en `invoice_items`** - Aunque tiene default, es mejor práctica calcularlo
-2. **Validación de dirección muy estricta** - Puede fallar si el cliente no tiene dirección
-3. **IVA incorrecto** - Aún dice 7% en lugar de 19%
-
----
-
-## Cambios Técnicos
-
-### 1. Corregir `useInvoiceMutations.ts` - Agregar campo `total`
-**Archivo:** `src/components/invoices/hooks/useInvoiceMutations.ts`
-
-Modificar la creación de items para incluir el campo `total`:
-
-```typescript
-// Líneas 48-53: Agregar cálculo de total
-const invoiceItems = items.map(item => ({
-  invoice_id: data.id,
-  description: item.description,
-  quantity: item.quantity,
-  unit_price: item.unit_price,
-  total: item.quantity * item.unit_price, // AGREGAR ESTA LÍNEA
-}));
+El error exacto es:
+```
+"Could not find the 'project_id' column of 'invoices' in the schema cache"
 ```
 
-También aplicar el mismo cambio en la sección de actualización (líneas 107-112).
+El código en `useInvoiceSubmission.ts` intenta enviar campos que **no existen** en la tabla `invoices`:
+- `project_id: null` (línea 48)
+- `proposal_id: null` (línea 49)
+
+Según el schema de la base de datos, las columnas de `invoices` son:
+`client_id`, `invoice_number`, `status`, `notes`, `created_at`, `user_id`, `id`, `tax_rate`, `due_date`, `issue_date`, `amount`, `updated_at`
 
 ---
 
-### 2. Hacer la dirección opcional en el formulario
-**Archivo:** `src/components/invoices/form/formSchema.ts`
+## Solución
 
-Cambiar la validación de `address` para que sea opcional o permita cadenas vacías:
+### Archivo: `src/components/invoices/form/hooks/useInvoiceSubmission.ts`
 
-```typescript
-// Cambiar de:
-address: z.string().min(5, { message: "Address must be at least 5 characters." }),
-
-// A:
-address: z.string().optional().default(""),
-```
-
----
-
-### 3. Corregir el IVA a 19%
-**Archivo:** `src/components/invoices/form/hooks/useInvoiceSubmission.ts`
-
-Actualizar la tasa de impuesto:
+**Eliminar las líneas 48 y 49** que envían campos inexistentes:
 
 ```typescript
-// Línea 54: Cambiar de 0.07 a 0.19
-tax_rate: 0.19,  // 19% IVA
+// CAMBIAR DE (líneas 45-57):
+const invoiceData = {
+  user_id: user.id,
+  client_id: values.client_id,
+  project_id: null,      // ❌ ELIMINAR - no existe en la tabla
+  proposal_id: null,     // ❌ ELIMINAR - no existe en la tabla
+  invoice_number: isEditMode ? undefined : generateInvoiceNumber(),
+  issue_date: values.invoiceDate,
+  due_date: values.dueDate,
+  amount: totalAmount,
+  tax_rate: 0.19,
+  notes: values.notes,
+  status: isEditMode ? undefined : "Pending",
+};
+
+// CAMBIAR A:
+const invoiceData = {
+  user_id: user.id,
+  client_id: values.client_id,
+  invoice_number: isEditMode ? undefined : generateInvoiceNumber(),
+  issue_date: values.invoiceDate,
+  due_date: values.dueDate,
+  amount: totalAmount,
+  tax_rate: 0.19,
+  notes: values.notes,
+  status: isEditMode ? undefined : "Pending",
+};
 ```
 
 ---
 
-### 4. Mejorar manejo de errores
-**Archivo:** `src/components/invoices/form/hooks/useInvoiceSubmission.ts`
-
-Agregar logging más detallado para debugging:
-
-```typescript
-} catch (error) {
-  console.error(`Error ${isEditMode ? "updating" : "creating"} invoice:`, error);
-  // Mostrar mensaje de error más específico
-  const errorMessage = error instanceof Error ? error.message : "Unknown error";
-  toast.error(`Failed to ${isEditMode ? "update" : "create"} invoice: ${errorMessage}`);
-}
-```
-
----
-
-## Resumen de Archivos a Modificar
+## Resumen
 
 | Archivo | Cambio |
 |---------|--------|
-| `src/components/invoices/hooks/useInvoiceMutations.ts` | Agregar campo `total` calculado en items |
-| `src/components/invoices/form/formSchema.ts` | Hacer `address` opcional |
-| `src/components/invoices/form/hooks/useInvoiceSubmission.ts` | Cambiar IVA a 19% y mejorar errores |
+| `useInvoiceSubmission.ts` | Eliminar `project_id: null` y `proposal_id: null` |
 
 ---
 
 ## Resultado Esperado
 
-Después de estos cambios:
-- Las facturas se crearán correctamente
-- Los clientes sin dirección podrán ser seleccionados
-- El IVA reflejará el 19% correcto
-- Los errores mostrarán mensajes más descriptivos
+Después de este cambio, las facturas se crearán correctamente porque solo se enviarán los campos que existen en la tabla de la base de datos.
 
