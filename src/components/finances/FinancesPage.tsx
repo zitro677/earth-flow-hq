@@ -14,7 +14,7 @@ import { InventoryPage } from "./inventory/InventoryPage";
 
 const FinancesPage: React.FC = () => {
   const [timeFilter, setTimeFilter] = useState<string>("year");
-  const [yearFilter, setYearFilter] = useState<string>("2025");
+  const [yearFilter, setYearFilter] = useState<string>(new Date().getFullYear().toString());
 
   const { 
     monthlyIncomeData, 
