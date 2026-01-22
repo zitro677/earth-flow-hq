@@ -52,7 +52,7 @@ const ProjectStatusChart: React.FC<ProjectStatusChartProps> = ({ data, isLoading
   return (
     <Card className="card-shadow">
       <CardHeader>
-        <CardTitle>Project Status</CardTitle>
+        <CardTitle>Status de los Proyectos</CardTitle>
       </CardHeader>
       <CardContent className="h-[300px]">
         {isLoading ? (
