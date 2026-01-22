@@ -1,8 +1,8 @@
-
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { calculateColombianTaxes, calculateAggregateTaxStats } from "./useColombianTaxCalculations";
 
 export interface Expense {
   id: string;
@@ -14,6 +14,16 @@ export interface Expense {
   description: string;
   deductible: boolean;
   miles?: number;
+  // Colombian tax fields
+  valorBruto: number;
+  iva: number;
+  reteFuente: number;
+  reteIva: number;
+  reteIca: number;
+  netoPagar: number;
+  proveedorResponsableIva: boolean;
+  tipoRetencion: string;
+  // Handlers
   onEdit?: (expense: Expense) => void;
   onDelete?: (id: string) => void;
 }
@@ -27,6 +37,7 @@ export interface NewExpense {
   description: string;
   deductible: boolean;
   miles?: string;
+  proveedorResponsableIva: boolean;
 }
 
 const MILEAGE_RATE = 0.67;
@@ -45,6 +56,7 @@ export const useExpenseTracker = () => {
     description: "",
     deductible: true,
     miles: "",
+    proveedorResponsableIva: true,
   });
 
   // Load expenses from Supabase
@@ -79,8 +91,17 @@ export const useExpenseTracker = () => {
           amount: parseFloat(expense.amount),
           vendor: expense.vendor || 'Unknown Vendor',
           description: expense.description || '',
-          deductible: true, // Default to true, could be added to database schema
+          deductible: true,
           miles: expense.category === 'kilometraje' ? Math.round(parseFloat(expense.amount) / MILEAGE_RATE) : undefined,
+          // Colombian tax fields
+          valorBruto: parseFloat(expense.valor_bruto) || 0,
+          iva: parseFloat(expense.iva) || 0,
+          reteFuente: parseFloat(expense.rete_fuente) || 0,
+          reteIva: parseFloat(expense.rete_iva) || 0,
+          reteIca: parseFloat(expense.rete_ica) || 0,
+          netoPagar: parseFloat(expense.neto_pagar) || 0,
+          proveedorResponsableIva: expense.proveedor_responsable_iva ?? true,
+          tipoRetencion: expense.tipo_retencion || 'servicios',
         }));
 
         setExpenses(transformedExpenses);
@@ -105,12 +126,20 @@ export const useExpenseTracker = () => {
         return;
       }
 
-      let finalAmount = 0;
-      if (newExpense.category === "Mileage" && newExpense.miles) {
-        finalAmount = parseFloat(newExpense.miles) * MILEAGE_RATE;
+      // Calculate gross value (valor bruto)
+      let valorBruto = 0;
+      if (newExpense.category === "kilometraje" && newExpense.miles) {
+        valorBruto = parseFloat(newExpense.miles) * MILEAGE_RATE;
       } else if (newExpense.amount) {
-        finalAmount = parseFloat(newExpense.amount);
+        valorBruto = parseFloat(newExpense.amount);
       }
+
+      // Calculate Colombian taxes
+      const taxCalc = calculateColombianTaxes(
+        valorBruto,
+        newExpense.subcategory,
+        newExpense.proveedorResponsableIva
+      );
 
       // If we're editing an existing expense
       if (currentExpenseId) {
@@ -120,9 +149,17 @@ export const useExpenseTracker = () => {
             expense_date: newExpense.date,
             category: newExpense.category,
             subcategory: newExpense.subcategory,
-            amount: finalAmount,
+            amount: taxCalc.netoAPagar, // Store net amount as main amount
             vendor: newExpense.vendor,
             description: newExpense.description || '',
+            valor_bruto: taxCalc.valorBruto,
+            iva: taxCalc.iva,
+            rete_fuente: taxCalc.reteFuente,
+            rete_iva: taxCalc.reteIva,
+            rete_ica: taxCalc.reteIca,
+            neto_pagar: taxCalc.netoAPagar,
+            proveedor_responsable_iva: newExpense.proveedorResponsableIva,
+            tipo_retencion: taxCalc.tipoRetencion,
           })
           .eq('id', currentExpenseId);
 
@@ -139,11 +176,19 @@ export const useExpenseTracker = () => {
               date: newExpense.date,
               category: newExpense.category,
               subcategory: newExpense.subcategory,
-              amount: finalAmount,
+              amount: taxCalc.netoAPagar,
               vendor: newExpense.vendor,
               description: newExpense.description,
               deductible: newExpense.deductible,
               miles: newExpense.category === "kilometraje" ? parseFloat(newExpense.miles || "0") : undefined,
+              valorBruto: taxCalc.valorBruto,
+              iva: taxCalc.iva,
+              reteFuente: taxCalc.reteFuente,
+              reteIva: taxCalc.reteIva,
+              reteIca: taxCalc.reteIca,
+              netoPagar: taxCalc.netoAPagar,
+              proveedorResponsableIva: newExpense.proveedorResponsableIva,
+              tipoRetencion: taxCalc.tipoRetencion,
             };
           }
           return expense;
@@ -151,7 +196,7 @@ export const useExpenseTracker = () => {
         
         setExpenses(updatedExpenses);
         setCurrentExpenseId(null);
-        toast.success("Expense updated successfully");
+        toast.success("Gasto actualizado correctamente");
       } else {
         // Adding a new expense
         const { data, error } = await supabase
@@ -161,9 +206,17 @@ export const useExpenseTracker = () => {
             expense_date: newExpense.date,
             category: newExpense.category,
             subcategory: newExpense.subcategory,
-            amount: finalAmount,
+            amount: taxCalc.netoAPagar,
             vendor: newExpense.vendor,
             description: newExpense.description || '',
+            valor_bruto: taxCalc.valorBruto,
+            iva: taxCalc.iva,
+            rete_fuente: taxCalc.reteFuente,
+            rete_iva: taxCalc.reteIva,
+            rete_ica: taxCalc.reteIca,
+            neto_pagar: taxCalc.netoAPagar,
+            proveedor_responsable_iva: newExpense.proveedorResponsableIva,
+            tipo_retencion: taxCalc.tipoRetencion,
           })
           .select()
           .single();
@@ -179,15 +232,23 @@ export const useExpenseTracker = () => {
           date: newExpense.date,
           category: newExpense.category,
           subcategory: newExpense.subcategory,
-          amount: finalAmount,
+          amount: taxCalc.netoAPagar,
           vendor: newExpense.vendor,
           description: newExpense.description,
           deductible: newExpense.deductible,
           miles: newExpense.category === "kilometraje" ? parseFloat(newExpense.miles || "0") : undefined,
+          valorBruto: taxCalc.valorBruto,
+          iva: taxCalc.iva,
+          reteFuente: taxCalc.reteFuente,
+          reteIva: taxCalc.reteIva,
+          reteIca: taxCalc.reteIca,
+          netoPagar: taxCalc.netoAPagar,
+          proveedorResponsableIva: newExpense.proveedorResponsableIva,
+          tipoRetencion: taxCalc.tipoRetencion,
         };
 
         setExpenses([expense, ...expenses]);
-        toast.success("Expense added successfully");
+        toast.success("Gasto agregado correctamente");
       }
 
       // Reset form
@@ -200,6 +261,7 @@ export const useExpenseTracker = () => {
         description: "",
         deductible: true,
         miles: "",
+        proveedorResponsableIva: true,
       });
     } catch (error) {
       console.error("Error saving expense:", error);
@@ -213,11 +275,12 @@ export const useExpenseTracker = () => {
       date: expense.date,
       category: expense.category,
       subcategory: expense.subcategory,
-      amount: expense.amount.toString(),
+      amount: expense.valorBruto.toString(),
       vendor: expense.vendor,
       description: expense.description,
       deductible: expense.deductible,
       miles: expense.miles?.toString() || "",
+      proveedorResponsableIva: expense.proveedorResponsableIva,
     });
   };
 
@@ -236,7 +299,7 @@ export const useExpenseTracker = () => {
 
       const updatedExpenses = expenses.filter(expense => expense.id !== id);
       setExpenses(updatedExpenses);
-      toast.success("Expense deleted successfully");
+      toast.success("Gasto eliminado correctamente");
     } catch (error) {
       console.error("Error deleting expense:", error);
       toast.error("Failed to delete expense");
@@ -250,20 +313,23 @@ export const useExpenseTracker = () => {
     onDelete: handleDeleteExpense,
   }));
 
+  // Calculate aggregate tax statistics
+  const taxStats = calculateAggregateTaxStats(expenses);
+
   return {
     expenses: expensesWithHandlers,
     newExpense,
     setNewExpense,
     addExpense,
     isLoading,
-    totalExpenses: expenses.reduce((sum, expense) => sum + expense.amount, 0),
-    deductibleExpenses: expenses
-      .filter((expense) => expense.deductible)
-      .reduce((sum, expense) => sum + expense.amount, 0),
-    potentialTaxSavings: expenses
-      .filter((expense) => expense.deductible)
-      .reduce((sum, expense) => sum + expense.amount, 0) * 0.3,
+    isEditMode: !!currentExpenseId,
+    // Legacy stats (kept for compatibility)
+    totalExpenses: taxStats.totalValorBruto,
+    deductibleExpenses: taxStats.totalValorBruto,
+    potentialTaxSavings: taxStats.totalValorBruto * 0.3,
     totalMiles: expenses.reduce((sum, expense) => sum + (expense.miles || 0), 0),
     totalMileageDeduction: expenses.reduce((sum, expense) => sum + (expense.miles || 0), 0) * MILEAGE_RATE,
+    // New Colombian tax stats
+    taxStats,
   };
 };

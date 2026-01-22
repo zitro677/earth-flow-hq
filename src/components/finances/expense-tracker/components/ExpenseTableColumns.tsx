@@ -1,8 +1,15 @@
 import { ColumnDef } from "@tanstack/react-table";
 import type { Expense } from "../hooks/useExpenseTracker";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Info } from "lucide-react";
 import { getCategoryLabel, getSubcategoryLabel } from "../data/expenseCategories";
+import { formatCOP, RETENTION_TYPE_LABELS, type RetentionType } from "../utils/colombianTaxConfig";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export const expenseColumns: ColumnDef<Expense>[] = [
   {
@@ -31,24 +38,65 @@ export const expenseColumns: ColumnDef<Expense>[] = [
     header: "Proveedor",
   },
   {
-    accessorKey: "description",
-    header: "Descripción",
-  },
-  {
-    accessorKey: "amount",
-    header: "Monto",
+    accessorKey: "valorBruto",
+    header: "Valor Bruto",
     cell: ({ row }) => {
-      return `$${row.getValue<number>("amount").toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })}`;
+      const value = row.original.valorBruto || 0;
+      return formatCOP(value);
     },
   },
   {
-    accessorKey: "deductible",
-    header: "Deducible",
+    accessorKey: "iva",
+    header: "IVA",
     cell: ({ row }) => {
-      return row.getValue<boolean>("deductible") ? "Sí" : "No";
+      const value = row.original.iva || 0;
+      return formatCOP(value);
+    },
+  },
+  {
+    id: "retenciones",
+    header: "Retenciones",
+    cell: ({ row }) => {
+      const expense = row.original;
+      const totalRetenciones = (expense.reteFuente || 0) + (expense.reteIva || 0) + (expense.reteIca || 0);
+      
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center gap-1 cursor-help text-destructive">
+                <span>-{formatCOP(totalRetenciones)}</span>
+                <Info className="h-3 w-3" />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent className="w-64">
+              <div className="space-y-1 text-xs">
+                <p className="font-medium">Detalle de Retenciones:</p>
+                <div className="flex justify-between">
+                  <span>Rete-Fuente ({RETENTION_TYPE_LABELS[expense.tipoRetencion as RetentionType] || 'Servicios'}):</span>
+                  <span>{formatCOP(expense.reteFuente || 0)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Rete-IVA (50%):</span>
+                  <span>{formatCOP(expense.reteIva || 0)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Rete-ICA (0.5%):</span>
+                  <span>{formatCOP(expense.reteIca || 0)}</span>
+                </div>
+              </div>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    },
+  },
+  {
+    accessorKey: "netoPagar",
+    header: "Neto Pagado",
+    cell: ({ row }) => {
+      const value = row.original.netoPagar || 0;
+      return <span className="font-medium">{formatCOP(value)}</span>;
     },
   },
   {
