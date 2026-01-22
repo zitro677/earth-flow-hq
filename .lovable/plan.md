@@ -1,91 +1,79 @@
 
-# Plan: Corrección de Edición de Proyectos
+# Plan: Corregir Card "Monto Pendiente" en Propuestas
 
-## Problemas Identificados
+## Problema Identificado
 
-1. **Error "Failed to update project" al agregar Team Members**
-   - El componente `TeamMembers.tsx` intenta guardar `{ team: updatedTeam }` en Supabase
-   - La tabla `projects` NO tiene columna `team` - solo tiene: id, user_id, client_id, name, description, status, start_date, end_date, budget, actual_cost, progress
-   - Esto causa el error porque Supabase rechaza columnas inexistentes
+La card "Monto Pendiente" siempre muestra **$0** porque:
 
-2. **El presupuesto no guarda cambios**
-   - `BudgetSection.tsx` llama a `handleSaveBudget` en `ProjectOverview.tsx`
-   - Pero `ProjectOverview.tsx` guarda en `localStorage`, NO en Supabase
-   - Debería usar `updateProject()` para persistir en la base de datos
+| Código actual | Estados en BD |
+|---------------|---------------|
+| `status === "Pending"` | Draft, Sent, Approved, Rejected |
 
-3. **No se puede cambiar el estado del proyecto**
-   - El componente `StatusSelector.tsx` existe y funciona correctamente
-   - Pero NO está siendo usado en la interfaz - solo se muestra un Badge estático en `ProjectStatusBadge.tsx`
-   - Necesita reemplazar el Badge por el selector interactivo
+El estado **"Pending" no existe** en la base de datos. Las propuestas "pendientes de aprobación" tienen el estado **"Sent"** (Enviada).
 
 ---
 
-## Solución Propuesta
+## Lógica de Negocio
 
-### Paso 1: Migración de Base de Datos
+Según el ciclo de vida de las propuestas:
 
-Agregar columna `team` tipo JSONB a la tabla `projects`:
-
-```sql
-ALTER TABLE projects ADD COLUMN team jsonb DEFAULT '[]'::jsonb;
+```text
+Draft (Borrador) → Sent (Enviada/Pendiente) → Approved/Rejected
+                          ↑
+                   "Pendiente de respuesta"
 ```
 
-Esto permitirá almacenar un array de objetos con la estructura:
-```json
-[{"name": "Juan", "role": "Diseñador", "avatar": ""}]
-```
+Una propuesta en estado **"Sent"** es una propuesta **pendiente de aprobación** por parte del cliente.
 
 ---
 
-### Paso 2: Actualizar ProjectOverview.tsx
+## Solución
 
-Modificar `handleSaveBudget` para guardar en Supabase en lugar de localStorage:
+### Archivo: `src/components/proposals/ProposalStats.tsx`
+
+Cambiar el filtro de `"Pending"` a `"Sent"`:
 
 ```typescript
-import { updateProject } from "../hooks/projectOperations";
+// ANTES (incorrecto)
+const pendingAmount = proposals
+  .filter((proposal) => proposal.status === "Pending")
+  .reduce((sum, proposal) => sum + formatAmount(proposal.amount), 0);
 
-const handleSaveBudget = async (budgetUsed: number, totalBudget: number) => {
-  // Actualizar en Supabase
-  const result = await updateProject(project.id, { 
-    budget: totalBudget,
-    actual_cost: budgetUsed 
-  });
-  
-  if (result) {
-    // Actualizar extraData local
-    const updatedExtraData = {
-      ...extraData,
-      totalCost: budgetUsed
-    };
-    saveExtraData(updatedExtraData);
-    
-    // Notificar al padre
-    if (onProjectUpdate) {
-      onProjectUpdate();
-    }
-  }
-};
+// DESPUÉS (correcto)
+const pendingAmount = proposals
+  .filter((proposal) => proposal.status === "Sent")
+  .reduce((sum, proposal) => {
+    // Usar total si está disponible, sino amount
+    const total = proposal.total ? Number(proposal.total) : 0;
+    const amount = formatAmount(proposal.amount);
+    return sum + (total > 0 ? total : amount);
+  }, 0);
+```
+
+Actualizar también el contador de propuestas pendientes:
+
+```typescript
+// ANTES
+{proposals.filter((proposal) => proposal.status === "Pending").length}
+
+// DESPUÉS  
+{proposals.filter((proposal) => proposal.status === "Sent").length}
 ```
 
 ---
 
-### Paso 3: Hacer el Status Editable
+## Cambio Adicional Recomendado
 
-Modificar `ProjectTitle.tsx` para usar `StatusSelector` en lugar del Badge estático:
+### Archivo: `src/components/proposals/ProposalFilters.tsx`
 
-```typescript
-import StatusSelector from "./StatusSelector";
+El filtro "Pendiente" usa `value="pending"` pero el estado real es "Sent". Hay que alinear la terminología:
 
-// En lugar de solo mostrar el badge:
-<StatusSelector
-  projectId={projectId}
-  currentStatus={projectStatus}
-  getStatusColor={getStatusColor}
-  onStatusChange={onStatusChange}
-/>
-```
-
-Agregar callback para recargar el proyecto cuando cambie el estado.
+| Filtro UI | Valor interno | Estado en BD |
+|-----------|---------------|--------------|
+| Borrador | draft | Draft |
+| **Pendiente** | **sent** | **Sent** |
+| Aprobada | approved | Approved |
+| Rechazada | rejected | Rejected |
 
 ---
 
@@ -93,57 +81,14 @@ Agregar callback para recargar el proyecto cuando cambie el estado.
 
 | Archivo | Cambio |
 |---------|--------|
-| **Base de datos** | Agregar columna `team jsonb DEFAULT '[]'` |
-| `src/components/projects/detail/ProjectOverview.tsx` | Usar `updateProject()` para guardar budget en Supabase |
-| `src/components/projects/detail/components/ProjectTitle.tsx` | Reemplazar Badge estático con StatusSelector interactivo |
-| `src/components/projects/detail/ProjectHeader.tsx` | Pasar callback `onStatusChange` a ProjectTitle |
-| `src/components/projects/ProjectDetail.tsx` | Agregar handler para cambio de estado |
-
----
-
-## Flujo Corregido
-
-```text
-EDITAR PROYECTO
-      │
-      ├──► Agregar Team Member
-      │         │
-      │         ▼
-      │    TeamMembers.tsx
-      │         │
-      │         ▼
-      │    updateProject(id, { team: [...] })
-      │         │
-      │         ▼
-      │    ✓ Guardado en Supabase (columna team jsonb)
-      │
-      ├──► Editar Presupuesto
-      │         │
-      │         ▼
-      │    BudgetSection.tsx → handleSaveBudget
-      │         │
-      │         ▼
-      │    updateProject(id, { budget, actual_cost })
-      │         │
-      │         ▼
-      │    ✓ Guardado en Supabase
-      │
-      └──► Cambiar Estado
-                │
-                ▼
-           StatusSelector.tsx (nuevo en ProjectTitle)
-                │
-                ▼
-           updateProject(id, { status })
-                │
-                ▼
-           ✓ Guardado en Supabase
-```
+| `src/components/proposals/ProposalStats.tsx` | Cambiar filtro de "Pending" a "Sent" para la card Monto Pendiente |
+| `src/components/proposals/ProposalFilters.tsx` | Cambiar value "pending" a "sent" para el filtro Pendiente |
+| `src/components/proposals/ProposalsPage.tsx` | Actualizar lógica de filtrado para usar "Sent" en lugar de "Pending" |
 
 ---
 
 ## Resultado Esperado
 
-1. **Team Members**: Se guardan correctamente en la nueva columna `team` de tipo JSONB
-2. **Presupuesto**: Se persiste en Supabase en las columnas `budget` y `actual_cost`
-3. **Estado**: El usuario puede cambiar entre Planning, In Progress, On Hold, y Completed directamente desde la vista de detalle usando un dropdown interactivo
+1. **Card "Monto Pendiente"**: Mostrará la suma de todas las propuestas con estado "Sent" (enviadas pero sin respuesta)
+2. **Contador**: Mostrará correctamente "X propuestas pendientes" 
+3. **Filtro "Pendiente"**: Filtrará correctamente las propuestas enviadas
