@@ -18,11 +18,12 @@ const ProposalStats: React.FC<ProposalStatsProps> = ({ proposals }) => {
   );
 
   const pendingAmount = proposals
-    .filter((proposal) => proposal.status === "Pending")
-    .reduce(
-      (sum, proposal) => sum + formatAmount(proposal.amount),
-      0
-    );
+    .filter((proposal) => proposal.status === "Sent")
+    .reduce((sum, proposal) => {
+      const total = proposal.total ? Number(proposal.total) : 0;
+      const amount = formatAmount(proposal.amount);
+      return sum + (total > 0 ? total : amount);
+    }, 0);
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
@@ -50,7 +51,7 @@ const ProposalStats: React.FC<ProposalStatsProps> = ({ proposals }) => {
         </h3>
         <p className="text-3xl font-bold mt-2">${pendingAmount.toLocaleString('es-ES')}</p>
         <p className="text-sm text-muted-foreground mt-1">
-          {proposals.filter((proposal) => proposal.status === "Pending").length} propuestas pendientes
+          {proposals.filter((proposal) => proposal.status === "Sent").length} propuestas pendientes
         </p>
       </motion.div>
     </div>

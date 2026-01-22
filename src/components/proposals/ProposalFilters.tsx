@@ -42,10 +42,10 @@ const ProposalFilters: React.FC<ProposalFiltersProps> = ({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos los Estados</SelectItem>
-            <SelectItem value="approved">Aprobada</SelectItem>
-            <SelectItem value="pending">Pendiente</SelectItem>
-            <SelectItem value="rejected">Rechazada</SelectItem>
             <SelectItem value="draft">Borrador</SelectItem>
+            <SelectItem value="sent">Pendiente</SelectItem>
+            <SelectItem value="approved">Aprobada</SelectItem>
+            <SelectItem value="rejected">Rechazada</SelectItem>
           </SelectContent>
         </Select>
 
