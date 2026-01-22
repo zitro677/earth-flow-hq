@@ -45,8 +45,6 @@ export const useInvoiceSubmission = (
       const invoiceData = {
         user_id: user.id,
         client_id: values.client_id,
-        project_id: null,
-        proposal_id: null,
         invoice_number: isEditMode ? undefined : generateInvoiceNumber(),
         issue_date: values.invoiceDate,
         due_date: values.dueDate,
