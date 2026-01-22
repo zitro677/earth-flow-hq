@@ -51,7 +51,7 @@ export const useInvoiceSubmission = (
         issue_date: values.invoiceDate,
         due_date: values.dueDate,
         amount: totalAmount,
-        tax_rate: 0.07,  // 7% tax
+        tax_rate: 0.19,  // 19% IVA
         notes: values.notes,
         status: isEditMode ? undefined : "Pending",
       };
@@ -82,7 +82,8 @@ export const useInvoiceSubmission = (
       navigate("/invoices");
     } catch (error) {
       console.error(`Error ${isEditMode ? "updating" : "creating"} invoice:`, error);
-      toast.error(`Failed to ${isEditMode ? "update" : "create"} invoice`);
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+      toast.error(`Failed to ${isEditMode ? "update" : "create"} invoice: ${errorMessage}`);
     } finally {
       setIsLoading(false);
     }
