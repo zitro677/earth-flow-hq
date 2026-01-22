@@ -3,6 +3,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { useProjectActions } from "./hooks/useProjectActions";
+import { updateProject } from "../hooks/projectOperations";
 
 // Import our new components
 import TimelineSection from "./components/TimelineSection";
@@ -38,37 +39,25 @@ const ProjectOverview: React.FC<ProjectOverviewProps> = ({
     saveExtraData(updatedExtraData);
   };
 
-  const handleSaveBudget = (budgetUsed: number, totalBudget: number) => {
-    // Update project budget
-    const updatedProject = {
-      ...project,
-      budget: totalBudget
-    };
+  const handleSaveBudget = async (budgetUsed: number, totalBudget: number) => {
+    // Update project budget in Supabase
+    const result = await updateProject(project.id, { 
+      budget: totalBudget,
+      actual_cost: budgetUsed 
+    });
     
-    // Save to localStorage
-    const projectsJson = localStorage.getItem("landscape_projects");
-    if (projectsJson) {
-      const projects = JSON.parse(projectsJson);
-      const projectIndex = projects.findIndex((p: any) => p.id === project.id);
-      if (projectIndex !== -1) {
-        projects[projectIndex] = {
-          ...projects[projectIndex],
-          budget: totalBudget
-        };
-        localStorage.setItem("landscape_projects", JSON.stringify(projects));
+    if (result) {
+      // Update extra data
+      const updatedExtraData = {
+        ...extraData,
+        totalCost: budgetUsed
+      };
+      saveExtraData(updatedExtraData);
+      
+      // Notify parent component of update if callback exists
+      if (onProjectUpdate) {
+        onProjectUpdate();
       }
-    }
-    
-    // Update extra data
-    const updatedExtraData = {
-      ...extraData,
-      totalCost: budgetUsed
-    };
-    saveExtraData(updatedExtraData);
-    
-    // Notify parent component of update if callback exists
-    if (onProjectUpdate) {
-      onProjectUpdate();
     }
   };
 

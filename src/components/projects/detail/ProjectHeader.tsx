@@ -16,6 +16,7 @@ interface ProjectHeaderProps {
   project: any;
   extraData: any;
   teamMembers: any[];
+  onStatusChange?: (newStatus: string) => void;
 }
 
 const ProjectHeader: React.FC<ProjectHeaderProps> = ({
@@ -26,6 +27,7 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
   project,
   extraData,
   teamMembers,
+  onStatusChange,
 }) => {
   const navigate = useNavigate();
   const { handleEditProject, handleShareProject, handleExportProject } = useProjectActions(projectId, projectName);
@@ -48,6 +50,7 @@ const ProjectHeader: React.FC<ProjectHeaderProps> = ({
               projectName={projectName}
               projectStatus={projectStatus}
               getStatusColor={getStatusColor}
+              onStatusChange={onStatusChange}
             />
           </div>
           <ProjectActions
