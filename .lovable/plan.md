@@ -1,286 +1,149 @@
 
-# Plan: Sistema de Cálculos Tributarios Colombianos
+# Plan: Corrección de Edición de Proyectos
 
-## Objetivo
-Implementar cálculos automáticos de retenciones, IVA y deducciones según el régimen tributario colombiano (régimen común, municipio Bogotá con ICA 0.5%).
+## Problemas Identificados
 
----
+1. **Error "Failed to update project" al agregar Team Members**
+   - El componente `TeamMembers.tsx` intenta guardar `{ team: updatedTeam }` en Supabase
+   - La tabla `projects` NO tiene columna `team` - solo tiene: id, user_id, client_id, name, description, status, start_date, end_date, budget, actual_cost, progress
+   - Esto causa el error porque Supabase rechaza columnas inexistentes
 
-## Configuración Tributaria Colombia
+2. **El presupuesto no guarda cambios**
+   - `BudgetSection.tsx` llama a `handleSaveBudget` en `ProjectOverview.tsx`
+   - Pero `ProjectOverview.tsx` guarda en `localStorage`, NO en Supabase
+   - Debería usar `updateProject()` para persistir en la base de datos
 
-```text
-┌───────────────────────────────────────────────────────────────────┐
-│  TASAS DE RETENCIÓN EN LA FUENTE (Rete-Renta)                    │
-├───────────────────────────────────────────────────────────────────┤
-│  Compras / Inventario            →  2.5%                         │
-│  Servicios                       →  4.0%                         │
-│  Arrendamiento Inmueble          →  3.5%                         │
-│  Publicidad / Transporte         →  1.0%                         │
-├───────────────────────────────────────────────────────────────────┤
-│  IVA                             →  19%                          │
-│  Rete-IVA (50% del IVA)          →  9.5% efectivo                │
-│  ICA Bogotá                      →  0.5%                         │
-└───────────────────────────────────────────────────────────────────┘
-```
+3. **No se puede cambiar el estado del proyecto**
+   - El componente `StatusSelector.tsx` existe y funciona correctamente
+   - Pero NO está siendo usado en la interfaz - solo se muestra un Badge estático en `ProjectStatusBadge.tsx`
+   - Necesita reemplazar el Badge por el selector interactivo
 
 ---
 
-## Flujo de Cálculo Automático
+## Solución Propuesta
 
-```text
-ENTRADA: Valor Bruto (sin IVA)
-         ↓
-┌────────────────────────────────────────────────────────────────┐
-│  1. DETECTAR TIPO DE GASTO                                     │
-│     → Mapear categoría/subcategoría a concepto tributario      │
-│       (inventario, servicio, arrendamiento, publicidad, etc.)  │
-└────────────────────────────────────────────────────────────────┘
-         ↓
-┌────────────────────────────────────────────────────────────────┐
-│  2. CALCULAR IVA                                               │
-│     IVA = Valor Bruto × 19%                                    │
-│     Valor Total = Valor Bruto + IVA                            │
-└────────────────────────────────────────────────────────────────┘
-         ↓
-┌────────────────────────────────────────────────────────────────┐
-│  3. CALCULAR RETENCIONES                                       │
-│     Rete-Fuente = Valor Bruto × % según concepto               │
-│     Rete-IVA = IVA × 50% (si proveedor responsable)            │
-│     Rete-ICA = Valor Bruto × 0.5%                              │
-└────────────────────────────────────────────────────────────────┘
-         ↓
-┌────────────────────────────────────────────────────────────────┐
-│  4. CALCULAR NETO A PAGAR                                      │
-│     Neto = Valor Bruto + IVA - Rete-Fuente - Rete-IVA - ICA    │
-└────────────────────────────────────────────────────────────────┘
-         ↓
-┌────────────────────────────────────────────────────────────────┐
-│  5. CALCULAR BENEFICIOS FISCALES                               │
-│     Costo Deducible = Valor Bruto (100%)                       │
-│     IVA Descontable = IVA - Rete-IVA                           │
-│     Crédito Renta = Rete-Fuente                                │
-│     Crédito ICA = Rete-ICA                                     │
-└────────────────────────────────────────────────────────────────┘
-```
+### Paso 1: Migración de Base de Datos
 
----
-
-## Cambios Requeridos
-
-### 1. Crear archivo de configuración tributaria
-
-**Nuevo archivo:** `src/components/finances/expense-tracker/utils/colombianTaxConfig.ts`
-
-Define tasas oficiales y mapeo de categorías a conceptos tributarios:
-
-```typescript
-// Tasas de retención según concepto
-export const RETENTION_RATES = {
-  compras: 0.025,        // 2.5% inventario/materiales
-  servicios: 0.04,       // 4.0% servicios generales
-  arrendamiento: 0.035,  // 3.5% arrendamiento inmueble
-  publicidad: 0.01,      // 1.0% publicidad/transporte
-  honorarios: 0.10,      // 10% honorarios (opcional)
-};
-
-export const IVA_RATE = 0.19;          // 19%
-export const RETE_IVA_RATE = 0.50;     // 50% del IVA
-export const ICA_BOGOTA_RATE = 0.005;  // 0.5%
-```
-
-Incluye función de mapeo de categorías:
-
-```typescript
-export function getRetentionType(categoryId: string, subcategoryId: string): string {
-  // Mapea cada subcategoría al tipo de retención aplicable
-  const mappings = {
-    'adquisicion_vehiculos': 'compras',
-    'materiales_blindaje': 'compras',
-    'mano_obra_directa': 'servicios',
-    'arrendamiento_taller': 'arrendamiento',
-    'publicidad_marketing': 'publicidad',
-    // ... etc
-  };
-  return mappings[subcategoryId] || 'servicios';
-}
-```
-
----
-
-### 2. Crear hook de cálculos tributarios
-
-**Nuevo archivo:** `src/components/finances/expense-tracker/hooks/useColombianTaxCalculations.ts`
-
-Hook reutilizable que calcula todo automáticamente:
-
-```typescript
-export interface TaxCalculationResult {
-  valorBruto: number;
-  iva: number;
-  valorTotal: number;
-  reteFuente: number;
-  reteIva: number;
-  reteIca: number;
-  totalRetenciones: number;
-  netoAPagar: number;
-  costoDeducible: number;
-  ivaDescontable: number;
-  creditoRenta: number;
-  creditoIca: number;
-}
-
-export function calculateColombianTaxes(
-  valorBruto: number,
-  categoryId: string,
-  subcategoryId: string,
-  proveedorResponsableIva: boolean = true
-): TaxCalculationResult { ... }
-```
-
----
-
-### 3. Actualizar el formulario de gastos
-
-**Archivo:** `src/components/finances/expense-tracker/components/ExpenseForm.tsx`
-
-Agregar:
-- Campo para indicar si el proveedor es responsable de IVA (checkbox)
-- Panel de cálculos que muestre en tiempo real:
-  - IVA calculado
-  - Retención en la fuente
-  - Rete-IVA  
-  - Rete-ICA
-  - **Neto a pagar al proveedor**
-
-```text
-┌────────────────────────────────────────────────────────────────┐
-│  NUEVO GASTO                                                   │
-├────────────────────────────────────────────────────────────────┤
-│  Valor Bruto (sin IVA): [_______________]                      │
-│                                                                │
-│  Categoría: [▼ Compra y Transformación ]                       │
-│  Subcategoría: [▼ Materiales de blindaje ]                     │
-│                                                                │
-│  [✓] Proveedor responsable de IVA                              │
-├────────────────────────────────────────────────────────────────┤
-│  CÁLCULOS AUTOMÁTICOS                                          │
-│  ─────────────────────────────────────────────────────────────│
-│  + IVA (19%):                           $ 1,900,000            │
-│  = Valor Total:                         $11,900,000            │
-│  ─────────────────────────────────────────────────────────────│
-│  - Rete-Fuente (2.5%):                  $   250,000            │
-│  - Rete-IVA (50% IVA):                  $   950,000            │
-│  - Rete-ICA (0.5%):                     $    50,000            │
-│  ─────────────────────────────────────────────────────────────│
-│  = NETO A PAGAR:                        $10,650,000            │
-└────────────────────────────────────────────────────────────────┘
-```
-
----
-
-### 4. Migración de base de datos
-
-Agregar columnas para almacenar cálculos tributarios:
+Agregar columna `team` tipo JSONB a la tabla `projects`:
 
 ```sql
-ALTER TABLE expenses ADD COLUMN valor_bruto numeric DEFAULT 0;
-ALTER TABLE expenses ADD COLUMN iva numeric DEFAULT 0;
-ALTER TABLE expenses ADD COLUMN rete_fuente numeric DEFAULT 0;
-ALTER TABLE expenses ADD COLUMN rete_iva numeric DEFAULT 0;
-ALTER TABLE expenses ADD COLUMN rete_ica numeric DEFAULT 0;
-ALTER TABLE expenses ADD COLUMN neto_pagar numeric DEFAULT 0;
-ALTER TABLE expenses ADD COLUMN proveedor_responsable_iva boolean DEFAULT true;
-ALTER TABLE expenses ADD COLUMN tipo_retencion text DEFAULT 'servicios';
+ALTER TABLE projects ADD COLUMN team jsonb DEFAULT '[]'::jsonb;
+```
+
+Esto permitirá almacenar un array de objetos con la estructura:
+```json
+[{"name": "Juan", "role": "Diseñador", "avatar": ""}]
 ```
 
 ---
 
-### 5. Actualizar tipos e interfaces
+### Paso 2: Actualizar ProjectOverview.tsx
 
-**Archivo:** `src/components/finances/expense-tracker/hooks/useExpenseTracker.ts`
-
-Extender interfaces para incluir campos tributarios:
+Modificar `handleSaveBudget` para guardar en Supabase en lugar de localStorage:
 
 ```typescript
-export interface Expense {
-  // ... campos existentes
-  valorBruto: number;
-  iva: number;
-  reteFuente: number;
-  reteIva: number;
-  reteIca: number;
-  netoPagar: number;
-  proveedorResponsableIva: boolean;
-  tipoRetencion: string;
-}
+import { updateProject } from "../hooks/projectOperations";
+
+const handleSaveBudget = async (budgetUsed: number, totalBudget: number) => {
+  // Actualizar en Supabase
+  const result = await updateProject(project.id, { 
+    budget: totalBudget,
+    actual_cost: budgetUsed 
+  });
+  
+  if (result) {
+    // Actualizar extraData local
+    const updatedExtraData = {
+      ...extraData,
+      totalCost: budgetUsed
+    };
+    saveExtraData(updatedExtraData);
+    
+    // Notificar al padre
+    if (onProjectUpdate) {
+      onProjectUpdate();
+    }
+  }
+};
 ```
 
 ---
 
-### 6. Actualizar estadísticas con datos fiscales
+### Paso 3: Hacer el Status Editable
 
-**Archivo:** `src/components/finances/expense-tracker/components/ExpenseStats.tsx`
+Modificar `ProjectTitle.tsx` para usar `StatusSelector` en lugar del Badge estático:
 
-Nuevas tarjetas de estadísticas:
+```typescript
+import StatusSelector from "./StatusSelector";
+
+// En lugar de solo mostrar el badge:
+<StatusSelector
+  projectId={projectId}
+  currentStatus={projectStatus}
+  getStatusColor={getStatusColor}
+  onStatusChange={onStatusChange}
+/>
+```
+
+Agregar callback para recargar el proyecto cuando cambie el estado.
+
+---
+
+## Archivos a Modificar
+
+| Archivo | Cambio |
+|---------|--------|
+| **Base de datos** | Agregar columna `team jsonb DEFAULT '[]'` |
+| `src/components/projects/detail/ProjectOverview.tsx` | Usar `updateProject()` para guardar budget en Supabase |
+| `src/components/projects/detail/components/ProjectTitle.tsx` | Reemplazar Badge estático con StatusSelector interactivo |
+| `src/components/projects/detail/ProjectHeader.tsx` | Pasar callback `onStatusChange` a ProjectTitle |
+| `src/components/projects/ProjectDetail.tsx` | Agregar handler para cambio de estado |
+
+---
+
+## Flujo Corregido
 
 ```text
-┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
-│  Total Gastos   │ │  IVA Descontable│ │  Crédito Renta  │
-│  $XX,XXX,XXX    │ │  $X,XXX,XXX     │ │  $X,XXX,XXX     │
-└─────────────────┘ └─────────────────┘ └─────────────────┘
-┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
-│  Crédito ICA    │ │  Total Retenido │ │  Neto Pagado    │
-│  $XXX,XXX       │ │  $X,XXX,XXX     │ │  $XX,XXX,XXX    │
-└─────────────────┘ └─────────────────┘ └─────────────────┘
+EDITAR PROYECTO
+      │
+      ├──► Agregar Team Member
+      │         │
+      │         ▼
+      │    TeamMembers.tsx
+      │         │
+      │         ▼
+      │    updateProject(id, { team: [...] })
+      │         │
+      │         ▼
+      │    ✓ Guardado en Supabase (columna team jsonb)
+      │
+      ├──► Editar Presupuesto
+      │         │
+      │         ▼
+      │    BudgetSection.tsx → handleSaveBudget
+      │         │
+      │         ▼
+      │    updateProject(id, { budget, actual_cost })
+      │         │
+      │         ▼
+      │    ✓ Guardado en Supabase
+      │
+      └──► Cambiar Estado
+                │
+                ▼
+           StatusSelector.tsx (nuevo en ProjectTitle)
+                │
+                ▼
+           updateProject(id, { status })
+                │
+                ▼
+           ✓ Guardado en Supabase
 ```
 
 ---
 
-### 7. Actualizar la tabla de gastos
+## Resultado Esperado
 
-**Archivo:** `src/components/finances/expense-tracker/components/ExpenseTableColumns.tsx`
-
-Agregar columnas para mostrar:
-- Valor Bruto
-- IVA
-- Retenciones (tooltip con detalle)
-- Neto Pagado
-
----
-
-## Archivos a Crear/Modificar
-
-| Archivo | Acción | Descripción |
-|---------|--------|-------------|
-| `src/components/finances/expense-tracker/utils/colombianTaxConfig.ts` | **CREAR** | Configuración de tasas y mapeos |
-| `src/components/finances/expense-tracker/hooks/useColombianTaxCalculations.ts` | **CREAR** | Hook de cálculos tributarios |
-| `src/components/finances/expense-tracker/components/ExpenseForm.tsx` | Modificar | Agregar campo proveedor IVA y panel de cálculos |
-| `src/components/finances/expense-tracker/hooks/useExpenseTracker.ts` | Modificar | Extender interfaces y operaciones DB |
-| `src/components/finances/expense-tracker/components/ExpenseStats.tsx` | Modificar | Nuevas tarjetas de estadísticas fiscales |
-| `src/components/finances/expense-tracker/components/ExpenseTableColumns.tsx` | Modificar | Columnas de IVA, retenciones, neto |
-| Base de datos | Migración | Agregar 8 columnas tributarias |
-
----
-
-## Formato de Moneda
-
-Todos los valores se mostrarán en **Pesos Colombianos (COP)** usando el formato `es-CO`:
-
-```typescript
-valor.toLocaleString('es-CO', { 
-  style: 'currency', 
-  currency: 'COP',
-  minimumFractionDigits: 0 
-})
-// Ejemplo: $10.650.000
-```
-
----
-
-## Beneficios
-
-1. **Cálculo automático** - El usuario solo ingresa el valor bruto sin IVA
-2. **Cumplimiento tributario** - Retenciones calculadas según normativa colombiana vigente
-3. **Control fiscal** - Visualización clara de créditos tributarios (IVA descontable, anticipos de renta e ICA)
-4. **Auditoría** - Todos los cálculos quedan almacenados en la base de datos para reportes
-5. **Simplicidad** - El usuario final ve exactamente cuánto debe pagar al proveedor
+1. **Team Members**: Se guardan correctamente en la nueva columna `team` de tipo JSONB
+2. **Presupuesto**: Se persiste en Supabase en las columnas `budget` y `actual_cost`
+3. **Estado**: El usuario puede cambiar entre Planning, In Progress, On Hold, y Completed directamente desde la vista de detalle usando un dropdown interactivo
