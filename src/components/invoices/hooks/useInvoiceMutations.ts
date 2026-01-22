@@ -50,6 +50,7 @@ export const useCreateInvoice = () => {
           description: item.description,
           quantity: item.quantity,
           unit_price: item.unit_price,
+          total: item.quantity * item.unit_price,
         }));
         
         const { error: itemsError } = await supabase
@@ -109,6 +110,7 @@ export const useUpdateInvoice = () => {
           description: item.description,
           quantity: item.quantity,
           unit_price: item.unit_price,
+          total: item.quantity * item.unit_price,
         }));
         
         const { error: itemsError } = await supabase
