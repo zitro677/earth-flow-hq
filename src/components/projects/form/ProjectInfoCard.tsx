@@ -39,7 +39,7 @@ const ProjectInfoCard: React.FC<ProjectInfoCardProps> = ({ form, statusOptions }
     >
       <Card className="card-shadow">
         <CardHeader>
-          <CardTitle>Project Information</CardTitle>
+          <CardTitle>Información del Proyecto</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <FormField
@@ -47,9 +47,9 @@ const ProjectInfoCard: React.FC<ProjectInfoCardProps> = ({ form, statusOptions }
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Project Name</FormLabel>
+                <FormLabel>Nombre del Proyecto</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter project name" {...field} />
+                  <Input placeholder="Ingresa el nombre del proyecto" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -61,9 +61,9 @@ const ProjectInfoCard: React.FC<ProjectInfoCardProps> = ({ form, statusOptions }
             name="client"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Client</FormLabel>
+                <FormLabel>Cliente</FormLabel>
                 <FormControl>
-                  <Input placeholder="Enter client name" {...field} />
+                  <Input placeholder="Ingresa el nombre del cliente" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -75,14 +75,14 @@ const ProjectInfoCard: React.FC<ProjectInfoCardProps> = ({ form, statusOptions }
             name="status"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Status</FormLabel>
+                <FormLabel>Estado</FormLabel>
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value}
                 >
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select a status" />
+                      <SelectValue placeholder="Selecciona un estado" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>

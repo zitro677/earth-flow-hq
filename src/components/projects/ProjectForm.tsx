@@ -35,7 +35,7 @@ const ProjectForm: React.FC = () => {
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
-            <h1 className="text-3xl font-bold">Loading Project...</h1>
+            <h1 className="text-3xl font-bold">Cargando Proyecto...</h1>
           </div>
         </div>
       </AnimatedPage>

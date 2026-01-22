@@ -18,13 +18,13 @@ const AuthErrorAlert: React.FC<AuthErrorAlertProps> = ({ show }) => {
     <div className="p-6">
       <Alert variant="destructive">
         <AlertTriangle className="h-4 w-4" />
-        <AlertTitle>Authentication Error</AlertTitle>
+        <AlertTitle>Error de Autenticación</AlertTitle>
         <AlertDescription>
-          You must be logged in to create an invoice. Please login and try again.
+          Debes iniciar sesión para crear una factura. Por favor inicia sesión e intenta de nuevo.
         </AlertDescription>
       </Alert>
       <div className="mt-4">
-        <Button onClick={() => navigate("/auth")}>Go to Login</Button>
+        <Button onClick={() => navigate("/auth")}>Ir a Iniciar Sesión</Button>
       </div>
     </div>
   );

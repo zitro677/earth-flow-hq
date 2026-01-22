@@ -6,15 +6,15 @@ import { Button } from "@/components/ui/button";
 export const getProjectColumns = (getStatusColor: (status: string) => string, onViewDetails: (id: string) => void) => [
   {
     accessorKey: "name",
-    header: "Project Name",
+    header: "Nombre del Proyecto",
   },
   {
     accessorKey: "client",
-    header: "Client",
+    header: "Cliente",
   },
   {
     accessorKey: "status",
-    header: "Status",
+    header: "Estado",
     cell: ({ row }: any) => {
       const status = row.getValue("status");
       return <Badge className={getStatusColor(status)}>{status}</Badge>;
@@ -22,7 +22,7 @@ export const getProjectColumns = (getStatusColor: (status: string) => string, on
   },
   {
     accessorKey: "progress",
-    header: "Progress",
+    header: "Progreso",
     cell: ({ row }: any) => {
       const progress = row.getValue("progress");
       return (
@@ -35,7 +35,7 @@ export const getProjectColumns = (getStatusColor: (status: string) => string, on
   },
   {
     accessorKey: "dueDate",
-    header: "Due Date",
+    header: "Fecha de Entrega",
     cell: ({ row }: any) => {
       const dueDate = row.getValue("dueDate");
       // Format the date consistently for display
@@ -44,11 +44,11 @@ export const getProjectColumns = (getStatusColor: (status: string) => string, on
   },
   {
     accessorKey: "budget",
-    header: "Budget",
+    header: "Presupuesto",
   },
   {
     accessorKey: "id",
-    header: "Actions",
+    header: "Acciones",
     cell: ({ row }: any) => {
       const projectId = row.getValue("id");
       return (
@@ -57,7 +57,7 @@ export const getProjectColumns = (getStatusColor: (status: string) => string, on
           size="sm"
           onClick={() => onViewDetails(projectId)}
         >
-          View Details
+          Ver Detalles
         </Button>
       );
     },

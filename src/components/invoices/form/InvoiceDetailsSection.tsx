@@ -40,10 +40,10 @@ const InvoiceDetailsSection: React.FC<InvoiceDetailsSectionProps> = ({
     >
       <Card>
         <CardContent className="p-6">
-          <h3 className="text-lg font-semibold mb-4">Invoice Details</h3>
+          <h3 className="text-lg font-semibold mb-4">Detalles de Factura</h3>
           <div className="space-y-4">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-lg font-medium">Invoice #</span>
+              <span className="text-lg font-medium">Factura #</span>
               <span className="font-mono">{invoiceNumber}</span>
             </div>
             <FormField
@@ -51,7 +51,7 @@ const InvoiceDetailsSection: React.FC<InvoiceDetailsSectionProps> = ({
               name="invoiceDate"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Invoice Date</FormLabel>
+                  <FormLabel>Fecha de Factura</FormLabel>
                   <FormControl>
                     <Input type="date" {...field} />
                   </FormControl>
@@ -64,7 +64,7 @@ const InvoiceDetailsSection: React.FC<InvoiceDetailsSectionProps> = ({
               name="dueDate"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Due Date</FormLabel>
+                  <FormLabel>Fecha de Vencimiento</FormLabel>
                   <FormControl>
                     <Input type="date" {...field} />
                   </FormControl>
@@ -73,13 +73,13 @@ const InvoiceDetailsSection: React.FC<InvoiceDetailsSectionProps> = ({
               )}
             />
             <FormItem>
-              <FormLabel>Payment Terms</FormLabel>
+              <FormLabel>Términos de Pago</FormLabel>
               <Select 
                 value={selectedTerm} 
                 onValueChange={handlePaymentTermChange}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select terms" />
+                  <SelectValue placeholder="Seleccionar términos" />
                 </SelectTrigger>
                 <SelectContent>
                   {paymentTerms.map((term) => (

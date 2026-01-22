@@ -29,21 +29,21 @@ const BudgetSection: React.FC<BudgetSectionProps> = ({
       <DollarSign className="h-5 w-5 text-muted-foreground mt-0.5" />
       <div className="w-full">
         <div className="flex justify-between items-center">
-          <h3 className="font-medium">Budget</h3>
+          <h3 className="font-medium">Presupuesto</h3>
           <Button 
             variant="outline" 
             size="sm" 
             onClick={() => setShowBudgetEdit(!showBudgetEdit)}
             className="h-7 px-2"
           >
-            {showBudgetEdit ? "Cancel" : <Edit2 className="h-3.5 w-3.5" />}
+            {showBudgetEdit ? "Cancelar" : <Edit2 className="h-3.5 w-3.5" />}
           </Button>
         </div>
         {showBudgetEdit ? (
           <div className="space-y-2 mt-2">
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-xs text-muted-foreground">Budget Used</label>
+                <label className="text-xs text-muted-foreground">Presupuesto Usado</label>
                 <Input
                   type="number"
                   value={budgetUsedValue}
@@ -52,7 +52,7 @@ const BudgetSection: React.FC<BudgetSectionProps> = ({
                 />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground">Total Budget</label>
+                <label className="text-xs text-muted-foreground">Presupuesto Total</label>
                 <Input
                   type="number"
                   value={budgetValue}
@@ -61,11 +61,11 @@ const BudgetSection: React.FC<BudgetSectionProps> = ({
                 />
               </div>
             </div>
-            <Button size="sm" onClick={saveBudget} className="w-full">Save Budget</Button>
+            <Button size="sm" onClick={saveBudget} className="w-full">Guardar Presupuesto</Button>
           </div>
         ) : (
           <p className="text-sm text-muted-foreground">
-            {budgetUsed} of {totalBudget} used
+            {budgetUsed} de {totalBudget} usado
           </p>
         )}
       </div>

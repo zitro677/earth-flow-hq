@@ -16,9 +16,9 @@ const TimelineSection: React.FC<TimelineSectionProps> = ({
     <div className="flex items-start gap-2">
       <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
       <div>
-        <h3 className="font-medium">Timeline</h3>
+        <h3 className="font-medium">Cronograma</h3>
         <p className="text-sm text-muted-foreground">
-          {startDate && format(new Date(startDate), 'MM-dd-yyyy')} to {dueDate && format(new Date(dueDate), 'MM-dd-yyyy')}
+          {startDate && format(new Date(startDate), 'dd-MM-yyyy')} a {dueDate && format(new Date(dueDate), 'dd-MM-yyyy')}
         </p>
       </div>
     </div>

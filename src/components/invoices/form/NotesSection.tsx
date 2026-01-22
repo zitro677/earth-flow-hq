@@ -27,7 +27,7 @@ const NotesSection: React.FC<NotesSectionProps> = ({ form }) => {
     >
       <Card>
         <CardContent className="p-6">
-          <h3 className="text-lg font-semibold mb-4">Additional Notes</h3>
+          <h3 className="text-lg font-semibold mb-4">Notas Adicionales</h3>
           <FormField
             control={form.control}
             name="notes"
@@ -35,7 +35,7 @@ const NotesSection: React.FC<NotesSectionProps> = ({ form }) => {
               <FormItem>
                 <FormControl>
                   <Textarea
-                    placeholder="Add any additional notes or payment instructions..."
+                    placeholder="Agrega notas adicionales o instrucciones de pago..."
                     className="min-h-[100px]"
                     {...field}
                   />
