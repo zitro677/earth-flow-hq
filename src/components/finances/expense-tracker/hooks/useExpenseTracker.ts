@@ -59,7 +59,7 @@ export const useExpenseTracker = () => {
           .from('expenses')
           .select('*')
           .eq('user_id', session.user.id)
-          .order('date', { ascending: false });
+          .order('expense_date', { ascending: false });
 
         if (error) {
           console.error("Error fetching expenses:", error);
@@ -70,10 +70,10 @@ export const useExpenseTracker = () => {
         // Transform database expenses to match our interface
         const transformedExpenses = (expensesData || []).map((expense: any) => ({
           id: expense.id,
-          date: expense.date,
+          date: expense.expense_date,
           category: expense.category,
           amount: parseFloat(expense.amount),
-          vendor: expense.description || 'Unknown Vendor', // Use description as vendor for now
+          vendor: expense.vendor || 'Unknown Vendor',
           description: expense.description || '',
           deductible: true, // Default to true, could be added to database schema
           miles: expense.category === 'Mileage' ? Math.round(parseFloat(expense.amount) / MILEAGE_RATE) : undefined,
@@ -113,10 +113,11 @@ export const useExpenseTracker = () => {
         const { error } = await supabase
           .from('expenses')
           .update({
-            date: newExpense.date,
+            expense_date: newExpense.date,
             category: newExpense.category,
             amount: finalAmount,
-            description: newExpense.vendor + (newExpense.description ? ` - ${newExpense.description}` : ''),
+            vendor: newExpense.vendor,
+            description: newExpense.description || '',
           })
           .eq('id', currentExpenseId);
 
@@ -151,10 +152,11 @@ export const useExpenseTracker = () => {
           .from('expenses')
           .insert({
             user_id: session.user.id,
-            date: newExpense.date,
+            expense_date: newExpense.date,
             category: newExpense.category,
             amount: finalAmount,
-            description: newExpense.vendor + (newExpense.description ? ` - ${newExpense.description}` : ''),
+            vendor: newExpense.vendor,
+            description: newExpense.description || '',
           })
           .select()
           .single();
