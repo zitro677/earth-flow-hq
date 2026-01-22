@@ -286,6 +286,7 @@ export type Database = {
           progress: number | null
           start_date: string | null
           status: string
+          team: Json | null
           updated_at: string
           user_id: string
         }
@@ -301,6 +302,7 @@ export type Database = {
           progress?: number | null
           start_date?: string | null
           status?: string
+          team?: Json | null
           updated_at?: string
           user_id: string
         }
@@ -316,6 +318,7 @@ export type Database = {
           progress?: number | null
           start_date?: string | null
           status?: string
+          team?: Json | null
           updated_at?: string
           user_id?: string
         }

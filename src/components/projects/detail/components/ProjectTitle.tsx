@@ -1,7 +1,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import ProjectStatusBadge from "./ProjectStatusBadge";
+import StatusSelector from "./StatusSelector";
 
 interface ProjectTitleProps {
   projectId: string;
@@ -9,6 +9,7 @@ interface ProjectTitleProps {
   projectStatus: string;
   getStatusColor: (status: string) => string;
   className?: string;
+  onStatusChange?: (newStatus: string) => void;
 }
 
 const ProjectTitle: React.FC<ProjectTitleProps> = ({
@@ -17,6 +18,7 @@ const ProjectTitle: React.FC<ProjectTitleProps> = ({
   projectStatus,
   getStatusColor,
   className = "",
+  onStatusChange,
 }) => {
   return (
     <motion.div
@@ -27,10 +29,12 @@ const ProjectTitle: React.FC<ProjectTitleProps> = ({
     >
       <h1 className="text-3xl font-bold">{projectName}</h1>
       <div className="flex items-center gap-2 mt-1">
-        <p className="text-muted-foreground">Project {projectId}</p>
-        <ProjectStatusBadge 
-          status={projectStatus} 
-          getStatusColor={getStatusColor} 
+        <p className="text-muted-foreground">Proyecto {projectId.slice(0, 8)}</p>
+        <StatusSelector 
+          projectId={projectId}
+          currentStatus={projectStatus} 
+          getStatusColor={getStatusColor}
+          onStatusChange={onStatusChange}
         />
       </div>
     </motion.div>
