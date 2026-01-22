@@ -88,8 +88,8 @@ export const useFinancialData = (yearFilter: string) => {
           .from('expenses')
           .select('*')
           .eq('user_id', userId)
-          .gte('date', yearStart)
-          .lte('date', yearEnd);
+          .gte('expense_date', yearStart)
+          .lte('expense_date', yearEnd);
 
         if (expensesError) {
           console.error("Error fetching expenses:", expensesError);
@@ -186,8 +186,8 @@ const generateMonthlyData = (invoices: any[], expenses: any[], year: number) => 
 
     const monthExpenses = expenses
       .filter(exp => {
-        if (!exp.date) return false;
-        const expenseDate = new Date(exp.date);
+        if (!exp.expense_date) return false;
+        const expenseDate = new Date(exp.expense_date);
         return expenseDate >= monthStart && expenseDate <= monthEnd;
       })
       .reduce((sum, exp) => sum + parseFloat(exp.amount.toString()), 0);
