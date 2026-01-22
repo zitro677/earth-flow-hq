@@ -1,129 +1,205 @@
 
-# Plan: Agregar Tarjetas de Propuestas Pendientes y Aprobadas al Dashboard
+# Plan: Sistema de Categorías y Subcategorías de Gastos Deducibles
 
 ## Objetivo
-Agregar dos nuevas tarjetas al dashboard para mostrar:
-1. **Propuestas Pendientes** (estado "Sent" - enviadas esperando respuesta)
-2. **Propuestas Aprobadas** (estado "Approved")
+Implementar un sistema jerárquico de categorías y subcategorías para gastos deducibles, específico para el negocio de blindaje de vehículos AutoSeguro DJ.
+
+---
+
+## Estructura de Categorías Propuesta
+
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│  CATEGORÍA PRINCIPAL          │  SUBCATEGORÍAS                  │
+├─────────────────────────────────────────────────────────────────┤
+│  1. Compra y Transformación   │  - Adquisición de vehículos     │
+│     de Vehículos              │  - Materiales de blindaje       │
+│                               │  - Repuestos y adaptación       │
+│                               │  - Mano de obra directa         │
+│                               │  - Consumibles de taller        │
+│                               │  - Servicios (energía/gas/agua) │
+│                               │  - Arrendamiento taller         │
+│                               │  - Depreciación maquinaria      │
+│                               │  - Mantenimiento equipos        │
+├─────────────────────────────────────────────────────────────────┤
+│  2. Venta y Comercialización  │  - Comisiones vendedores        │
+│                               │  - Publicidad y marketing       │
+│                               │  - Traslado de unidades         │
+│                               │  - Preparación vehículos        │
+│                               │  - Gastos de entrega            │
+│                               │  - Gastos de garantía           │
+├─────────────────────────────────────────────────────────────────┤
+│  3. Trámites e Intermediación │  - Derechos y registros         │
+│                               │  - Transporte y almacenamiento  │
+│                               │  - Licencias y software         │
+│                               │  - Comisiones gestores          │
+├─────────────────────────────────────────────────────────────────┤
+│  4. Administración y Finanzas │  - Sueldos administrativos      │
+│                               │  - Aportes parafiscales         │
+│                               │  - Arrendamiento oficinas       │
+│                               │  - Servicios públicos           │
+│                               │  - Licencias software           │
+│                               │  - Material de oficina          │
+│                               │  - Uniformes y EPP              │
+│                               │  - Viajes y hospedaje           │
+│                               │  - Seguros                      │
+│                               │  - Depreciación activos         │
+│                               │  - Mantenimiento inmuebles      │
+│                               │  - Reparaciones locativas       │
+├─────────────────────────────────────────────────────────────────┤
+│  5. Marketing y RRPP          │  - Eventos VIP                  │
+│                               │  - Merchandising                │
+│                               │  - Membresías y gremios         │
+│                               │  - Certificaciones              │
+├─────────────────────────────────────────────────────────────────┤
+│  6. Financieros y Tributarios │  - Intereses préstamos          │
+│                               │  - Comisiones bancarias         │
+│                               │  - Auditoría externa            │
+│                               │  - Timbres y registros          │
+├─────────────────────────────────────────────────────────────────┤
+│  7. Kilometraje               │  - Kilometraje (deducible)      │
+└─────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
 ## Cambios Requeridos
 
-### 1. Actualizar `useOverviewStats.ts`
+### 1. Crear archivo de configuración de categorías
 
-Agregar nuevas métricas para propuestas pendientes y aprobadas:
+**Nuevo archivo:** `src/components/finances/expense-tracker/data/expenseCategories.ts`
+
+Este archivo contendrá la estructura de categorías y subcategorías, facilitando futuras modificaciones sin tocar el código del formulario.
 
 ```typescript
-// Agregar estas nuevas métricas
-const pendingProposals = proposals?.filter(p => p.status === 'Sent').length || 0;
-const pendingProposalsAmount = proposals?.filter(p => p.status === 'Sent')
-  .reduce((sum, p) => sum + parseFloat(p.amount?.toString() || '0'), 0) || 0;
+export interface ExpenseSubcategory {
+  id: string;
+  label: string;
+  description?: string;
+}
 
-const approvedProposals = proposals?.filter(p => p.status === 'Approved').length || 0;
-const approvedProposalsAmount = proposals?.filter(p => p.status === 'Approved')
-  .reduce((sum, p) => sum + parseFloat(p.amount?.toString() || '0'), 0) || 0;
-```
+export interface ExpenseCategory {
+  id: string;
+  label: string;
+  icon?: string;
+  subcategories: ExpenseSubcategory[];
+}
 
-Y retornarlas en el objeto:
-```typescript
-return {
-  // ... existentes
-  pendingProposals,
-  pendingProposalsAmount,
-  approvedProposals,
-  approvedProposalsAmount
-};
+export const EXPENSE_CATEGORIES: ExpenseCategory[] = [
+  {
+    id: "transformacion",
+    label: "Compra y Transformación de Vehículos",
+    subcategories: [
+      { id: "adquisicion_vehiculos", label: "Adquisición de vehículos" },
+      { id: "materiales_blindaje", label: "Materiales de blindaje" },
+      // ... más subcategorías
+    ]
+  },
+  // ... más categorías
+];
 ```
 
 ---
 
-### 2. Actualizar `DashboardPage.tsx`
+### 2. Actualizar el tipo `NewExpense`
 
-Cambiar la grilla de 4 a 6 columnas y agregar las nuevas tarjetas:
+**Archivo:** `src/components/finances/expense-tracker/hooks/useExpenseTracker.ts`
+
+Agregar campo `subcategory` al tipo:
+
+```typescript
+export interface NewExpense {
+  date: string;
+  category: string;
+  subcategory: string;  // NUEVO
+  amount: string;
+  vendor: string;
+  description: string;
+  deductible: boolean;
+  miles?: string;
+}
+```
+
+---
+
+### 3. Actualizar el formulario de gastos
+
+**Archivo:** `src/components/finances/expense-tracker/components/ExpenseForm.tsx`
+
+Cambios principales:
+- Importar las categorías desde el nuevo archivo de configuración
+- Agregar selector de categoría principal con grupos visuales
+- Agregar selector de subcategoría dependiente de la categoría seleccionada
+- Las subcategorías se actualizarán dinámicamente según la categoría elegida
 
 ```text
-Layout actual (4 tarjetas):
-┌─────────────┬─────────────┬─────────────┬─────────────┐
-│ Ingresos    │ Proyectos   │ Facturas    │ Nuevas      │
-│ Totales     │ Activos     │ Pendientes  │ Propuestas  │
-└─────────────┴─────────────┴─────────────┴─────────────┘
-
-Nuevo layout (6 tarjetas en 2 filas):
-┌─────────────┬─────────────┬─────────────┐
-│ Ingresos    │ Proyectos   │ Facturas    │
-│ Totales     │ Activos     │ Pendientes  │
-├─────────────┼─────────────┼─────────────┤
-│ Nuevas      │ Propuestas  │ Propuestas  │
-│ Propuestas  │ Pendientes  │ Aprobadas   │
-└─────────────┴─────────────┴─────────────┘
-```
-
-Agregar nuevas tarjetas con iconos apropiados:
-
-```typescript
-import { Clock, CheckCircle } from "lucide-react";
-
-// Nueva tarjeta: Propuestas Pendientes
-<OverviewCard
-  title="Propuestas Pendientes"
-  value={formatCurrency(overviewStats.pendingProposalsAmount)}
-  description={`${overviewStats.pendingProposals} esperando respuesta`}
-  icon={Clock}
-  trend={0}
-  delay={4}
-  isLoading={isLoading}
-/>
-
-// Nueva tarjeta: Propuestas Aprobadas
-<OverviewCard
-  title="Propuestas Aprobadas"
-  value={formatCurrency(overviewStats.approvedProposalsAmount)}
-  description={`${overviewStats.approvedProposals} propuestas aprobadas`}
-  icon={CheckCircle}
-  trend={0}
-  delay={5}
-  isLoading={isLoading}
-/>
+Diseño del formulario actualizado:
+┌────────────────────────────────────────────────────────────┐
+│  Agregar Nuevo Gasto                                       │
+├────────────────────────────────────────────────────────────┤
+│  Fecha: [___________]     Categoría: [▼ Seleccionar    ]   │
+│                                                            │
+│  Subcategoría: [▼ Seleccionar subcategoría          ]      │
+│                                                            │
+│  Monto ($): [_________]   Proveedor: [________________]    │
+│                                                            │
+│  Descripción: [_______________________________________]    │
+│                                                            │
+│  [✓] Deducible de impuestos                                │
+│                                                            │
+│                          [Cancelar]  [Guardar Gasto]       │
+└────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-### 3. Ajustar el Grid Responsivo
+### 4. Actualizar base de datos (opcional pero recomendado)
 
-Modificar las clases CSS de la grilla:
+Agregar columna `subcategory` a la tabla `expenses`:
 
-```typescript
-// Cambiar de:
-<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-
-// A:
-<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+```sql
+ALTER TABLE expenses ADD COLUMN subcategory text;
 ```
 
-Esto mostrará:
-- **Móvil**: 1 columna (6 filas)
-- **Tablet**: 2 columnas (3 filas)
-- **Desktop**: 3 columnas (2 filas)
+Esto permitirá almacenar y filtrar por subcategoría en reportes futuros.
 
 ---
 
-## Archivos a Modificar
+### 5. Actualizar operaciones de guardado
 
-| Archivo | Cambios |
-|---------|---------|
-| `src/components/dashboard/hooks/calculations/useOverviewStats.ts` | Agregar cálculos de propuestas pendientes y aprobadas |
-| `src/components/dashboard/DashboardPage.tsx` | Agregar 2 nuevas tarjetas y ajustar grid |
+**Archivo:** `src/components/finances/expense-tracker/hooks/useExpenseTracker.ts`
+
+- Incluir `subcategory` en las operaciones de INSERT y UPDATE
+- Transformar los datos recuperados para incluir subcategoría
 
 ---
 
-## Resultado Visual Esperado
+## Archivos a Modificar/Crear
 
-El dashboard mostrará 6 tarjetas organizadas en 2 filas de 3 columnas:
+| Archivo | Acción | Descripción |
+|---------|--------|-------------|
+| `src/components/finances/expense-tracker/data/expenseCategories.ts` | **CREAR** | Configuración de categorías y subcategorías |
+| `src/components/finances/expense-tracker/hooks/useExpenseTracker.ts` | Modificar | Agregar subcategory al tipo y operaciones |
+| `src/components/finances/expense-tracker/components/ExpenseForm.tsx` | Modificar | UI con selectores jerárquicos |
+| Base de datos | Migración | Agregar columna subcategory |
 
-- **Fila 1**: Ingresos Totales, Proyectos Activos, Facturas Pendientes
-- **Fila 2**: Nuevas Propuestas (borradores), Propuestas Pendientes (enviadas), Propuestas Aprobadas
+---
 
-Cada tarjeta de propuestas mostrará:
-- El monto total en formato de moneda
-- La cantidad de propuestas en esa categoría
+## Beneficios de esta Implementación
+
+1. **Fácil de usar**: El usuario selecciona primero la categoría principal y luego la subcategoría específica
+2. **Organizado**: Las categorías están agrupadas lógicamente según el tipo de gasto
+3. **Mantenible**: Las categorías están en un archivo de configuración separado, fácil de modificar
+4. **Extensible**: Se pueden agregar nuevas categorías o subcategorías sin cambiar el código del formulario
+5. **Reportes precisos**: Permitirá generar reportes fiscales detallados por categoría y subcategoría
+
+---
+
+## Experiencia de Usuario
+
+1. El usuario abre el formulario de nuevo gasto
+2. Selecciona la **categoría principal** (ej: "Compra y Transformación de Vehículos")
+3. El selector de subcategoría se actualiza mostrando solo las opciones relevantes
+4. Selecciona la **subcategoría** (ej: "Materiales de blindaje")
+5. Completa el resto del formulario
+6. Todos los gastos quedan etiquetados con ambos niveles para reportes fiscales
