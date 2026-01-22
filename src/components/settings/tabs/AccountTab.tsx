@@ -23,7 +23,7 @@ const AccountTab = ({ initialSettings, onSave, isLoading }: AccountTabProps) => 
   const accountForm = useForm({
     defaultValues: {
       name: initialSettings.name,
-      email: initialSettings.email || user?.email || "user@example.com",
+      email: initialSettings.email || user?.email || "usuario@ejemplo.com",
       company: initialSettings.company,
       bio: initialSettings.bio
     }
@@ -35,9 +35,9 @@ const AccountTab = ({ initialSettings, onSave, isLoading }: AccountTabProps) => 
         <form onSubmit={accountForm.handleSubmit(onSave)}>
           <Card>
             <CardHeader>
-              <CardTitle>Personal Information</CardTitle>
+              <CardTitle>Información Personal</CardTitle>
               <CardDescription>
-                Update your account details and personal information
+                Actualiza los detalles de tu cuenta e información personal
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -46,12 +46,12 @@ const AccountTab = ({ initialSettings, onSave, isLoading }: AccountTabProps) => 
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email</FormLabel>
+                    <FormLabel>Correo Electrónico</FormLabel>
                     <FormControl>
                       <Input {...field} readOnly className="bg-muted/50" />
                     </FormControl>
                     <FormDescription>
-                      Your email address is used for login and cannot be changed.
+                      Tu correo electrónico se usa para iniciar sesión y no puede ser cambiado.
                     </FormDescription>
                   </FormItem>
                 )}
@@ -61,9 +61,9 @@ const AccountTab = ({ initialSettings, onSave, isLoading }: AccountTabProps) => 
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Full Name</FormLabel>
+                    <FormLabel>Nombre Completo</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Enter your full name" />
+                      <Input {...field} placeholder="Ingresa tu nombre completo" />
                     </FormControl>
                   </FormItem>
                 )}
@@ -73,9 +73,9 @@ const AccountTab = ({ initialSettings, onSave, isLoading }: AccountTabProps) => 
                 name="company"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Company</FormLabel>
+                    <FormLabel>Empresa</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="Enter your company name" />
+                      <Input {...field} placeholder="Ingresa el nombre de tu empresa" />
                     </FormControl>
                   </FormItem>
                 )}
@@ -85,11 +85,11 @@ const AccountTab = ({ initialSettings, onSave, isLoading }: AccountTabProps) => 
                 name="bio"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Bio</FormLabel>
+                    <FormLabel>Biografía</FormLabel>
                     <FormControl>
                       <Textarea 
                         {...field} 
-                        placeholder="Write a short bio about yourself" 
+                        placeholder="Escribe una breve biografía sobre ti" 
                         className="resize-none min-h-[120px]"
                       />
                     </FormControl>
@@ -99,7 +99,7 @@ const AccountTab = ({ initialSettings, onSave, isLoading }: AccountTabProps) => 
             </CardContent>
             <CardFooter className="flex justify-end">
               <Button type="submit" disabled={isLoading}>
-                {isLoading ? 'Saving...' : 'Save Changes'}
+                {isLoading ? 'Guardando...' : 'Guardar Cambios'}
               </Button>
             </CardFooter>
           </Card>
@@ -108,32 +108,32 @@ const AccountTab = ({ initialSettings, onSave, isLoading }: AccountTabProps) => 
       
       <Card>
         <CardHeader>
-          <CardTitle>Password</CardTitle>
+          <CardTitle>Contraseña</CardTitle>
           <CardDescription>
-            Update your password and security settings
+            Actualiza tu contraseña y configuración de seguridad
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="current-password">Current Password</Label>
+              <Label htmlFor="current-password">Contraseña Actual</Label>
               <Input id="current-password" type="password" />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="new-password">New Password</Label>
+              <Label htmlFor="new-password">Nueva Contraseña</Label>
               <Input id="new-password" type="password" />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="confirm-password">Confirm New Password</Label>
+              <Label htmlFor="confirm-password">Confirmar Nueva Contraseña</Label>
               <Input id="confirm-password" type="password" />
             </div>
           </div>
         </CardContent>
         <CardFooter className="flex justify-end">
           <Button 
-            onClick={() => toast.success("Password updated successfully")}
+            onClick={() => toast.success("Contraseña actualizada exitosamente")}
           >
-            Update Password
+            Actualizar Contraseña
           </Button>
         </CardFooter>
       </Card>

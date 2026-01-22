@@ -2,6 +2,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
+import { es } from "date-fns/locale";
 import {
   Card,
   CardContent,
@@ -40,7 +41,7 @@ const TimelineBudgetCard: React.FC<TimelineBudgetCardProps> = ({ form }) => {
     >
       <Card className="card-shadow">
         <CardHeader>
-          <CardTitle>Timeline & Budget</CardTitle>
+          <CardTitle>Cronograma y Presupuesto</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -49,7 +50,7 @@ const TimelineBudgetCard: React.FC<TimelineBudgetCardProps> = ({ form }) => {
               name="startDate"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Start Date</FormLabel>
+                  <FormLabel>Fecha de Inicio</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -58,9 +59,9 @@ const TimelineBudgetCard: React.FC<TimelineBudgetCardProps> = ({ form }) => {
                           className={"w-full pl-3 text-left font-normal"}
                         >
                           {field.value ? (
-                            format(field.value, "PPP")
+                            format(field.value, "PPP", { locale: es })
                           ) : (
-                            <span>Pick a date</span>
+                            <span>Selecciona una fecha</span>
                           )}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>
@@ -88,7 +89,7 @@ const TimelineBudgetCard: React.FC<TimelineBudgetCardProps> = ({ form }) => {
               name="dueDate"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Due Date</FormLabel>
+                  <FormLabel>Fecha de Entrega</FormLabel>
                   <Popover>
                     <PopoverTrigger asChild>
                       <FormControl>
@@ -97,9 +98,9 @@ const TimelineBudgetCard: React.FC<TimelineBudgetCardProps> = ({ form }) => {
                           className={"w-full pl-3 text-left font-normal"}
                         >
                           {field.value ? (
-                            format(field.value, "PPP")
+                            format(field.value, "PPP", { locale: es })
                           ) : (
-                            <span>Pick a date</span>
+                            <span>Selecciona una fecha</span>
                           )}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>
@@ -129,11 +130,11 @@ const TimelineBudgetCard: React.FC<TimelineBudgetCardProps> = ({ form }) => {
               name="budget"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Budget ($)</FormLabel>
+                  <FormLabel>Presupuesto (COP)</FormLabel>
                   <FormControl>
                     <Input
                       type="text"
-                      placeholder="e.g. 5000"
+                      placeholder="ej. 5000000"
                       {...field}
                     />
                   </FormControl>
@@ -147,11 +148,11 @@ const TimelineBudgetCard: React.FC<TimelineBudgetCardProps> = ({ form }) => {
               name="estimatedHours"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Estimated Hours</FormLabel>
+                  <FormLabel>Horas Estimadas</FormLabel>
                   <FormControl>
                     <Input
                       type="text"
-                      placeholder="e.g. 120"
+                      placeholder="ej. 120"
                       {...field}
                     />
                   </FormControl>

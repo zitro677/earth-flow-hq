@@ -23,8 +23,8 @@ import { NewClientData } from "./types";
 
 // Schema now ensures name is required
 const clientSchema = z.object({
-  name: z.string().min(1, "Client name is required"),
-  email: z.string().email("Invalid email address").optional().or(z.literal("")),
+  name: z.string().min(1, "El nombre del cliente es requerido"),
+  email: z.string().email("Correo electrónico inválido").optional().or(z.literal("")),
   phone: z.string().optional().or(z.literal("")),
   address: z.string().optional().or(z.literal("")),
 });
@@ -106,13 +106,13 @@ const ClientForm: React.FC = () => {
           onClick={() => navigate("/clients")}
           className="flex items-center gap-1 mb-6"
         >
-          <ArrowLeft className="h-4 w-4" /> Back to Clients
+          <ArrowLeft className="h-4 w-4" /> Volver a Clientes
         </Button>
 
         <Card>
           <CardContent className="p-6">
             <h1 className="text-2xl font-bold mb-6">
-              {isEditing ? "Edit Client" : "Add New Client"}
+              {isEditing ? "Editar Cliente" : "Agregar Nuevo Cliente"}
             </h1>
 
             <Form {...form}>
@@ -122,9 +122,9 @@ const ClientForm: React.FC = () => {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Client Name*</FormLabel>
+                      <FormLabel>Nombre del Cliente*</FormLabel>
                       <FormControl>
-                        <Input placeholder="Enter client name" {...field} />
+                        <Input placeholder="Ingresa el nombre del cliente" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -136,9 +136,9 @@ const ClientForm: React.FC = () => {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>Correo Electrónico</FormLabel>
                       <FormControl>
-                        <Input placeholder="client@example.com" {...field} />
+                        <Input placeholder="cliente@ejemplo.com" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -150,9 +150,9 @@ const ClientForm: React.FC = () => {
                   name="phone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Phone</FormLabel>
+                      <FormLabel>Teléfono</FormLabel>
                       <FormControl>
-                        <Input placeholder="Phone number" {...field} />
+                        <Input placeholder="Número de teléfono" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -164,10 +164,10 @@ const ClientForm: React.FC = () => {
                   name="address"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Address</FormLabel>
+                      <FormLabel>Dirección</FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="Client address"
+                          placeholder="Dirección del cliente"
                           {...field}
                           rows={4}
                         />
@@ -183,10 +183,10 @@ const ClientForm: React.FC = () => {
                     variant="outline"
                     onClick={() => navigate("/clients")}
                   >
-                    Cancel
+                    Cancelar
                   </Button>
                   <Button type="submit">
-                    {isEditing ? "Update Client" : "Create Client"}
+                    {isEditing ? "Actualizar Cliente" : "Crear Cliente"}
                   </Button>
                 </div>
               </form>

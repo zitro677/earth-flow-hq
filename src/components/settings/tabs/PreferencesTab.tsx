@@ -31,9 +31,9 @@ const PreferencesTab = ({ initialSettings, onSave, isLoading }: PreferencesTabPr
         <form onSubmit={preferencesForm.handleSubmit(onSave)}>
           <Card>
             <CardHeader>
-              <CardTitle>Display Settings</CardTitle>
+              <CardTitle>Configuración de Visualización</CardTitle>
               <CardDescription>
-                Customize the appearance of your dashboard
+                Personaliza la apariencia de tu panel de control
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -43,9 +43,9 @@ const PreferencesTab = ({ initialSettings, onSave, isLoading }: PreferencesTabPr
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                     <div className="space-y-0.5">
-                      <FormLabel className="text-base">Dark Mode</FormLabel>
+                      <FormLabel className="text-base">Modo Oscuro</FormLabel>
                       <FormDescription>
-                        Enable dark mode for reduced eye strain in low light environments
+                        Activa el modo oscuro para reducir la fatiga visual en ambientes con poca luz
                       </FormDescription>
                     </div>
                     <FormControl>
@@ -63,9 +63,9 @@ const PreferencesTab = ({ initialSettings, onSave, isLoading }: PreferencesTabPr
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                     <div className="space-y-0.5">
-                      <FormLabel className="text-base">Compact View</FormLabel>
+                      <FormLabel className="text-base">Vista Compacta</FormLabel>
                       <FormDescription>
-                        Display more content per page with a compact layout
+                        Muestra más contenido por página con un diseño compacto
                       </FormDescription>
                     </div>
                     <FormControl>
@@ -80,7 +80,7 @@ const PreferencesTab = ({ initialSettings, onSave, isLoading }: PreferencesTabPr
             </CardContent>
             <CardFooter className="flex justify-end">
               <Button type="submit" disabled={isLoading}>
-                {isLoading ? 'Saving...' : 'Save Preferences'}
+                {isLoading ? 'Guardando...' : 'Guardar Preferencias'}
               </Button>
             </CardFooter>
           </Card>
@@ -89,43 +89,43 @@ const PreferencesTab = ({ initialSettings, onSave, isLoading }: PreferencesTabPr
       
       <Card>
         <CardHeader>
-          <CardTitle>Default Views</CardTitle>
+          <CardTitle>Vistas Predeterminadas</CardTitle>
           <CardDescription>
-            Configure your default views for projects and invoices
+            Configura tus vistas predeterminadas para proyectos y facturas
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid gap-2">
-            <Label htmlFor="default-dashboard">Default Dashboard View</Label>
+            <Label htmlFor="default-dashboard">Vista de Panel Predeterminada</Label>
             <select 
               id="default-dashboard"
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               defaultValue="overview"
             >
-              <option value="overview">Overview</option>
-              <option value="projects">Projects</option>
-              <option value="finances">Finances</option>
-              <option value="custom">Custom</option>
+              <option value="overview">Resumen</option>
+              <option value="projects">Proyectos</option>
+              <option value="finances">Finanzas</option>
+              <option value="custom">Personalizado</option>
             </select>
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="default-project-view">Default Project View</Label>
+            <Label htmlFor="default-project-view">Vista de Proyecto Predeterminada</Label>
             <select 
               id="default-project-view"
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               defaultValue="grid"
             >
-              <option value="grid">Grid</option>
-              <option value="list">List</option>
+              <option value="grid">Cuadrícula</option>
+              <option value="list">Lista</option>
               <option value="kanban">Kanban</option>
             </select>
           </div>
         </CardContent>
         <CardFooter className="flex justify-end">
           <Button 
-            onClick={() => toast.success("Default views updated successfully")}
+            onClick={() => toast.success("Vistas predeterminadas actualizadas exitosamente")}
           >
-            Save View Settings
+            Guardar Configuración de Vistas
           </Button>
         </CardFooter>
       </Card>

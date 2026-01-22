@@ -30,9 +30,9 @@ const NotificationsTab = ({ initialSettings, onSave, isLoading }: NotificationsT
       <form onSubmit={notificationsForm.handleSubmit(onSave)}>
         <Card>
           <CardHeader>
-            <CardTitle>Notification Preferences</CardTitle>
+            <CardTitle>Preferencias de Notificaciones</CardTitle>
             <CardDescription>
-              Configure how you receive notifications
+              Configura cómo recibes las notificaciones
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -43,9 +43,9 @@ const NotificationsTab = ({ initialSettings, onSave, isLoading }: NotificationsT
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between space-x-2 rounded-lg border p-4">
                     <div className="space-y-0.5">
-                      <FormLabel className="text-base">Email Notifications</FormLabel>
+                      <FormLabel className="text-base">Notificaciones por Correo</FormLabel>
                       <FormDescription>
-                        Receive notifications via email
+                        Recibir notificaciones por correo electrónico
                       </FormDescription>
                     </div>
                     <FormControl>
@@ -73,10 +73,10 @@ const NotificationsTab = ({ initialSettings, onSave, isLoading }: NotificationsT
                       </FormControl>
                       <div className="space-y-1 leading-none">
                         <FormLabel>
-                          Project Updates
+                          Actualizaciones de Proyectos
                         </FormLabel>
                         <FormDescription>
-                          Get notified about changes to your projects
+                          Recibe notificaciones sobre cambios en tus proyectos
                         </FormDescription>
                       </div>
                     </FormItem>
@@ -97,10 +97,10 @@ const NotificationsTab = ({ initialSettings, onSave, isLoading }: NotificationsT
                       </FormControl>
                       <div className="space-y-1 leading-none">
                         <FormLabel>
-                          Invoice Reminders
+                          Recordatorios de Facturas
                         </FormLabel>
                         <FormDescription>
-                          Receive reminders about upcoming and overdue invoices
+                          Recibe recordatorios sobre facturas próximas y vencidas
                         </FormDescription>
                       </div>
                     </FormItem>
@@ -121,10 +121,10 @@ const NotificationsTab = ({ initialSettings, onSave, isLoading }: NotificationsT
                       </FormControl>
                       <div className="space-y-1 leading-none">
                         <FormLabel>
-                          Marketing Emails
+                          Correos de Marketing
                         </FormLabel>
                         <FormDescription>
-                          Receive updates about new features and promotions
+                          Recibe actualizaciones sobre nuevas funciones y promociones
                         </FormDescription>
                       </div>
                     </FormItem>
@@ -138,9 +138,9 @@ const NotificationsTab = ({ initialSettings, onSave, isLoading }: NotificationsT
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between space-x-2 rounded-lg border p-4">
                     <div className="space-y-0.5">
-                      <FormLabel className="text-base">SMS Notifications</FormLabel>
+                      <FormLabel className="text-base">Notificaciones SMS</FormLabel>
                       <FormDescription>
-                        Receive important notifications via SMS
+                        Recibe notificaciones importantes por SMS
                       </FormDescription>
                     </div>
                     <FormControl>
@@ -156,7 +156,7 @@ const NotificationsTab = ({ initialSettings, onSave, isLoading }: NotificationsT
           </CardContent>
           <CardFooter className="flex justify-end">
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Saving...' : 'Save Notification Settings'}
+              {isLoading ? 'Guardando...' : 'Guardar Preferencias'}
             </Button>
           </CardFooter>
         </Card>

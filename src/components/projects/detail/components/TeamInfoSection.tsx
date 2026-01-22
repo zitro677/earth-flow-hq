@@ -11,9 +11,9 @@ const TeamInfoSection: React.FC<TeamInfoSectionProps> = ({ teamSize }) => {
     <div className="flex items-start gap-2">
       <Users className="h-5 w-5 text-muted-foreground mt-0.5" />
       <div>
-        <h3 className="font-medium">Team</h3>
+        <h3 className="font-medium">Equipo</h3>
         <p className="text-sm text-muted-foreground">
-          {teamSize} team members assigned
+          {teamSize} miembros del equipo asignados
         </p>
       </div>
     </div>

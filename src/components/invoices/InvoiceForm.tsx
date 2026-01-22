@@ -47,12 +47,12 @@ const InvoiceForm: React.FC = () => {
 
   const handleFormSubmit = async (data: any) => {
     if (!data.client_id || data.client_id === "") {
-      toast.error("Please select a client");
+      toast.error("Por favor selecciona un cliente");
       return;
     }
     
     if (items.length === 0) {
-      toast.error("Please add at least one item");
+      toast.error("Por favor agrega al menos un ítem");
       return;
     }
     
@@ -69,17 +69,17 @@ const InvoiceForm: React.FC = () => {
             onClick={() => navigate("/invoices")}
             className="flex items-center gap-1"
           >
-            <ArrowLeft className="h-4 w-4" /> Back to Invoices
+            <ArrowLeft className="h-4 w-4" /> Volver a Facturas
           </Button>
           <h1 className="text-2xl font-semibold">
-            {isEditMode ? "Edit Invoice" : "Create New Invoice"}
+            {isEditMode ? "Editar Factura" : "Crear Nueva Factura"}
           </h1>
           <div className="flex gap-2">
             <Button type="button" variant="outline" onClick={() => form.reset()}>
-              Reset
+              Restablecer
             </Button>
             <Button type="submit" disabled={isLoading}>
-              {isLoading ? "Saving..." : isEditMode ? "Update Invoice" : "Save Invoice"}
+              {isLoading ? "Guardando..." : isEditMode ? "Actualizar Factura" : "Guardar Factura"}
             </Button>
           </div>
         </div>
@@ -106,10 +106,10 @@ const InvoiceForm: React.FC = () => {
 
         <div className="flex justify-end gap-2">
           <Button type="button" variant="outline" onClick={() => navigate("/invoices")}>
-            Cancel
+            Cancelar
           </Button>
           <Button type="submit" disabled={isLoading}>
-            {isLoading ? "Saving..." : isEditMode ? "Update Invoice" : "Save Invoice"}
+            {isLoading ? "Guardando..." : isEditMode ? "Actualizar Factura" : "Guardar Factura"}
           </Button>
         </div>
       </form>

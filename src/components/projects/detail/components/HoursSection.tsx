@@ -29,21 +29,21 @@ const HoursSection: React.FC<HoursSectionProps> = ({
       <Clock className="h-5 w-5 text-muted-foreground mt-0.5" />
       <div className="w-full">
         <div className="flex justify-between items-center">
-          <h3 className="font-medium">Hours</h3>
+          <h3 className="font-medium">Horas</h3>
           <Button 
             variant="outline" 
             size="sm" 
             onClick={() => setShowHoursEdit(!showHoursEdit)}
             className="h-7 px-2"
           >
-            {showHoursEdit ? "Cancel" : <Edit2 className="h-3.5 w-3.5" />}
+            {showHoursEdit ? "Cancelar" : <Edit2 className="h-3.5 w-3.5" />}
           </Button>
         </div>
         {showHoursEdit ? (
           <div className="space-y-2 mt-2">
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-xs text-muted-foreground">Hours Logged</label>
+                <label className="text-xs text-muted-foreground">Horas Registradas</label>
                 <Input
                   type="number"
                   value={hoursLoggedValue}
@@ -52,7 +52,7 @@ const HoursSection: React.FC<HoursSectionProps> = ({
                 />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground">Estimated Hours</label>
+                <label className="text-xs text-muted-foreground">Horas Estimadas</label>
                 <Input
                   type="number"
                   value={hoursValue}
@@ -61,11 +61,11 @@ const HoursSection: React.FC<HoursSectionProps> = ({
                 />
               </div>
             </div>
-            <Button size="sm" onClick={saveHours} className="w-full">Save Hours</Button>
+            <Button size="sm" onClick={saveHours} className="w-full">Guardar Horas</Button>
           </div>
         ) : (
           <p className="text-sm text-muted-foreground">
-            {hoursLogged} of {estimatedHours} hrs logged
+            {hoursLogged} de {estimatedHours} hrs registradas
           </p>
         )}
       </div>

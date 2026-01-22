@@ -21,7 +21,7 @@ const FormActions: React.FC<FormActionsProps> = ({
         onClick={navigateBack}
         disabled={isSubmitting}
       >
-        Cancel
+        Cancelar
       </Button>
       <Button 
         type="submit"
@@ -29,8 +29,8 @@ const FormActions: React.FC<FormActionsProps> = ({
         className="min-w-[150px]"
       >
         {isSubmitting 
-          ? (isEditMode ? "Updating..." : "Creating...") 
-          : (isEditMode ? "Update Project" : "Create Project")}
+          ? (isEditMode ? "Actualizando..." : "Creando...") 
+          : (isEditMode ? "Actualizar Proyecto" : "Crear Proyecto")}
       </Button>
     </div>
   );
