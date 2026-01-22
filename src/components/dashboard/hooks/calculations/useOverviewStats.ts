@@ -31,12 +31,20 @@ export const useOverviewStats = (projects: any[], invoices: any[], proposals: an
     // Calculate pending proposals (Sent status)
     const pendingProposals = proposals?.filter(p => p.status === 'Sent').length || 0;
     const pendingProposalsAmount = proposals?.filter(p => p.status === 'Sent')
-      .reduce((sum, p) => sum + parseFloat(p.total?.toString() || p.amount?.toString() || '0'), 0) || 0;
+      .reduce((sum, p) => {
+        const total = parseFloat(p.total?.toString() || '0');
+        const amount = parseFloat(p.amount?.toString() || '0');
+        return sum + (total > 0 ? total : amount);
+      }, 0) || 0;
     
     // Calculate approved proposals
     const approvedProposals = proposals?.filter(p => p.status === 'Approved').length || 0;
     const approvedProposalsAmount = proposals?.filter(p => p.status === 'Approved')
-      .reduce((sum, p) => sum + parseFloat(p.total?.toString() || p.amount?.toString() || '0'), 0) || 0;
+      .reduce((sum, p) => {
+        const total = parseFloat(p.total?.toString() || '0');
+        const amount = parseFloat(p.amount?.toString() || '0');
+        return sum + (total > 0 ? total : amount);
+      }, 0) || 0;
     // Calculate due soon projects (due within 7 days)
     const today = new Date();
     const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
