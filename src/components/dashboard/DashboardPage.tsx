@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable } from "../ui/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { BarChart3, PenTool, FileText, FolderKanban } from "lucide-react";
+import { BarChart3, PenTool, FileText, FolderKanban, Clock, CheckCircle } from "lucide-react";
 import { useDashboardData } from "./hooks/useDashboardData";
 
 const DashboardPage: React.FC = () => {
@@ -97,7 +97,7 @@ const DashboardPage: React.FC = () => {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
           <OverviewCard
             title="Ingresos Totales"
             value={formatCurrency(overviewStats.totalRevenue)}
@@ -118,20 +118,38 @@ const DashboardPage: React.FC = () => {
           />
           <OverviewCard
             title="Facturas Pendientes"
-            value={overviewStats.pendingInvoices.toString()}
+            value={formatCurrency(overviewStats.pendingInvoices)}
             description={`${overviewStats.pendingInvoicesCount} facturas pendientes`}
             icon={FileText}
-            trend={-4}
+            trend={0}
             delay={2}
             isLoading={isLoading}
           />
           <OverviewCard
             title="Nuevas Propuestas"
             value={overviewStats.newProposals.toString()}
-            description={`${overviewStats.pendingApprovals} esperando aprobación`}
+            description={`${overviewStats.pendingApprovals} borradores`}
             icon={PenTool}
-            trend={24}
+            trend={0}
             delay={3}
+            isLoading={isLoading}
+          />
+          <OverviewCard
+            title="Propuestas Pendientes"
+            value={formatCurrency(overviewStats.pendingProposalsAmount)}
+            description={`${overviewStats.pendingProposals} esperando respuesta`}
+            icon={Clock}
+            trend={0}
+            delay={4}
+            isLoading={isLoading}
+          />
+          <OverviewCard
+            title="Propuestas Aprobadas"
+            value={formatCurrency(overviewStats.approvedProposalsAmount)}
+            description={`${overviewStats.approvedProposals} propuestas aprobadas`}
+            icon={CheckCircle}
+            trend={0}
+            delay={5}
             isLoading={isLoading}
           />
         </div>
