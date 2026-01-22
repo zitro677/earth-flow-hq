@@ -177,19 +177,16 @@ export const useProjectForm = () => {
           dueDate: format(new Date(data.dueDate), "yyyy-MM-dd"),
         };
         
-        const newProject = addProject(formattedData);
+        const newProject = await addProject(formattedData);
         
         if (newProject) {
-          console.log("Project created successfully:", newProject);
-          toast.success("Project created successfully");
-          
+          console.log("Proyecto creado exitosamente:", newProject);
+          // Toast is already shown in addProject, navigate after success
           setTimeout(() => {
             navigate("/projects");
           }, 500);
-        } else {
-          console.error("Failed to create project");
-          toast.error("Failed to create project");
         }
+        // Error toast is already shown in addProject
       }
     } catch (error) {
       console.error("Error submitting form:", error);
