@@ -64,7 +64,7 @@ const RevenueChart: React.FC<RevenueChartProps> = ({ data, isLoading = false }) 
                   border: "1px solid rgba(0, 0, 0, 0.05)",
                   boxShadow: "0 4px 12px rgba(0, 0, 0, 0.05)",
                 }}
-                formatter={(value) => [`$${value}`, undefined]}
+                formatter={(value) => [new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(Number(value)), undefined]}
               />
               <Area
                 type="monotone"
