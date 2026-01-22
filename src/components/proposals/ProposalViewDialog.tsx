@@ -88,7 +88,7 @@ const ProposalViewDialog: React.FC<ProposalViewDialogProps> = ({
 
           {/* Client Info */}
           <div className="p-4 border rounded-md bg-muted/20">
-            <h3 className="text-sm font-medium mb-2">Client Information</h3>
+            <h3 className="text-sm font-medium mb-2">Informacion Cliente</h3>
             <p>{proposal?.client_name || "No client specified"}</p>
             <p>{proposal?.clients?.email || ""}</p>
             <p>{proposal?.clients?.address || ""}</p>
