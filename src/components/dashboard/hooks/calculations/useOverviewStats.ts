@@ -27,7 +27,16 @@ export const useOverviewStats = (projects: any[], invoices: any[], proposals: an
     // Calculate real proposals data
     const newProposals = proposals?.filter(p => p.status === 'Draft').length || 0;
     const pendingApprovals = proposals?.filter(p => p.status === 'Sent').length || 0;
-
+    
+    // Calculate pending proposals (Sent status)
+    const pendingProposals = proposals?.filter(p => p.status === 'Sent').length || 0;
+    const pendingProposalsAmount = proposals?.filter(p => p.status === 'Sent')
+      .reduce((sum, p) => sum + parseFloat(p.total?.toString() || p.amount?.toString() || '0'), 0) || 0;
+    
+    // Calculate approved proposals
+    const approvedProposals = proposals?.filter(p => p.status === 'Approved').length || 0;
+    const approvedProposalsAmount = proposals?.filter(p => p.status === 'Approved')
+      .reduce((sum, p) => sum + parseFloat(p.total?.toString() || p.amount?.toString() || '0'), 0) || 0;
     // Calculate due soon projects (due within 7 days)
     const today = new Date();
     const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -48,7 +57,11 @@ export const useOverviewStats = (projects: any[], invoices: any[], proposals: an
       newProposals,
       pendingApprovals,
       dueSoonProjects,
-      revenueTrend
+      revenueTrend,
+      pendingProposals,
+      pendingProposalsAmount,
+      approvedProposals,
+      approvedProposalsAmount
     };
   }, [projects, invoices, proposals]);
 };
