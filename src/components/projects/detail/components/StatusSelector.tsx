@@ -9,6 +9,7 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
+  CommandList,
 } from "@/components/ui/command";
 import {
   Popover,
@@ -94,27 +95,29 @@ const StatusSelector: React.FC<StatusSelectorProps> = ({
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0">
         <Command>
-          <CommandInput placeholder="Search status..." />
-          <CommandEmpty>No status found.</CommandEmpty>
-          <CommandGroup>
-            {statusOptions.map((statusOption) => (
-              <CommandItem
-                key={statusOption.value}
-                value={statusOption.value}
-                onSelect={() => handleStatusChange(statusOption.value)}
-              >
-                <Check
-                  className={cn(
-                    "mr-2 h-4 w-4",
-                    status === statusOption.value ? "opacity-100" : "opacity-0"
-                  )}
-                />
-                <Badge className={getStatusColor(statusOption.value)}>
-                  {statusOption.label}
-                </Badge>
-              </CommandItem>
-            ))}
-          </CommandGroup>
+          <CommandInput placeholder="Buscar estado..." />
+          <CommandList>
+            <CommandEmpty>Estado no encontrado.</CommandEmpty>
+            <CommandGroup>
+              {statusOptions.map((statusOption) => (
+                <CommandItem
+                  key={statusOption.value}
+                  value={statusOption.value}
+                  onSelect={() => handleStatusChange(statusOption.value)}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      status === statusOption.value ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  <Badge className={getStatusColor(statusOption.value)}>
+                    {statusOption.label}
+                  </Badge>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
         </Command>
       </PopoverContent>
     </Popover>
