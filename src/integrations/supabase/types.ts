@@ -56,6 +56,7 @@ export type Database = {
           expense_date: string
           id: string
           notes: string | null
+          subcategory: string | null
           updated_at: string
           user_id: string
           vendor: string | null
@@ -68,6 +69,7 @@ export type Database = {
           expense_date?: string
           id?: string
           notes?: string | null
+          subcategory?: string | null
           updated_at?: string
           user_id: string
           vendor?: string | null
@@ -80,6 +82,7 @@ export type Database = {
           expense_date?: string
           id?: string
           notes?: string | null
+          subcategory?: string | null
           updated_at?: string
           user_id?: string
           vendor?: string | null
