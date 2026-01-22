@@ -28,7 +28,7 @@ const ExpenseBreakdownChart: React.FC<ExpenseBreakdownChartProps> = ({ data }) =
     >
       <Card className="card-shadow">
         <CardHeader>
-          <CardTitle>Expense Breakdown</CardTitle>
+          <CardTitle>Desglose gastos</CardTitle>
         </CardHeader>
         <CardContent className="h-[350px]">
           <ResponsiveContainer width="100%" height="100%">
