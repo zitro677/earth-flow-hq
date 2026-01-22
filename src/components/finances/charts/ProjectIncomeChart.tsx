@@ -27,7 +27,7 @@ const ProjectIncomeChart: React.FC<ProjectIncomeChartProps> = ({ data }) => {
     >
       <Card className="card-shadow">
         <CardHeader>
-          <CardTitle>Income by Project</CardTitle>
+          <CardTitle>Ingreso por proyecto</CardTitle>
         </CardHeader>
         <CardContent className="h-[350px]">
           <ResponsiveContainer width="100%" height="100%">
