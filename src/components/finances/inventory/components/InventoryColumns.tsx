@@ -14,14 +14,16 @@ export const inventoryColumns: ColumnDef<any>[] = [
   },
   {
     accessorKey: "unit_cost",
-    header: "Unit Cost",
+    header: "Costo Unitario",
     cell: ({ row }) => {
       const value = row.original.unit_cost;
-      // Check if value is a number before using toFixed
-      const formattedValue = typeof value === 'number' 
-        ? `$${value.toFixed(2)}` 
-        : `$${value}`;
-      return formattedValue;
+      const numValue = typeof value === 'number' ? value : parseFloat(value) || 0;
+      return new Intl.NumberFormat('es-CO', {
+        style: 'currency',
+        currency: 'COP',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).format(numValue);
     },
   },
   {

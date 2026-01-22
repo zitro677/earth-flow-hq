@@ -6,9 +6,11 @@ export const formatDate = (dateString: string | null | undefined): string => {
 
 export const formatCurrency = (amount: number | null | undefined): string => {
   if (amount === null || amount === undefined) return '$0';
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('es-CO', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'COP',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
   }).format(amount);
 };
 

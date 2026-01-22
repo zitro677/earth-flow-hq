@@ -18,9 +18,9 @@ interface TaxResultsSectionProps {
 
 export const TaxResultsSection: React.FC<TaxResultsSectionProps> = ({ taxResults }) => {
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('es-CO', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'COP',
       notation: 'compact',
       compactDisplay: 'short',
       minimumFractionDigits: 0,
