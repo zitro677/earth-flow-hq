@@ -1,79 +1,125 @@
 
-# Plan: Corregir Card "Monto Pendiente" en Propuestas
+# Plan: Corregir Vulnerabilidades de Seguridad en `user_roles`
 
-## Problema Identificado
+## Vulnerabilidades Identificadas
 
-La card "Monto Pendiente" siempre muestra **$0** porque:
+### 1. Política RLS Permite Escalación de Privilegios (CRÍTICA)
+La política `"Users can update their own role"` permite a cualquier usuario autenticado cambiar su propio rol de `user` a `admin`:
 
-| Código actual | Estados en BD |
-|---------------|---------------|
-| `status === "Pending"` | Draft, Sent, Approved, Rejected |
-
-El estado **"Pending" no existe** en la base de datos. Las propuestas "pendientes de aprobación" tienen el estado **"Sent"** (Enviada).
-
----
-
-## Lógica de Negocio
-
-Según el ciclo de vida de las propuestas:
-
-```text
-Draft (Borrador) → Sent (Enviada/Pendiente) → Approved/Rejected
-                          ↑
-                   "Pendiente de respuesta"
+```sql
+-- POLÍTICA ACTUAL (VULNERABLE)
+cmd: UPDATE
+policyname: Users can update their own role
+qual: (auth.uid() = user_id)
 ```
 
-Una propuesta en estado **"Sent"** es una propuesta **pendiente de aprobación** por parte del cliente.
+**Impacto**: Un usuario malicioso puede ejecutar:
+```javascript
+await supabase.from('user_roles').update({ role: 'admin' }).eq('user_id', myId)
+```
+
+### 2. Política INSERT Demasiado Permisiva
+```sql
+cmd: INSERT
+policyname: System can insert roles
+with_check: true  -- Permite a CUALQUIERA insertar roles
+```
+
+### 3. Verificación de Admin Solo en Cliente
+El código en `useRoleManagement.tsx` verifica `if (userRole !== 'admin')` pero esto es **solo validación del lado del cliente**, fácilmente evitable.
+
+### 4. Emails Hardcodeados para Admin
+```typescript
+if (user?.email === 'greenplanetlandscaping01@gmail.com') {
+  const adminSuccess = await ensureAdminRole(userId);
+}
+```
+Esto es una práctica de seguridad incorrecta.
 
 ---
 
-## Solución
+## Solución Propuesta
 
-### Archivo: `src/components/proposals/ProposalStats.tsx`
+### Paso 1: Actualizar Políticas RLS en Base de Datos
 
-Cambiar el filtro de `"Pending"` a `"Sent"`:
+**Migración SQL a ejecutar:**
+
+```sql
+-- 1. Eliminar política vulnerable de UPDATE
+DROP POLICY IF EXISTS "Users can update their own role" ON public.user_roles;
+
+-- 2. Eliminar política INSERT demasiado permisiva
+DROP POLICY IF EXISTS "System can insert roles" ON public.user_roles;
+
+-- 3. Crear función SECURITY DEFINER para verificar rol admin
+CREATE OR REPLACE FUNCTION public.is_admin(_user_id uuid)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.user_roles
+    WHERE user_id = _user_id
+      AND role = 'admin'
+  )
+$$;
+
+-- 4. Nueva política: Solo admins pueden actualizar roles
+CREATE POLICY "Only admins can update roles"
+ON public.user_roles
+FOR UPDATE
+TO authenticated
+USING (public.is_admin(auth.uid()));
+
+-- 5. Nueva política: Solo el trigger del sistema puede insertar
+-- (via handle_new_user trigger que ya existe)
+CREATE POLICY "System trigger can insert roles"
+ON public.user_roles
+FOR INSERT
+TO authenticated
+WITH CHECK (
+  -- Solo permite insertar el rol del propio usuario (para el trigger)
+  auth.uid() = user_id 
+  AND role = 'user'  -- Nuevos usuarios solo pueden ser 'user'
+);
+
+-- 6. Política para que admins puedan ver todos los roles
+CREATE POLICY "Admins can view all roles"
+ON public.user_roles
+FOR SELECT
+TO authenticated
+USING (
+  auth.uid() = user_id OR public.is_admin(auth.uid())
+);
+
+-- 7. Eliminar política SELECT actual y reemplazar
+DROP POLICY IF EXISTS "Users can view their own role" ON public.user_roles;
+```
+
+### Paso 2: Actualizar Código Frontend
+
+**Archivo: `src/components/auth/hooks/useRoleManagement.tsx`**
+
+Eliminar:
+- Verificaciones de email hardcodeadas (líneas 17-35)
+- Función `ensureAdminRole` (líneas 59-88) - No debe ser posible desde el cliente
+
+La función `updateUserRole` debe mantenerse pero ahora fallará correctamente si el usuario no es admin (la BD rechazará la operación).
 
 ```typescript
-// ANTES (incorrecto)
-const pendingAmount = proposals
-  .filter((proposal) => proposal.status === "Pending")
-  .reduce((sum, proposal) => sum + formatAmount(proposal.amount), 0);
+// ELIMINAR estas líneas (17-35):
+if (user?.email === 'greenplanetlandscaping01@gmail.com') {
+  // ...
+}
+if (user?.email === 'zitro677.lo87@gmail.com') {
+  // ...
+}
 
-// DESPUÉS (correcto)
-const pendingAmount = proposals
-  .filter((proposal) => proposal.status === "Sent")
-  .reduce((sum, proposal) => {
-    // Usar total si está disponible, sino amount
-    const total = proposal.total ? Number(proposal.total) : 0;
-    const amount = formatAmount(proposal.amount);
-    return sum + (total > 0 ? total : amount);
-  }, 0);
+// ELIMINAR función ensureAdminRole completa (59-88)
 ```
-
-Actualizar también el contador de propuestas pendientes:
-
-```typescript
-// ANTES
-{proposals.filter((proposal) => proposal.status === "Pending").length}
-
-// DESPUÉS  
-{proposals.filter((proposal) => proposal.status === "Sent").length}
-```
-
----
-
-## Cambio Adicional Recomendado
-
-### Archivo: `src/components/proposals/ProposalFilters.tsx`
-
-El filtro "Pendiente" usa `value="pending"` pero el estado real es "Sent". Hay que alinear la terminología:
-
-| Filtro UI | Valor interno | Estado en BD |
-|-----------|---------------|--------------|
-| Borrador | draft | Draft |
-| **Pendiente** | **sent** | **Sent** |
-| Aprobada | approved | Approved |
-| Rechazada | rejected | Rejected |
 
 ---
 
@@ -81,14 +127,30 @@ El filtro "Pendiente" usa `value="pending"` pero el estado real es "Sent". Hay q
 
 | Archivo | Cambio |
 |---------|--------|
-| `src/components/proposals/ProposalStats.tsx` | Cambiar filtro de "Pending" a "Sent" para la card Monto Pendiente |
-| `src/components/proposals/ProposalFilters.tsx` | Cambiar value "pending" a "sent" para el filtro Pendiente |
-| `src/components/proposals/ProposalsPage.tsx` | Actualizar lógica de filtrado para usar "Sent" en lugar de "Pending" |
+| **Base de datos** | Migración SQL para actualizar políticas RLS |
+| `src/components/auth/hooks/useRoleManagement.tsx` | Eliminar código hardcodeado de emails y función ensureAdminRole |
 
 ---
 
-## Resultado Esperado
+## Resultado de Seguridad
 
-1. **Card "Monto Pendiente"**: Mostrará la suma de todas las propuestas con estado "Sent" (enviadas pero sin respuesta)
-2. **Contador**: Mostrará correctamente "X propuestas pendientes" 
-3. **Filtro "Pendiente"**: Filtrará correctamente las propuestas enviadas
+| Antes | Después |
+|-------|---------|
+| Cualquier usuario puede auto-promoverse a admin | Solo admins pueden cambiar roles |
+| Emails hardcodeados en código | Roles gestionados solo via BD |
+| Validación solo en cliente | Validación en servidor (RLS) |
+| INSERT con `true` | INSERT restringido a rol 'user' |
+
+---
+
+## Configuración Inicial de Admins
+
+Para asignar el primer admin de forma segura, se debe hacer directamente en la base de datos:
+
+```sql
+UPDATE public.user_roles 
+SET role = 'admin' 
+WHERE user_id = 'uuid-del-usuario-a-promover';
+```
+
+Esto solo puede hacerse por alguien con acceso directo a la base de datos.
