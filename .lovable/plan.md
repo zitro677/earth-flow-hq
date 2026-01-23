@@ -1,90 +1,56 @@
 
-# Plan: Corregir Error de Cierre de Sesión
+# Plan: Asignar Rol de Administrador a tu Cuenta
+
+## Situación Actual
+
+Tu cuenta `zitro677.lo87@gmail.com` (ID: `967fca1b-c12d-478c-93fa-238148b364cc`) fue creada exitosamente. Sin embargo, necesitamos verificar y corregir el rol de administrador.
 
 ## Problema Identificado
 
-Cuando intentas cerrar sesión, aparece el error "Error al cerrar sesión" porque:
+El sistema tiene un trigger `handle_new_user` que debería asignar automáticamente:
+- **admin** al primer usuario registrado
+- **user** a los demás usuarios
 
-1. **La sesión ya expiró en el servidor** pero el navegador aún tiene los datos guardados
-2. Al llamar a `signOut()`, el servidor responde "Session not found" (sesión no encontrada)
-3. El código actual trata esto como un error, cuando en realidad deberías simplemente ser redirigido a la página de login
+Parece que el registro en la tabla `user_roles` no se creó correctamente o tiene un rol incorrecto.
 
 ## Solución
 
-Modificar la función `signOut` para manejar el caso de sesión expirada como un cierre de sesión exitoso, en lugar de un error.
+Ejecutaré una migración SQL para:
 
-### Cambios en `src/components/auth/hooks/useAuthState.tsx`
+1. **Verificar si existe un registro** en `user_roles` para tu usuario
+2. **Insertar o actualizar** el rol a `admin`
+3. **Verificar el registro en `profiles`** y crearlo si no existe
 
-```typescript
-const signOut = async () => {
-  try {
-    console.log("Attempting to sign out...");
-    setLoading(true);
-    
-    const { error } = await supabase.auth.signOut();
-    
-    // Si hay error pero es porque la sesión no existe,
-    // tratarlo como éxito (el usuario ya no está autenticado)
-    if (error && error.name !== 'AuthSessionMissingError') {
-      console.error("Error in supabase.auth.signOut():", error);
-      throw error;
-    }
-    
-    console.log("Sign out successful");
-    
-    // Limpiar estado local
-    setUser(null);
-    setSession(null);
-    setLoading(false);
-    
-    // Redirigir a página de login
-    window.location.href = "/auth";
-  } catch (error) {
-    console.error("Error signing out:", error);
-    
-    // Incluso si hay error, limpiar estado local y redirigir
-    setUser(null);
-    setSession(null);
-    setLoading(false);
-    window.location.href = "/auth";
-  }
-};
+### SQL a Ejecutar
+
+```sql
+-- Insertar rol de admin si no existe, o actualizar si existe
+INSERT INTO public.user_roles (user_id, role)
+VALUES ('967fca1b-c12d-478c-93fa-238148b364cc', 'admin')
+ON CONFLICT (user_id) 
+DO UPDATE SET role = 'admin', updated_at = now();
+
+-- Verificar/crear perfil si no existe
+INSERT INTO public.profiles (user_id, email, full_name)
+VALUES (
+  '967fca1b-c12d-478c-93fa-238148b364cc',
+  'zitro677.lo87@gmail.com',
+  'zitro677'
+)
+ON CONFLICT (user_id) 
+DO UPDATE SET email = 'zitro677.lo87@gmail.com', updated_at = now();
 ```
 
-### Cambios en `src/components/settings/SettingsPage.tsx`
+## Cambios en el Código
 
-Simplificar el manejo de errores ya que el signOut ahora siempre limpiará la sesión:
-
-```typescript
-const handleSignOut = async () => {
-  await signOut();
-  // No necesitamos toast aquí, el useAuthState ya maneja todo
-};
-```
-
-### Cambios en `src/components/layout/hooks/useSidebar.tsx`
-
-Igual, simplificar el handleSignOut:
-
-```typescript
-const handleSignOut = useCallback(async () => {
-  toast.loading("Cerrando sesión...");
-  await signOut();
-  // La navegación se hace en signOut con window.location.href
-}, [signOut]);
-```
-
-## Resumen de Archivos a Modificar
-
-| Archivo | Cambio |
-|---------|--------|
-| `src/components/auth/hooks/useAuthState.tsx` | Manejar `AuthSessionMissingError` como éxito y siempre limpiar estado local |
-| `src/components/settings/SettingsPage.tsx` | Simplificar `handleSignOut` |
-| `src/components/layout/hooks/useSidebar.tsx` | Simplificar `handleSignOut` |
+No se requieren cambios en el código. Solo necesitamos actualizar los datos en la base de datos.
 
 ## Resultado Esperado
 
-- ✅ Cerrar sesión funcionará incluso si la sesión ya expiró
-- ✅ No más mensajes de error "Error al cerrar sesión"
-- ✅ El usuario siempre será redirigido a la página de login
-- ✅ El estado local siempre se limpiará correctamente
+- Tu cuenta será reconocida como **administrador**
+- Tendrás acceso a la sección de **Gestión de Usuarios** en Configuración
+- Podrás cambiar roles de otros usuarios
+
+## Nota Técnica
+
+La tabla `user_roles` tiene una restricción única en `user_id`, por lo que usaremos `ON CONFLICT` para manejar ambos casos (inserción o actualización).
