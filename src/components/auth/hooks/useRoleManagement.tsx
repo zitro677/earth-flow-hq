@@ -4,36 +4,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { User } from "@supabase/supabase-js";
 
-export type UserRole = 'admin' | 'read_only' | null;
+export type UserRole = 'admin' | 'read_only' | 'user' | null;
 
 export const useRoleManagement = (user: User | null) => {
   const [userRole, setUserRole] = useState<UserRole>(null);
 
-  // Function to fetch user role - now using direct query since RLS is fixed
+  // Function to fetch user role from database
   const fetchUserRole = async (userId: string) => {
     try {
       console.log("Fetching user role for:", userId);
       
-      // For greenplanetlandscaping01@gmail.com, ensure admin role first
-      if (user?.email === 'greenplanetlandscaping01@gmail.com') {
-        console.log('Ensuring admin role for greenplanetlandscaping01@gmail.com');
-        const adminSuccess = await ensureAdminRole(userId);
-        if (adminSuccess) {
-          setUserRole('admin');
-          return;
-        }
-      }
-      
-      // For zitro677.lo87@gmail.com, also ensure admin role
-      if (user?.email === 'zitro677.lo87@gmail.com') {
-        console.log('Ensuring admin role for zitro677.lo87@gmail.com');
-        const adminSuccess = await ensureAdminRole(userId);
-        if (adminSuccess) {
-          setUserRole('admin');
-          return;
-        }
-      }
-
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')
@@ -42,7 +22,7 @@ export const useRoleManagement = (user: User | null) => {
 
       if (error) {
         console.error('Error fetching user role:', error);
-        // Set as read_only if no role found or error occurs for other users
+        // Set as read_only if no role found or error occurs
         setUserRole('read_only');
         return;
       }
@@ -55,37 +35,6 @@ export const useRoleManagement = (user: User | null) => {
       setUserRole('read_only');
     }
   };
-
-  // Function to ensure admin role for specific users
-  const ensureAdminRole = async (userId: string): Promise<boolean> => {
-    try {
-      // First, delete any existing roles for this user to avoid conflicts
-      await supabase
-        .from('user_roles')
-        .delete()
-        .eq('user_id', userId);
-
-      // Then insert the admin role
-      const { data, error } = await supabase
-        .from('user_roles')
-        .insert({ 
-          user_id: userId, 
-          role: 'admin' 
-        })
-        .select();
-
-      if (error) {
-        console.error("Error ensuring admin role:", error);
-        return false;
-      }
-
-      console.log("Admin role ensured for user:", userId);
-      return true;
-    } catch (error) {
-      console.error("Error in ensureAdminRole:", error);
-      return false;
-    }
-  };
   
   useEffect(() => {
     if (user) {
@@ -95,19 +44,19 @@ export const useRoleManagement = (user: User | null) => {
     }
   }, [user]);
 
-  // Function to update user role
+  // Function to update user role - only works if current user is admin (enforced by RLS)
   const updateUserRole = async (userId: string, role: 'admin' | 'read_only'): Promise<boolean> => {
     try {
-      // Check if the current user is an admin
+      // Client-side check for better UX (actual security is enforced by RLS)
       if (userRole !== 'admin') {
         toast.error("Only administrators can update user roles");
         return false;
       }
 
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('user_roles')
-        .upsert({ user_id: userId, role })
-        .select();
+        .update({ role })
+        .eq('user_id', userId);
 
       if (error) {
         console.error("Error updating user role:", error);
