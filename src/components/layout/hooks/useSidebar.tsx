@@ -18,16 +18,9 @@ export function useSidebar() {
   }, []);
 
   const handleSignOut = useCallback(async () => {
-    try {
-      toast.loading("Signing out...");
-      await signOut();
-      toast.success("Signed out successfully");
-      navigate("/auth");
-    } catch (error) {
-      console.error("Error signing out:", error);
-      toast.error("Failed to sign out. Please try again.");
-    }
-  }, [signOut, navigate]);
+    toast.loading("Cerrando sesión...");
+    await signOut();
+  }, [signOut]);
 
   return {
     isMobileOpen,

@@ -31,13 +31,8 @@ const SettingsPage = () => {
   const userSettings = loadUserSettings();
 
   const handleSignOut = async () => {
-    try {
-      await signOut();
-      toast.success("Has cerrado sesión exitosamente");
-    } catch (error) {
-      console.error("Error signing out:", error);
-      toast.error("Error al cerrar sesión");
-    }
+    toast.loading("Cerrando sesión...");
+    await signOut();
   };
 
   const renderSignOutButton = () => (

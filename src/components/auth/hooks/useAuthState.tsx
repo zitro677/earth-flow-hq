@@ -85,7 +85,9 @@ export const useAuthState = () => {
       setLoading(true);
       
       const { error } = await supabase.auth.signOut();
-      if (error) {
+      
+      // If error is AuthSessionMissingError, treat as success (session already expired)
+      if (error && error.name !== 'AuthSessionMissingError') {
         console.error("Error in supabase.auth.signOut():", error);
         throw error;
       }
@@ -101,9 +103,12 @@ export const useAuthState = () => {
       window.location.href = "/auth";
     } catch (error) {
       console.error("Error signing out:", error);
+      
+      // Even on error, clear local state and redirect
+      setUser(null);
+      setSession(null);
       setLoading(false);
-      toast.error("Error signing out");
-      throw error;
+      window.location.href = "/auth";
     }
   };
 
