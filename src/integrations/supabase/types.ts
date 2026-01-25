@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      agent_conversations: {
+        Row: {
+          created_at: string
+          id: string
+          messages: Json
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          messages?: Json
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          messages?: Json
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       clients: {
         Row: {
           address: string | null
@@ -437,6 +464,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      sanctions_checks: {
+        Row: {
+          checked_lists: string[]
+          created_at: string
+          details: Json | null
+          entity_document: string | null
+          entity_name: string
+          entity_type: string
+          id: string
+          result: string
+          user_id: string
+        }
+        Insert: {
+          checked_lists: string[]
+          created_at?: string
+          details?: Json | null
+          entity_document?: string | null
+          entity_name: string
+          entity_type?: string
+          id?: string
+          result: string
+          user_id: string
+        }
+        Update: {
+          checked_lists?: string[]
+          created_at?: string
+          details?: Json | null
+          entity_document?: string | null
+          entity_name?: string
+          entity_type?: string
+          id?: string
+          result?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
