@@ -4,6 +4,7 @@ import { Outlet } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
+import { AgentChatWidget } from "@/components/agent/AgentChatWidget";
 
 const Layout: React.FC = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 768);
@@ -42,6 +43,7 @@ const Layout: React.FC = () => {
           </AnimatePresence>
         </main>
       </div>
+      <AgentChatWidget />
     </div>
   );
 };
