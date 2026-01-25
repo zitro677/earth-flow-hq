@@ -1,56 +1,76 @@
 
-# Plan: Asignar Rol de Administrador a tu Cuenta
+# Plan: Solución Definitiva para Error 403 en Google OAuth
 
-## Situación Actual
+## Diagnóstico Confirmado
 
-Tu cuenta `zitro677.lo87@gmail.com` (ID: `967fca1b-c12d-478c-93fa-238148b364cc`) fue creada exitosamente. Sin embargo, necesitamos verificar y corregir el rol de administrador.
+El error 403 que ves **no proviene del código** de tu aplicación. La implementación en `useLoginForm.tsx` y `LoginPage.tsx` es correcta. El problema está en la configuración del proveedor Google OAuth en el backend de Lovable Cloud.
 
-## Problema Identificado
+## Causa Raíz
 
-El sistema tiene un trigger `handle_new_user` que debería asignar automáticamente:
-- **admin** al primer usuario registrado
-- **user** a los demás usuarios
+Cuando usas credenciales gestionadas por Lovable Cloud, la configuración de Google OAuth debe estar habilitada en el dashboard de Lovable Cloud. El flujo OAuth falla en Google antes de regresar a tu app porque:
 
-Parece que el registro en la tabla `user_roles` no se creó correctamente o tiene un rol incorrecto.
+1. **Google Auth no está habilitado** en Lovable Cloud Auth Settings, o
+2. **El dominio de preview no está autorizado** en la configuración interna
 
-## Solución
+## Solución en 3 Pasos
 
-Ejecutaré una migración SQL para:
+### Paso 1: Verificar que Google Auth esté habilitado en Lovable Cloud
 
-1. **Verificar si existe un registro** en `user_roles` para tu usuario
-2. **Insertar o actualizar** el rol a `admin`
-3. **Verificar el registro en `profiles`** y crearlo si no existe
+1. Abre el dashboard de Lovable Cloud haciendo clic en el botón "View Backend" que aparecerá después de aprobar este plan
+2. Navega a **Users → Auth Settings → Sign In Methods**
+3. Busca **Google** en la lista de proveedores
+4. Asegúrate de que esté **habilitado** (toggle ON)
+5. Si está deshabilitado, actívalo y guarda los cambios
 
-### SQL a Ejecutar
+### Paso 2: Agregar scope explícito de email (Cambio en código)
 
-```sql
--- Insertar rol de admin si no existe, o actualizar si existe
-INSERT INTO public.user_roles (user_id, role)
-VALUES ('967fca1b-c12d-478c-93fa-238148b364cc', 'admin')
-ON CONFLICT (user_id) 
-DO UPDATE SET role = 'admin', updated_at = now();
+Para evitar problemas con ciertas configuraciones de Google Suite, agregaré el scope explícito de email al llamar a `signInWithOAuth`. Este cambio es una práctica recomendada por Supabase:
 
--- Verificar/crear perfil si no existe
-INSERT INTO public.profiles (user_id, email, full_name)
-VALUES (
-  '967fca1b-c12d-478c-93fa-238148b364cc',
-  'zitro677.lo87@gmail.com',
-  'zitro677'
-)
-ON CONFLICT (user_id) 
-DO UPDATE SET email = 'zitro677.lo87@gmail.com', updated_at = now();
+```typescript
+// En useLoginForm.tsx, línea 46-55
+const { data, error } = await supabase.auth.signInWithOAuth({
+  provider: 'google',
+  options: {
+    redirectTo: currentOrigin,
+    scopes: 'email profile',  // ← AGREGAR ESTA LÍNEA
+    queryParams: {
+      access_type: 'offline',
+      prompt: 'consent',
+    },
+  }
+});
 ```
 
-## Cambios en el Código
+### Paso 3: Probar después de los cambios
 
-No se requieren cambios en el código. Solo necesitamos actualizar los datos en la base de datos.
+1. Cierra sesión si estás logueado
+2. Intenta iniciar sesión con Google nuevamente
+3. Si el error persiste, el problema está en la configuración interna de Lovable Cloud y deberás contactar soporte
+
+## Archivos a Modificar
+
+| Archivo | Cambio |
+|---------|--------|
+| `src/components/auth/hooks/useLoginForm.tsx` | Agregar `scopes: 'email profile'` en las opciones de OAuth |
 
 ## Resultado Esperado
 
-- Tu cuenta será reconocida como **administrador**
-- Tendrás acceso a la sección de **Gestión de Usuarios** en Configuración
-- Podrás cambiar roles de otros usuarios
+- El flujo de Google OAuth funcionará correctamente en Preview
+- Los usuarios podrán iniciar sesión con su cuenta de Google
+- Se solicitarán explícitamente los permisos de email y perfil
+
+## Alternativa si persiste el problema
+
+Si después de estos pasos el error 403 continúa, significa que hay un problema con las credenciales gestionadas de Lovable Cloud. En ese caso, las opciones son:
+
+1. **Contactar soporte de Lovable** para verificar la configuración interna
+2. **Usar credenciales propias de Google Cloud Console** (configurar manualmente Client ID y Secret)
 
 ## Nota Técnica
 
-La tabla `user_roles` tiene una restricción única en `user_id`, por lo que usaremos `ON CONFLICT` para manejar ambos casos (inserción o actualización).
+El error 403 "You do not have access to this page" de Google típicamente indica:
+- La aplicación OAuth está en modo "Testing" y tu email no está en la lista de Test Users
+- El Client ID no tiene el origen/redirect URI autorizado
+- El proveedor OAuth está deshabilitado en el backend
+
+Con las credenciales gestionadas de Lovable Cloud, estos aspectos deberían estar configurados automáticamente, pero es necesario que Google Auth esté habilitado en el dashboard.
