@@ -1,148 +1,403 @@
 
-Objetivo: que el inicio de sesión con Google funcione de forma consistente en **Preview** (incluyendo cuando pruebas dentro del editor) usando **tus propias credenciales de Google**, y dejarlo estable también para Producción.
+# Plan: Agente Contable IA con Voz para AutoSeguro DJ
 
-Contexto (lo que sabemos):
-- El 403 ocurre **solo en Preview**.
-- Con credenciales “gestionadas” no se puede corregir la lista interna de dominios permitidos, así que la vía “definitiva” es **usar tus credenciales** + ajustar el flujo para que funcione aunque el Preview esté embebido.
-- Ya añadimos `scopes: 'email profile'`, eso está bien y lo mantenemos.
+## Resumen Ejecutivo
 
--------------------------------------------------------------------------------
+Vamos a agregar un **Agente Contable Conversacional con Voz** que:
+- Asesora sobre normativa tributaria colombiana (DIAN, beneficios fiscales)
+- Consulta listas restrictivas (OFAC/Clinton, ONU, UE) para compliance
+- Accede a los datos de tu CRM en Supabase
+- Se integra con Aliaddo para sincronización contable
+- Usa ElevenLabs para interacción por voz
 
-1) Paso a paso: crear credenciales OAuth en Google (Console)
+---
 
-A. Crear/seleccionar proyecto
-1. Entra a Google Cloud Console.
-2. Selecciona un proyecto existente o crea uno nuevo (recomendado: uno dedicado para tu app).
+## Arquitectura Propuesta
 
-B. Configurar la pantalla de consentimiento (OAuth consent screen)
-1. Ve a “APIs & Services” → “OAuth consent screen”.
-2. Tipo de usuario:
-   - Elige “External” (para cuentas Gmail normales).
-3. Completa lo mínimo:
-   - App name (nombre visible)
-   - User support email
-   - Developer contact email
-4. Scopes:
-   - Asegura los básicos: `openid`, `email`, `profile`
-   - No agregues scopes “sensibles/restringidos” si no los necesitas.
-5. Test users (muy importante si está en modo Testing):
-   - Agrega tu email: `zitro677.lo87@gmail.com`
-6. Guarda.
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│                    TU CRM ACTUAL (Frontend)                      │
+│   React + Tailwind + Supabase Client                            │
+│   ┌──────────────────────────────────────────────────────────┐  │
+│   │  NUEVO: Componente AgentChat                             │  │
+│   │  - Widget flotante en esquina inferior derecha           │  │
+│   │  - Chat de texto + botón de voz                          │  │
+│   │  - Historial de conversaciones                           │  │
+│   └──────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│               EDGE FUNCTIONS (Backend Seguro)                    │
+├─────────────────────────────────────────────────────────────────┤
+│  ┌────────────────────┐  ┌────────────────────────────────────┐ │
+│  │ agent-chat         │  │ agent-voice                        │ │
+│  │ (Orquestador)      │  │ (ElevenLabs TTS/STT)               │ │
+│  └─────────┬──────────┘  └────────────────────────────────────┘ │
+│            │                                                     │
+│  ┌─────────▼──────────────────────────────────────────────────┐ │
+│  │               HERRAMIENTAS DEL AGENTE                      │ │
+│  ├────────────────────────────────────────────────────────────┤ │
+│  │ 1. query_database     → Consulta Supabase (finanzas,       │ │
+│  │                         clientes, facturas, proyectos)     │ │
+│  │                                                            │ │
+│  │ 2. check_sanctions    → Consulta listas OFAC/Clinton       │ │
+│  │                         vía API (OFAC-API.com o TusDatos)  │ │
+│  │                                                            │ │
+│  │ 3. tax_advisor        → Analiza datos + normativa DIAN     │ │
+│  │                         (beneficios, deducciones, plazos)  │ │
+│  │                                                            │ │
+│  │ 4. sync_aliaddo       → Exporta/importa datos con Aliaddo  │ │
+│  │                         (CSV/API REST si disponible)       │ │
+│  └────────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                     SERVICIOS EXTERNOS                           │
+├─────────────────────────────────────────────────────────────────┤
+│  ┌───────────────┐  ┌───────────────┐  ┌─────────────────────┐  │
+│  │ Lovable AI    │  │ ElevenLabs    │  │ OFAC-API.com        │  │
+│  │ (LLM gratuito)│  │ (Voz)         │  │ (Listas Clinton)    │  │
+│  └───────────────┘  └───────────────┘  └─────────────────────┘  │
+│                                                                  │
+│  ┌───────────────┐  ┌───────────────────────────────────────┐   │
+│  │ Aliaddo       │  │ Tu Base de Datos Supabase             │   │
+│  │ (API/CSV)     │  │ (clientes, facturas, gastos, etc)     │   │
+│  └───────────────┘  └───────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────┘
+```
 
-Notas:
-- Si dejas la app en “Testing”, solo los “Test users” podrán entrar.
-- Si quieres que cualquiera entre, tendrás que “Publish” la app (y cumplir requisitos de Google).
+---
 
-C. Crear el OAuth Client ID (Web application)
-1. Ve a “APIs & Services” → “Credentials”.
-2. “Create credentials” → “OAuth client ID”.
-3. Application type: “Web application”.
+## Fases de Implementación
 
-D. Authorized JavaScript origins (añade estos 3)
-Añade exactamente estos orígenes (sin paths):
-- Preview (público): `https://id-preview--d93b01bb-1e54-40e6-9569-44d4509b1500.lovable.app`
-- Preview dentro del editor: `https://d93b01bb-1e54-40e6-9569-44d4509b1500.lovableproject.com`
-- Producción: `https://earth-flow-hq.lovable.app`
+### FASE 1: Agente Base con Chat de Texto (Semana 1)
 
-E. Authorized redirect URIs (NO lo inventes: cópialo del backend)
-Aquí es donde más se equivoca la gente:
-- El “redirect URI” correcto es el que usa el **backend de autenticación**, no “/auth/callback” en tu frontend.
-- Para obtenerlo:
-  1) Abre tu Backend (Lovable Cloud) y entra a la configuración de Google (paso 2 de este plan).
-  2) Copia el campo que normalmente aparece como “Redirect URL / Callback URL”.
-  3) Pégalo en “Authorized redirect URIs” en Google Cloud Console.
+**Objetivo**: Chat funcional con acceso a base de datos y asesoría fiscal básica
 
-F. Copia valores
-- Guarda el **Client ID** y **Client Secret** (los usarás en Lovable Cloud).
+#### 1.1 Edge Function: agent-chat
+- Usa **Lovable AI** (Gemini 3 Flash) - ya disponible sin API key
+- Sistema de "tool calling" para consultar datos
+- Prompt especializado en normativa colombiana (DIAN, NIIF)
 
-Checklist rápido de Google Console:
-- [ ] Consent screen: External
-- [ ] Test user agregado: `zitro677.lo87@gmail.com` (si está en Testing)
-- [ ] OAuth Client ID: Web application
-- [ ] 3 JavaScript origins añadidos (preview público, preview editor, producción)
-- [ ] Redirect URI copiado del backend (no del frontend)
+#### 1.2 Herramienta: query_database
+Permite al agente consultar:
+- Resumen financiero (ingresos, gastos, retenciones del período)
+- Clientes y su historial
+- Facturas pendientes/pagadas
+- Proyectos activos y su rentabilidad
 
--------------------------------------------------------------------------------
+#### 1.3 Herramienta: tax_advisor
+Knowledge base con:
+- Calendario tributario DIAN (IVA, Renta, ICA)
+- Beneficios fiscales aplicables (zonas francas, descuentos por pronto pago)
+- Tu configuración actual de retenciones (ya la tienes implementada)
+- Cálculo automático de deducciones optimizadas
 
-2) Paso a paso: pegar Client ID/Secret en Lovable Cloud (Backend)
+#### 1.4 Componente Frontend: AgentChatWidget
+- Widget flotante en esquina inferior derecha
+- Diseño consistente con tu UI actual
+- Historial de conversaciones persistente en Supabase
 
-Cómo abrir el backend:
-- Desktop: en la barra superior del editor, abre la vista “Cloud/Backend” (a veces está fijada; si no, está en “More”).
-- Móvil: entra en modo Preview, toca el botón “…” y busca la opción para abrir “Cloud/Backend”.
+**Archivos a crear**:
+| Archivo | Descripción |
+|---------|-------------|
+| `supabase/functions/agent-chat/index.ts` | Orquestador principal del agente |
+| `src/components/agent/AgentChatWidget.tsx` | Widget flotante de chat |
+| `src/components/agent/hooks/useAgentChat.ts` | Hook para streaming de respuestas |
+| `src/components/agent/AgentMessage.tsx` | Componente de mensaje |
 
-Luego:
-1. Ve a: Users → Auth Settings → Sign In Methods.
-2. En “Google”:
-   - Activa el toggle “ON”.
-   - Selecciona “Use custom credentials” (o similar, según aparezca).
-   - Pega:
-     - Client ID
-     - Client Secret
-   - Guarda.
+---
 
-3. En esa misma pantalla, localiza el “Redirect URL / Callback URL” que el backend muestra.
-   - Copia ese valor y úsalo en Google Console (paso 1.E).
+### FASE 2: Consulta de Listas Restrictivas (Semana 2)
 
-Checklist backend:
-- [ ] Google ON
-- [ ] Client ID y Secret pegados
-- [ ] Guardado aplicado
-- [ ] Redirect URL copiado para Google Console
+**Objetivo**: Verificar clientes/proveedores en listas OFAC, ONU, UE
 
--------------------------------------------------------------------------------
+#### 2.1 Herramienta: check_sanctions
+Opciones de API:
+- **OFAC-API.com**: $0.01 por consulta, cobertura global
+- **TusDatos.co**: Servicio colombiano, incluye bases locales (Procuraduría, Contraloría)
 
-3) Arreglo definitivo para Preview: evitar problemas por iframe (cambio de código)
+#### 2.2 Flujo de verificación
+```text
+Usuario pregunta: "¿El cliente Juan Pérez está en listas restrictivas?"
+         │
+         ▼
+┌─────────────────────────────────────────┐
+│ Agente extrae: nombre, documento (si hay)│
+└─────────────────────────────────────────┘
+         │
+         ▼
+┌─────────────────────────────────────────┐
+│ Consulta API de sanciones               │
+│ - OFAC SDN List                         │
+│ - Lista ONU de sanciones                │
+│ - Lista UE consolidada                  │
+│ - Procuraduría Colombia (opcional)      │
+└─────────────────────────────────────────┘
+         │
+         ▼
+┌─────────────────────────────────────────┐
+│ Respuesta con:                          │
+│ - Estado: ✅ Limpio / ⚠️ Coincidencia   │
+│ - Detalles de la coincidencia (si hay)  │
+│ - Recomendación de acción               │
+│ - Fuente verificable (link)             │
+└─────────────────────────────────────────┘
+```
 
-Problema frecuente: el Preview dentro del editor corre embebido; algunos flujos OAuth se comportan mal ahí.
+#### 2.3 Tabla de auditoría
+Nueva tabla `sanctions_checks` para mantener historial de verificaciones (cumplimiento SARLAFT)
 
-Solución robusta:
-- Detectar si la app está corriendo dentro de un iframe.
-- Si está en iframe:
-  - Pedir al SDK la URL de OAuth sin redirigir automáticamente (`skipBrowserRedirect: true`)
-  - Abrir esa URL en una pestaña nueva (`window.open(...)`)
+---
 
-Cambios propuestos (archivo existente):
-- `src/components/auth/hooks/useLoginForm.tsx`
-  - Mantener `scopes: 'email profile'`
-  - Agregar:
-    - `skipBrowserRedirect: true` cuando esté en iframe
-    - `window.open(data.url, '_blank', 'noopener,noreferrer')` si hay `data.url`
+### FASE 3: Integración con Voz - ElevenLabs (Semana 3)
 
-Comportamiento esperado:
-- Desde el Preview embebido, al tocar “Login con Google”, se abre una pestaña nueva para completar el login.
-- Al volver, quedas autenticado y el Preview ya no falla con 403.
+**Objetivo**: Interacción conversacional por voz
 
--------------------------------------------------------------------------------
+#### 3.1 Edge Function: agent-voice
+- **Text-to-Speech (TTS)**: El agente responde con voz
+- **Speech-to-Text (STT)**: El usuario puede hablar
+- Modelo: `eleven_multilingual_v2` (soporta español)
 
-4) Pruebas (paso a paso) para confirmar que quedó bien
+#### 3.2 Flujo de voz
+```text
+┌─────────────────────────────────────────┐
+│ Usuario presiona botón 🎤               │
+└─────────────────────────────────────────┘
+         │
+         ▼
+┌─────────────────────────────────────────┐
+│ Captura audio del micrófono             │
+│ (Web Audio API)                         │
+└─────────────────────────────────────────┘
+         │
+         ▼
+┌─────────────────────────────────────────┐
+│ Edge Function: agent-voice              │
+│ 1. Transcribe audio (ElevenLabs STT)    │
+│ 2. Procesa con Lovable AI               │
+│ 3. Genera respuesta de voz (TTS)        │
+└─────────────────────────────────────────┘
+         │
+         ▼
+┌─────────────────────────────────────────┐
+│ Reproduce audio de respuesta            │
+│ + Muestra texto en el chat              │
+└─────────────────────────────────────────┘
+```
 
-1. En Google Console:
-   - Verifica que el “OAuth Client” sea el que pegaste en Lovable Cloud.
-2. En tu navegador:
-   - Abre una ventana incógnito.
-3. Prueba en este orden:
-   A) Preview público (en pestaña normal):
-      - `https://id-preview--d93b01bb-1e54-40e6-9569-44d4509b1500.lovable.app/auth`
-   B) Preview dentro del editor:
-      - botón Google → debe abrir pestaña nueva (tras el cambio de código)
-   C) Producción:
-      - `https://earth-flow-hq.lovable.app/auth`
+#### 3.3 Componente: VoiceButton
+- Botón de micrófono en el widget
+- Indicador visual de grabación
+- Reproducción automática de respuestas
 
-Si aún aparece 403:
-- Captura el texto exacto de la pantalla 403 (una frase completa) y la URL del navegador en esa pantalla.
-- Con eso se determina si es “access_denied”, “app blocked”, “origin mismatch”, “redirect mismatch” u otra política de Google.
+**Archivos a crear**:
+| Archivo | Descripción |
+|---------|-------------|
+| `supabase/functions/agent-voice/index.ts` | TTS y STT con ElevenLabs |
+| `src/components/agent/VoiceButton.tsx` | Botón de grabación |
+| `src/components/agent/hooks/useVoiceRecording.ts` | Hook de captura de audio |
 
--------------------------------------------------------------------------------
+---
 
-5) Entregables (lo que haré cuando pases a modo implementación)
-- Implementar el manejo “iframe-safe” en `useLoginForm.tsx` usando `skipBrowserRedirect`.
-- Mantener `scopes: 'email profile'`.
-- (Opcional) Mostrar un mensaje/toast tipo: “Abrimos una pestaña nueva para continuar con Google”.
+### FASE 4: Integración con Aliaddo (Semana 4)
 
-Riesgos/consideraciones
-- Si tu consentimiento está en “Testing” y no agregas tu email como Test user, seguirá fallando.
-- Si el Redirect URI no se copia del backend exactamente, seguirá fallando.
-- El Preview del editor usa un dominio distinto al Preview público; por eso hay que autorizar ambos orígenes.
+**Objetivo**: Sincronización bidireccional con software contable
 
-Criterio de éxito
-- Login con Google funciona en Preview (público y dentro del editor) y en Producción, sin 403.
+#### 4.1 Análisis de Aliaddo
+Según la documentación, Aliaddo ofrece:
+- **API REST** para facturación electrónica
+- **Archivos planos (CSV)** para importación masiva
+- Cumplimiento DIAN integrado
+
+#### 4.2 Estrategia de integración
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│                    SINCRONIZACIÓN                                │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│   TU CRM (Supabase)              ALIADDO                        │
+│   ┌──────────────┐               ┌──────────────┐               │
+│   │ Facturas     │ ──────────────▶ │ FE DIAN     │               │
+│   │ Clientes     │ ──────────────▶ │ Terceros    │               │
+│   │ Gastos       │ ──────────────▶ │ Documentos  │               │
+│   └──────────────┘               └──────────────┘               │
+│          ▲                              │                        │
+│          │                              ▼                        │
+│   ┌──────────────┐               ┌──────────────┐               │
+│   │ Reportes     │ ◀────────────── │ Contabilidad│               │
+│   │ Saldos       │ ◀────────────── │ Balance     │               │
+│   └──────────────┘               └──────────────┘               │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+#### 4.3 Implementación
+- **Exportación**: Genera CSV/JSON compatible con Aliaddo desde tus datos
+- **Importación**: Lee reportes de Aliaddo para mostrar en tu dashboard
+- **Opcional**: Integración directa vía API REST si Aliaddo lo soporta en tu plan
+
+**Archivos a crear**:
+| Archivo | Descripción |
+|---------|-------------|
+| `supabase/functions/aliaddo-sync/index.ts` | Sincronización con Aliaddo |
+| `src/components/settings/AliadoIntegration.tsx` | Configuración en Settings |
+
+---
+
+## Tabla de Base de Datos Nueva
+
+```sql
+-- Historial de conversaciones del agente
+CREATE TABLE agent_conversations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  messages JSONB NOT NULL DEFAULT '[]',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Verificaciones de listas restrictivas (auditoría SARLAFT)
+CREATE TABLE sanctions_checks (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  entity_name TEXT NOT NULL,
+  entity_document TEXT,
+  entity_type TEXT NOT NULL DEFAULT 'person', -- 'person' o 'company'
+  result TEXT NOT NULL, -- 'clean', 'match', 'possible_match'
+  details JSONB,
+  checked_lists TEXT[] NOT NULL, -- ['OFAC', 'UN', 'EU', etc]
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- RLS para ambas tablas
+ALTER TABLE agent_conversations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE sanctions_checks ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can manage their own conversations"
+  ON agent_conversations FOR ALL USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can view their own sanctions checks"
+  ON sanctions_checks FOR ALL USING (auth.uid() = user_id);
+```
+
+---
+
+## Secrets/API Keys Necesarios
+
+| Secret | Servicio | Costo Estimado | Obligatorio |
+|--------|----------|----------------|-------------|
+| `LOVABLE_API_KEY` | Lovable AI | Ya incluido | ✅ Ya configurado |
+| `ELEVENLABS_API_KEY` | ElevenLabs | ~$5-22/mes | ✅ Para voz |
+| `OFAC_API_KEY` | OFAC-API.com | ~$0.01/consulta | ⚠️ Para listas restrictivas |
+| `ALIADDO_API_KEY` | Aliaddo | Según tu plan | ⚠️ Para sincronización |
+
+---
+
+## Prompt del Agente (Sistema)
+
+```text
+Eres el Asistente Contable de AutoSeguro DJ, una empresa colombiana de blindaje 
+de vehículos que también ofrece servicios de compra-venta de autos, trámites, 
+seguros y detailing.
+
+TU ROL:
+- Asesorar sobre normativa tributaria colombiana (DIAN, NIIF para Pymes)
+- Calcular retenciones según el Régimen Común (Rete-Fuente, Rete-IVA, ICA Bogotá 0.5%)
+- Identificar beneficios fiscales aplicables
+- Verificar clientes/proveedores en listas restrictivas (OFAC, ONU, UE)
+- Responder consultas sobre los datos financieros de la empresa
+
+CONFIGURACIÓN FISCAL ACTUAL:
+- Régimen: Común
+- Municipio: Bogotá
+- IVA: 19%
+- ICA: 0.5%
+- Rete-IVA: 50% del IVA
+
+HERRAMIENTAS DISPONIBLES:
+1. query_database: Consulta datos de clientes, facturas, proyectos, gastos
+2. check_sanctions: Verifica personas/empresas en listas restrictivas
+3. calculate_taxes: Calcula retenciones e impuestos
+
+ESTILO DE COMUNICACIÓN:
+- Profesional pero cercano
+- Respuestas claras y concisas
+- Siempre cita la fuente normativa cuando sea relevante
+- Si hay riesgo de compliance, advierte inmediatamente
+```
+
+---
+
+## Ejemplo de Interacción
+
+```text
+👤 Usuario: "¿Cuánto IVA descontable tengo acumulado este año?"
+
+🤖 Agente: [Ejecuta query_database]
+   Consultando gastos del período enero-diciembre 2025...
+
+   📊 Resumen de IVA Descontable:
+   
+   Total Valor Bruto Gastos: $45,230,000 COP
+   IVA Pagado: $8,593,700 COP
+   Rete-IVA Practicado: $4,296,850 COP
+   
+   ✅ IVA Descontable Neto: $4,296,850 COP
+   
+   💡 Recomendación: Este valor lo puedes descontar en tu próxima 
+   declaración de IVA. Recuerda que el vencimiento para el bimestre 
+   actual es el 15 del mes siguiente.
+
+👤 Usuario: "Quiero verificar al proveedor Carlos Mendoza"
+
+🤖 Agente: [Ejecuta check_sanctions con nombre "Carlos Mendoza"]
+   
+   🔍 Verificación de Listas Restrictivas
+   
+   Nombre: Carlos Mendoza
+   Listas consultadas: OFAC SDN, ONU, UE, Procuraduría Colombia
+   
+   ✅ Resultado: SIN COINCIDENCIAS
+   
+   Este proveedor no aparece en las listas de sanciones consultadas.
+   Fecha de verificación: 25/01/2026
+   
+   📝 Se ha guardado un registro de esta verificación para cumplimiento SARLAFT.
+```
+
+---
+
+## Consideraciones Técnicas
+
+### Seguridad
+- El agente **solo puede leer** datos del usuario autenticado (RLS)
+- Las consultas a APIs externas se hacen desde Edge Functions (secrets seguros)
+- Historial de conversaciones encriptado en tránsito y reposo
+
+### Rendimiento
+- Streaming de respuestas para mejor UX
+- Cache de consultas frecuentes (resumen financiero)
+- Audio comprimido para respuestas de voz
+
+### Costos Estimados Mensuales
+| Servicio | Uso Estimado | Costo |
+|----------|--------------|-------|
+| Lovable AI | ~500 consultas | Incluido en plan |
+| ElevenLabs | ~100 minutos audio | ~$5-11 |
+| OFAC-API | ~50 verificaciones | ~$0.50 |
+| **Total** | | **~$6-12/mes** |
+
+---
+
+## Próximos Pasos
+
+1. **Confirma** si quieres proceder con la Fase 1 (chat de texto)
+2. **Conecta ElevenLabs** usando el conector disponible (lo haré automáticamente)
+3. **Decide** qué servicio de listas restrictivas prefieres:
+   - OFAC-API.com (internacional, más completo)
+   - TusDatos.co (colombiano, incluye bases locales)
+
+¿Apruebas este plan para comenzar con la implementación?
