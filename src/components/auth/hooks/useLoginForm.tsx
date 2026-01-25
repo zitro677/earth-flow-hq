@@ -31,6 +31,9 @@ export const useLoginForm = () => {
     checkUserCount();
   }, []);
 
+  // Detect if running inside an iframe (editor preview)
+  const isInsideIframe = window.self !== window.top;
+
   // Handle Google login
   const handleGoogleLogin = async () => {
     try {
@@ -38,6 +41,7 @@ export const useLoginForm = () => {
       setErrorMessage(null);
       
       console.log("Starting Google login...");
+      console.log("Is inside iframe:", isInsideIframe);
       
       // Get the current origin for the redirect
       const currentOrigin = window.location.origin;
@@ -48,6 +52,7 @@ export const useLoginForm = () => {
         options: {
           redirectTo: currentOrigin,
           scopes: 'email profile',
+          skipBrowserRedirect: isInsideIframe, // Skip auto-redirect when in iframe
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -60,10 +65,17 @@ export const useLoginForm = () => {
         throw error;
       }
       
-      console.log("Google OAuth initiated successfully");
+      // If in iframe, open OAuth URL in new tab
+      if (isInsideIframe && data?.url) {
+        console.log("Opening Google OAuth in new tab (iframe detected)");
+        toast.info("Abriendo pestaña nueva para continuar con Google...");
+        window.open(data.url, '_blank', 'noopener,noreferrer');
+        setIsLoading(false);
+        return;
+      }
       
-      // The redirect will happen automatically
-      // Don't set loading to false here as the page will redirect
+      console.log("Google OAuth initiated successfully");
+      // The redirect will happen automatically when not in iframe
     } catch (error: any) {
       console.error("Google login error:", error);
       setErrorMessage(error.message || "Failed to login with Google");
