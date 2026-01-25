@@ -47,6 +47,7 @@ export const useLoginForm = () => {
         provider: 'google',
         options: {
           redirectTo: currentOrigin,
+          scopes: 'email profile',
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
