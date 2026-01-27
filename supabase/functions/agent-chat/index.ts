@@ -41,8 +41,15 @@ CALENDARIO TRIBUTARIO (principales):
 - Renta: Anual (abril-mayo según NIT)
 
 HERRAMIENTAS DISPONIBLES:
-Cuando necesites información de la base de datos, responderé con los datos más recientes.
+Cuando necesites información de la base de datos, usa las herramientas disponibles.
 Puedo consultar: clientes, facturas, proyectos, gastos/expenses e inventario.
+
+IMPORTANTE SOBRE RESPUESTAS:
+- Cuando recibas datos de las herramientas, interprétalos y responde en lenguaje natural
+- NO muestres JSON crudo al usuario
+- Presenta la información de forma clara, amigable y resumida
+- Usa formato de texto con emojis para hacer la información más legible
+- Formatea los montos en pesos colombianos (COP) con separadores de miles
 
 ESTILO DE COMUNICACIÓN:
 - Profesional pero cercano
@@ -127,6 +134,8 @@ interface InvoiceData {
   amount?: number;
   status?: string;
   issue_date?: string;
+  due_date?: string;
+  invoice_number?: string;
   clients?: { name: string };
 }
 
@@ -148,6 +157,20 @@ interface ClientData {
   name: string;
   email?: string;
   phone?: string;
+}
+
+interface ToolCall {
+  id: string;
+  function: {
+    name: string;
+    arguments: string;
+  };
+}
+
+interface ToolResult {
+  tool_call_id: string;
+  role: "tool";
+  content: string;
 }
 
 // Ejecutar herramienta de consulta a base de datos
@@ -177,7 +200,6 @@ async function executeQueryDatabase(
         .from("invoices")
         .select("*")
         .eq("user_id", userId)
-        .eq("status", "paid")
         .gte("issue_date", dateFrom)
         .lte("issue_date", dateTo);
 
@@ -188,18 +210,21 @@ async function executeQueryDatabase(
       const expenses = (expensesRaw || []) as ExpenseData[];
       const invoices = (invoicesRaw || []) as InvoiceData[];
 
+      // Case-insensitive status comparison
+      const paidInvoices = invoices.filter(i => i.status?.toLowerCase() === "paid");
+
       const totalExpenses = expenses.reduce((sum, e) => sum + Number(e.valor_bruto || e.amount || 0), 0);
       const totalIVA = expenses.reduce((sum, e) => sum + Number(e.iva || 0), 0);
       const totalReteFuente = expenses.reduce((sum, e) => sum + Number(e.rete_fuente || 0), 0);
       const totalReteIVA = expenses.reduce((sum, e) => sum + Number(e.rete_iva || 0), 0);
       const totalReteICA = expenses.reduce((sum, e) => sum + Number(e.rete_ica || 0), 0);
-      const totalIncome = invoices.reduce((sum, i) => sum + Number(i.amount || 0), 0);
+      const totalIncome = paidInvoices.reduce((sum, i) => sum + Number(i.amount || 0), 0);
 
       return {
         periodo: `${dateFrom} a ${dateTo}`,
         ingresos: {
           total: totalIncome,
-          cantidad_facturas: invoices.length
+          cantidad_facturas: paidInvoices.length
         },
         gastos: {
           valor_bruto_total: totalExpenses,
@@ -239,23 +264,35 @@ async function executeQueryDatabase(
         .gte("issue_date", dateFrom)
         .lte("issue_date", dateTo);
 
-      if (filters?.status) query = query.eq("status", filters.status);
+      // Case-insensitive status filter
+      if (filters?.status) {
+        // We need to get all and filter in memory for case-insensitive comparison
+      }
       if (filters?.client_id) query = query.eq("client_id", filters.client_id);
 
-      const { data: invoicesRaw, error } = await query.order("issue_date", { ascending: false }).limit(30);
+      const { data: invoicesRaw, error } = await query.order("issue_date", { ascending: false }).limit(50);
 
       if (error) return { error: "Error consultando facturas" };
       
-      const invoices = (invoicesRaw || []) as InvoiceData[];
+      let invoices = (invoicesRaw || []) as InvoiceData[];
+      
+      // Case-insensitive status filter
+      if (filters?.status) {
+        const statusLower = filters.status.toLowerCase();
+        invoices = invoices.filter(i => i.status?.toLowerCase() === statusLower);
+      }
+
+      // Case-insensitive status counting
       const summary = {
         total: invoices.reduce((sum, i) => sum + Number(i.amount || 0), 0),
         cantidad: invoices.length,
         por_estado: {
-          paid: invoices.filter(i => i.status === "paid").length,
-          pending: invoices.filter(i => i.status === "pending").length,
-          draft: invoices.filter(i => i.status === "draft").length
+          paid: (invoicesRaw || []).filter((i: InvoiceData) => i.status?.toLowerCase() === "paid").length,
+          pending: (invoicesRaw || []).filter((i: InvoiceData) => i.status?.toLowerCase() === "pending").length,
+          draft: (invoicesRaw || []).filter((i: InvoiceData) => i.status?.toLowerCase() === "draft").length
         }
       };
+      
       return { facturas: invoices, resumen: summary };
     }
 
@@ -270,7 +307,8 @@ async function executeQueryDatabase(
       if (error) return { error: "Error consultando proyectos" };
 
       const projects = (projectsRaw || []) as ProjectData[];
-      const activeProjects = projects.filter(p => p.status === "in_progress");
+      // Case-insensitive status comparison
+      const activeProjects = projects.filter(p => p.status?.toLowerCase() === "in_progress");
       const totalBudget = activeProjects.reduce((sum, p) => sum + Number(p.budget || 0), 0);
       const totalActual = activeProjects.reduce((sum, p) => sum + Number(p.actual_cost || 0), 0);
 
@@ -425,6 +463,109 @@ function executeCalculateTaxes(
   }
 }
 
+// Ejecutar herramientas y obtener resultados
+async function executeToolCalls(
+  toolCalls: ToolCall[],
+  supabase: SupabaseClient,
+  userId: string
+): Promise<ToolResult[]> {
+  const results: ToolResult[] = [];
+
+  for (const tc of toolCalls) {
+    try {
+      const args = JSON.parse(tc.function.arguments);
+      let result;
+
+      if (tc.function.name === "query_database") {
+        result = await executeQueryDatabase(supabase, userId, args.query_type, args.filters);
+      } else if (tc.function.name === "calculate_taxes") {
+        result = executeCalculateTaxes(
+          args.base_amount,
+          args.calculation_type,
+          args.retention_concept,
+          args.is_iva_responsible
+        );
+      } else {
+        result = { error: `Herramienta desconocida: ${tc.function.name}` };
+      }
+
+      results.push({
+        tool_call_id: tc.id,
+        role: "tool",
+        content: JSON.stringify(result)
+      });
+    } catch (e) {
+      console.error("Error ejecutando herramienta:", e);
+      results.push({
+        tool_call_id: tc.id,
+        role: "tool",
+        content: JSON.stringify({ error: "Error ejecutando herramienta" })
+      });
+    }
+  }
+
+  return results;
+}
+
+// Procesar stream de la API y extraer contenido o tool calls
+async function processStream(
+  reader: ReadableStreamDefaultReader<Uint8Array>,
+  decoder: TextDecoder
+): Promise<{ content: string; toolCalls: ToolCall[] }> {
+  let content = "";
+  const toolCalls: ToolCall[] = [];
+  let currentToolCall: ToolCall | null = null;
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+
+    let newlineIndex: number;
+    while ((newlineIndex = buffer.indexOf("\n")) !== -1) {
+      let line = buffer.slice(0, newlineIndex);
+      buffer = buffer.slice(newlineIndex + 1);
+
+      if (line.endsWith("\r")) line = line.slice(0, -1);
+      if (line.startsWith(":") || line.trim() === "") continue;
+      if (!line.startsWith("data: ")) continue;
+
+      const jsonStr = line.slice(6).trim();
+      if (jsonStr === "[DONE]") break;
+
+      try {
+        const parsed = JSON.parse(jsonStr);
+        const delta = parsed.choices?.[0]?.delta;
+
+        if (delta?.content) {
+          content += delta.content;
+        }
+
+        // Manejar tool calls
+        if (delta?.tool_calls) {
+          for (const tc of delta.tool_calls) {
+            if (tc.index !== undefined) {
+              if (tc.id) {
+                currentToolCall = { id: tc.id, function: { name: tc.function?.name || "", arguments: "" } };
+                toolCalls.push(currentToolCall);
+              }
+              if (tc.function?.arguments && currentToolCall) {
+                currentToolCall.function.arguments += tc.function.arguments;
+              }
+            }
+          }
+        }
+      } catch {
+        // Ignorar líneas que no son JSON válido
+      }
+    }
+  }
+
+  return { content, toolCalls };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -465,8 +606,8 @@ serve(async (req) => {
 
     const userId = userData.claims.sub as string;
 
-    // Llamar a Lovable AI con herramientas
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    // Primera llamada a Lovable AI con herramientas
+    const firstResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
@@ -484,17 +625,17 @@ serve(async (req) => {
       }),
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("AI gateway error:", response.status, errorText);
+    if (!firstResponse.ok) {
+      const errorText = await firstResponse.text();
+      console.error("AI gateway error:", firstResponse.status, errorText);
       
-      if (response.status === 429) {
+      if (firstResponse.status === 429) {
         return new Response(
           JSON.stringify({ error: "Límite de solicitudes excedido. Por favor intenta en unos minutos." }),
           { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-      if (response.status === 402) {
+      if (firstResponse.status === 402) {
         return new Response(
           JSON.stringify({ error: "Se requiere agregar créditos para continuar usando el asistente." }),
           { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -507,106 +648,105 @@ serve(async (req) => {
       );
     }
 
-    // Procesar streaming y manejar tool calls
-    const reader = response.body?.getReader();
+    // Procesar primera respuesta
+    const reader = firstResponse.body?.getReader();
+    if (!reader) {
+      return new Response(
+        JSON.stringify({ error: "No se pudo leer la respuesta" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const decoder = new TextDecoder();
-    let toolCalls: Array<{ id: string; function: { name: string; arguments: string } }> = [];
-    let currentToolCall: { id: string; function: { name: string; arguments: string } } | null = null;
+    const { content: firstContent, toolCalls } = await processStream(reader, decoder);
 
-    // Para streaming directo
-    const encoder = new TextEncoder();
-    const stream = new ReadableStream({
-      async start(controller) {
-        if (!reader) {
-          controller.close();
-          return;
-        }
+    // Si no hay tool calls, hacer streaming directo de la respuesta
+    if (toolCalls.length === 0) {
+      // Hacer una nueva llamada y retornar el stream directamente
+      const directResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-3-flash-preview",
+          messages: [
+            { role: "system", content: SYSTEM_PROMPT },
+            ...messages
+          ],
+          stream: true
+        }),
+      });
 
-        let buffer = "";
-
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          buffer += decoder.decode(value, { stream: true });
-
-          let newlineIndex: number;
-          while ((newlineIndex = buffer.indexOf("\n")) !== -1) {
-            let line = buffer.slice(0, newlineIndex);
-            buffer = buffer.slice(newlineIndex + 1);
-
-            if (line.endsWith("\r")) line = line.slice(0, -1);
-            if (line.startsWith(":") || line.trim() === "") continue;
-            if (!line.startsWith("data: ")) continue;
-
-            const jsonStr = line.slice(6).trim();
-            if (jsonStr === "[DONE]") {
-              // Si hay tool calls pendientes, ejecutarlas
-              if (toolCalls.length > 0) {
-                for (const tc of toolCalls) {
-                  try {
-                    const args = JSON.parse(tc.function.arguments);
-                    let result;
-
-                    if (tc.function.name === "query_database") {
-                      result = await executeQueryDatabase(supabase, userId, args.query_type, args.filters);
-                    } else if (tc.function.name === "calculate_taxes") {
-                      result = executeCalculateTaxes(
-                        args.base_amount,
-                        args.calculation_type,
-                        args.retention_concept,
-                        args.is_iva_responsible
-                      );
-                    }
-
-                    // Enviar resultado de herramienta como parte del stream
-                    const toolResult = `\n\n📊 **Datos obtenidos:**\n\`\`\`json\n${JSON.stringify(result, null, 2)}\n\`\`\``;
-                    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ 
-                      choices: [{ delta: { content: toolResult } }] 
-                    })}\n\n`));
-                  } catch (e) {
-                    console.error("Error ejecutando herramienta:", e);
-                  }
-                }
-              }
-              controller.enqueue(encoder.encode("data: [DONE]\n\n"));
-              controller.close();
-              return;
-            }
-
-            try {
-              const parsed = JSON.parse(jsonStr);
-              const delta = parsed.choices?.[0]?.delta;
-              
-              if (delta?.content) {
-                controller.enqueue(encoder.encode(`data: ${jsonStr}\n\n`));
-              }
-
-              // Manejar tool calls
-              if (delta?.tool_calls) {
-                for (const tc of delta.tool_calls) {
-                  if (tc.index !== undefined) {
-                    if (tc.id) {
-                      currentToolCall = { id: tc.id, function: { name: tc.function?.name || "", arguments: "" } };
-                      toolCalls.push(currentToolCall);
-                    }
-                    if (tc.function?.arguments && currentToolCall) {
-                      currentToolCall.function.arguments += tc.function.arguments;
-                    }
-                  }
-                }
-              }
-            } catch {
-              // Ignorar líneas que no son JSON válido
-            }
-          }
-        }
-
-        controller.close();
+      if (!directResponse.ok) {
+        return new Response(
+          JSON.stringify({ error: "Error del servicio de IA" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
+
+      return new Response(directResponse.body, {
+        headers: { 
+          ...corsHeaders, 
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          "Connection": "keep-alive"
+        },
+      });
+    }
+
+    // Two-Turn Tool Calling: Ejecutar herramientas y hacer segunda llamada al AI
+    console.log("Ejecutando herramientas:", toolCalls.map(tc => tc.function.name));
+    
+    const toolResults = await executeToolCalls(toolCalls, supabase, userId);
+    console.log("Resultados de herramientas obtenidos");
+
+    // Construir mensajes para la segunda llamada
+    const secondCallMessages = [
+      { role: "system", content: SYSTEM_PROMPT },
+      ...messages,
+      {
+        role: "assistant",
+        content: firstContent || null,
+        tool_calls: toolCalls.map(tc => ({
+          id: tc.id,
+          type: "function",
+          function: {
+            name: tc.function.name,
+            arguments: tc.function.arguments
+          }
+        }))
+      },
+      ...toolResults
+    ];
+
+    // Segunda llamada al AI con los resultados de las herramientas
+    const secondResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-3-flash-preview",
+        messages: secondCallMessages,
+        stream: true
+      }),
     });
 
-    return new Response(stream, {
+    if (!secondResponse.ok) {
+      const errorText = await secondResponse.text();
+      console.error("Second AI call error:", secondResponse.status, errorText);
+      
+      return new Response(
+        JSON.stringify({ error: "Error procesando la respuesta" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Retornar el stream de la segunda respuesta (respuesta natural del AI)
+    return new Response(secondResponse.body, {
       headers: { 
         ...corsHeaders, 
         "Content-Type": "text/event-stream",
