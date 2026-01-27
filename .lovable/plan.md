@@ -1,129 +1,148 @@
 
-# Plan: Corregir el Chatbot del Agente Contable
 
-## Resumen del Problema
+# Plan: Integrar ElevenLabs para Interacción por Voz
 
-El chatbot tiene dos problemas principales:
-1. **Respuestas en JSON crudo** - Muestra los datos directamente en formato técnico en lugar de texto natural para el usuario
-2. **Datos incorrectos** - El filtro de estados no funciona porque hay discrepancia entre "pending" vs "Pending"
+## Objetivo
 
-## Causa Raíz
+Agregar capacidades de voz al Asistente Contable para que:
+1. **El usuario pueda hablar** (Speech-to-Text) en lugar de escribir
+2. **El asistente responda con voz** (Text-to-Speech) de forma natural en español
 
-El flujo actual es:
+## Arquitectura de la Solución
+
 ```text
-Usuario pregunta → AI decide usar herramienta → Se ejecuta herramienta → 
-Se envía JSON crudo al usuario ❌
+┌─────────────────────────────────────────────────────────────────┐
+│                    Widget del Agente                             │
+├─────────────────────────────────────────────────────────────────┤
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐         │
+│  │ 🎤 Grabar   │───→│ STT Edge   │───→│ Texto para  │         │
+│  │   Audio     │    │ Function    │    │ el chat     │         │
+│  └─────────────┘    └─────────────┘    └──────┬──────┘         │
+│                                               │                 │
+│                                               ▼                 │
+│                                        agent-chat               │
+│                                               │                 │
+│                                               ▼                 │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐         │
+│  │ 🔊 Reproducir│◀───│ TTS Edge   │◀───│ Respuesta   │         │
+│  │   Audio     │    │ Function    │    │ del agente  │         │
+│  └─────────────┘    └─────────────┘    └─────────────┘         │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-El flujo correcto debe ser:
+## Componentes a Crear
+
+### 1. Edge Function: `agent-voice`
+
+Maneja tanto Speech-to-Text como Text-to-Speech con ElevenLabs.
+
+| Endpoint | Método | Función |
+|----------|--------|---------|
+| `/tts` | POST | Convierte texto a audio (voz del asistente) |
+| `/stt` | POST | Convierte audio a texto (entrada del usuario) |
+
+### 2. Hook: `useAgentVoice`
+
+Nuevo hook que maneja:
+- Grabación de audio del micrófono
+- Envío a la Edge Function para transcripción
+- Reproducción de respuestas de voz
+- Estados de carga y errores
+
+### 3. Actualizar Widget de Chat
+
+Agregar botones para:
+- 🎤 Grabar mensaje de voz
+- 🔊 Reproducir respuesta del asistente
+
+## Detalles Técnicos
+
+### Edge Function `agent-voice`
+
 ```text
-Usuario pregunta → AI decide usar herramienta → Se ejecuta herramienta → 
-AI recibe resultado → AI genera respuesta natural ✅
+Archivo: supabase/functions/agent-voice/index.ts
+
+Funcionalidades:
+├── POST /tts
+│   ├── Recibe: { text: string, voice_id?: string }
+│   ├── Llama: ElevenLabs TTS API
+│   └── Retorna: Audio MP3 binario
+│
+└── POST /stt
+    ├── Recibe: FormData con archivo de audio
+    ├── Llama: ElevenLabs STT API (scribe_v2)
+    └── Retorna: { text: string }
 ```
 
-## Solución Propuesta
+### Configuración de Voz
 
-### Paso 1: Modificar el Edge Function para usar "Two-Turn Tool Calling"
+| Parámetro | Valor |
+|-----------|-------|
+| Modelo TTS | `eleven_multilingual_v2` (soporta español) |
+| Voz sugerida | Roger (CwhRBWXzGAHq8TQ4Fs17) - profesional |
+| Modelo STT | `scribe_v2` (alta precisión) |
+| Idioma | Español (detección automática) |
 
-En lugar de enviar el resultado JSON directamente al usuario, debemos:
-1. Acumular los resultados de las herramientas
-2. Hacer una segunda llamada al AI con los resultados
-3. El AI genera una respuesta natural basada en los datos
+### Hook `useAgentVoice`
 
-### Paso 2: Corregir la comparación de estados (case-insensitive)
+```text
+Archivo: src/components/agent/hooks/useAgentVoice.ts
 
-Cambiar las comparaciones de status para que sean insensibles a mayúsculas/minúsculas.
+Estados:
+├── isRecording: boolean
+├── isTranscribing: boolean
+├── isSpeaking: boolean
+└── error: string | null
 
-## Cambios Técnicos
-
-### Archivo: `supabase/functions/agent-chat/index.ts`
-
-**Cambio 1: Modificar la función `executeQueryDatabase` para comparaciones case-insensitive**
-
-En el case "invoices" (líneas 234-259), cambiar:
-```typescript
-// ANTES
-por_estado: {
-  paid: invoices.filter(i => i.status === "paid").length,
-  pending: invoices.filter(i => i.status === "pending").length,
-  draft: invoices.filter(i => i.status === "draft").length
-}
-
-// DESPUÉS
-por_estado: {
-  paid: invoices.filter(i => i.status?.toLowerCase() === "paid").length,
-  pending: invoices.filter(i => i.status?.toLowerCase() === "pending").length,
-  draft: invoices.filter(i => i.status?.toLowerCase() === "draft").length
-}
+Métodos:
+├── startRecording(): Promise<void>
+├── stopRecording(): Promise<string> (retorna transcripción)
+├── speakText(text: string): Promise<void>
+└── stopSpeaking(): void
 ```
 
-**Cambio 2: Refactorizar el manejo de streaming para "Two-Turn Tool Calling"**
+### Actualización del Widget
 
-En lugar de enviar el JSON directamente (línea 563), acumular los tool calls y hacer una segunda llamada al AI:
+```text
+Archivo: src/components/agent/AgentChatWidget.tsx
 
-```typescript
-// Cuando se detecta [DONE] y hay tool calls:
-if (toolCalls.length > 0) {
-  // 1. Ejecutar todas las herramientas
-  const toolResults = [];
-  for (const tc of toolCalls) {
-    const args = JSON.parse(tc.function.arguments);
-    let result;
-    
-    if (tc.function.name === "query_database") {
-      result = await executeQueryDatabase(supabase, userId, args.query_type, args.filters);
-    } else if (tc.function.name === "calculate_taxes") {
-      result = executeCalculateTaxes(...);
-    }
-    
-    toolResults.push({
-      tool_call_id: tc.id,
-      role: "tool",
-      content: JSON.stringify(result)
-    });
-  }
-  
-  // 2. Segunda llamada al AI con los resultados
-  const secondResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${LOVABLE_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "google/gemini-3-flash-preview",
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        ...messages,
-        { role: "assistant", content: null, tool_calls: toolCalls },
-        ...toolResults
-      ],
-      stream: true
-    }),
-  });
-  
-  // 3. Reenviar el stream de la segunda respuesta
-  // (esto contendrá texto natural, no JSON)
-}
+Nuevos elementos:
+├── Botón de micrófono (junto al input)
+├── Botón de reproducir voz (en cada respuesta)
+├── Indicador visual de grabación
+└── Control de volumen (opcional)
 ```
 
-## Flujo Final Esperado
+## Flujo de Usuario
 
-Cuando el usuario pregunte "¿cuántas facturas están pendientes?":
+### Enviar mensaje por voz:
+1. Usuario presiona 🎤
+2. Aparece indicador de grabación (onda de audio)
+3. Usuario habla su consulta
+4. Al soltar, se envía a STT
+5. Texto transcrito aparece en el input
+6. Se envía automáticamente al agente
 
-1. El AI decidirá usar `query_database` con `query_type: "invoices"`
-2. La herramienta consultará la BD y encontrará 4 facturas pendientes
-3. El resultado se enviará de vuelta al AI
-4. El AI responderá: "Tienes **4 facturas pendientes** por un total de **$15,800,000 COP** 📋"
+### Escuchar respuesta:
+1. Respuesta del agente llega como texto
+2. Automáticamente (o con botón) se envía a TTS
+3. Se reproduce el audio
+4. Indicador visual de "hablando"
 
-## Archivos a Modificar
+## Archivos a Crear/Modificar
 
-| Archivo | Cambio |
+| Archivo | Acción |
 |---------|--------|
-| `supabase/functions/agent-chat/index.ts` | Implementar two-turn tool calling y corregir comparaciones case-insensitive |
+| `supabase/functions/agent-voice/index.ts` | Crear |
+| `supabase/config.toml` | Actualizar (agregar función) |
+| `src/components/agent/hooks/useAgentVoice.ts` | Crear |
+| `src/components/agent/AgentChatWidget.tsx` | Modificar |
+| `src/components/agent/VoiceIndicator.tsx` | Crear (opcional) |
 
 ## Resultado Esperado
 
-- Las respuestas serán en texto natural, amigable para el usuario
-- Los datos reflejarán correctamente el contenido de la base de datos
-- El chatbot podrá contextualizar y explicar los datos, no solo mostrarlos
+1. **Entrada por voz**: El usuario puede mantener presionado el botón del micrófono y hablar su consulta en español
+2. **Salida por voz**: Las respuestas del asistente se pueden escuchar con voz natural
+3. **Experiencia fluida**: Indicadores visuales claros durante grabación y reproducción
+4. **Fallback a texto**: Si hay error de voz, el chat de texto sigue funcionando
+
