@@ -1,83 +1,73 @@
 
-# Plan: Corregir Problemas del Asistente Contable
-
-## Problemas Identificados
-
-### 1. Boton de Microfono No Aparece
-**Causa**: El widget de chat (`AgentChatWidget.tsx`) ya tiene el boton de microfono implementado en las lineas 307-324. Sin embargo, el hook `useAgentVoice` esta siendo importado y el boton deberia aparecer. Necesito verificar si hay algun error de renderizado o si el componente se esta mostrando correctamente.
-
-Revisando el codigo, el boton de microfono **si esta implementado** en el formulario (linea 307-324). El problema podria ser:
-- Un error silencioso en el hook que causa que el componente no se renderice
-- El widget no se muestra en la pagina actual
-
-### 2. Ano Incorrecto (2024 vs 2026)
-**Causa**: En el archivo `AgentChatWidget.tsx`, linea 108, el quick action dice:
-```typescript
-{ label: "Resumen financiero", message: "Dame un resumen financiero del ano actual" }
-```
-
-El problema NO esta en la logica del backend (que usa correctamente `new Date().getFullYear()` en linea 210), sino que probablemente el AI no esta interpretando "ano actual" correctamente. La solucion es ser mas explicito en el mensaje o agregar contexto al system prompt.
-
-### 3. Respuesta Predefinida de Retenciones
-**Causa**: En linea 111 del widget, el quick action esta configurado como:
-```typescript
-{ label: "Calcular retenciones", message: "Calcula las retenciones para un servicio de $5.000.000" }
-```
-
-Este es un mensaje **estatico** que siempre envia el mismo monto ($5.000.000). El usuario espera que el sistema consulte los gastos reales de la base de datos y estime retenciones basadas en esos datos.
+## Objetivo
+Hacer que el botón de micrófono sea visible siempre dentro del widget del agente (especialmente en pantallas pequeñas), sin romper la UI en desktop.
 
 ---
 
-## Cambios Propuestos
-
-### Cambio 1: Agregar contexto de fecha al System Prompt
-Modificar el `SYSTEM_PROMPT` en `agent-chat/index.ts` para incluir la fecha actual dinamicamente:
-
-```typescript
-const SYSTEM_PROMPT = `...
-FECHA ACTUAL: ${new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' })}
-ANO FISCAL VIGENTE: ${new Date().getFullYear()}
-...`;
-```
-
-Esto asegura que el AI siempre tenga contexto del ano actual.
-
-### Cambio 2: Actualizar Quick Actions
-Modificar los quick actions en `AgentChatWidget.tsx` para ser mas utiles:
-
-| Antes | Despues |
-|-------|---------|
-| "Dame un resumen financiero del ano actual" | "Dame un resumen financiero del ano 2026" (dinamico) |
-| "Calcula las retenciones para un servicio de $5.000.000" | "Cuanto he pagado en retenciones este ano? Desglosa por tipo" |
-
-```typescript
-const currentYear = new Date().getFullYear();
-const quickActions = [
-  { label: "Resumen financiero", message: `Dame un resumen financiero completo del ano ${currentYear}` },
-  { label: "Calcular IVA", message: "Cuanto IVA descontable tengo acumulado?" },
-  { label: "Facturas pendientes", message: "Cuales son mis facturas pendientes de pago?" },
-  { label: "Retenciones pagadas", message: `Cuanto he pagado en retenciones durante ${currentYear}? Desglosa por tipo (Rete-Fuente, Rete-IVA, Rete-ICA)` },
-];
-```
-
-### Cambio 3: Verificar renderizado del boton de microfono
-El codigo del boton de microfono existe. Verificar:
-- Si el componente `AgentChatWidget` esta incluido en el layout
-- Si hay errores de importacion del hook `useAgentVoice`
+## Hallazgos (qué está pasando)
+- En el código **sí existe** el botón del micrófono dentro del formulario del chat (en `AgentChatWidget.tsx`, líneas 310–327).
+- El contenedor del widget tiene un ancho fijo `w-96` (384px) y está anclado con `right-6`.
+- En móviles comunes (360px de ancho), el widget queda **parcialmente fuera de pantalla hacia la izquierda**. En ese caso, el primer elemento del input (el botón del micrófono, que va a la izquierda) es justamente lo que puede quedar “cortado”, mientras el input y el botón de enviar (a la derecha) sí se alcanzan a ver.
+- Por eso tu percepción es “no aparece el botón”, aunque técnicamente se está renderizando.
 
 ---
 
-## Archivos a Modificar
+## Solución propuesta (UI responsive del widget)
+### A) Hacer el widget responsive (ancho y posición)
+Actualizar `AgentChatWidget.tsx` para que:
+- En pantallas pequeñas use `left-4 right-4` (inset horizontal) y ancho flexible (no fijo).
+- En pantallas medianas/grandes conserve el comportamiento actual (`right-6` y `w-96`).
 
-| Archivo | Cambio |
-|---------|--------|
-| `supabase/functions/agent-chat/index.ts` | Agregar fecha actual al SYSTEM_PROMPT |
-| `src/components/agent/AgentChatWidget.tsx` | Actualizar quick actions con ano dinamico y mensaje de retenciones mejorado |
+Implementación esperada (a alto nivel):
+- Importar `useIsMobile` desde `src/hooks/use-mobile.tsx`
+- Calcular `const isMobile = useIsMobile()`
+- Cambiar el `className` del contenedor principal (`motion.div`) para que sea condicional
+
+Ejemplo de clases objetivo:
+- Mobile:
+  - `fixed bottom-4 left-4 right-4 w-auto max-w-none`
+- Desktop:
+  - `fixed bottom-6 right-6 w-96`
+
+También ajustar, si hace falta, para evitar que el contenido interno colapse:
+- Al `Input` darle `min-w-0` (o asegurar que el contenedor del input no provoque overflow raro).
+- Mantener `z-50` para que no quede detrás del sidebar.
+
+### B) Asegurar que el botón se vea incluso si el navegador no soporta grabación
+En algunos dispositivos (sobre todo ciertos Safari/iOS antiguos), `MediaRecorder` puede no existir. Eso NO debería ocultar el botón; pero para una UX clara:
+- Calcular `supportsVoice`:
+  - `navigator.mediaDevices?.getUserMedia` existe
+  - `window.MediaRecorder` existe
+- Si no soporta, mostrar el botón igualmente pero deshabilitado y con tooltip tipo “Tu navegador no soporta grabación de audio”.
+
+Esto evita confusión (botón ausente vs botón deshabilitado).
 
 ---
 
-## Resultado Esperado
+## Pasos de implementación (código)
+1. Editar `src/components/agent/AgentChatWidget.tsx`
+   - Importar `useIsMobile`
+   - Calcular `isMobile`
+   - Modificar clases del contenedor principal del widget para mobile/desktop
+   - (Opcional recomendado) agregar `supportsVoice` y deshabilitar el botón con un mensaje claro si no hay soporte
 
-1. **Microfono**: Verificar que el boton aparece correctamente (el codigo ya existe)
-2. **Ano correcto**: El AI tendra contexto explicito del ano 2026 en su prompt del sistema
-3. **Retenciones reales**: El quick action solicitara un desglose de retenciones pagadas, consultando la base de datos en lugar de calcular un monto estatico
+2. Verificación visual rápida
+   - Probar en viewport angosto (simular móvil) y confirmar:
+     - Se ve el botón de micrófono a la izquierda del input
+     - No se corta el widget horizontalmente
+   - Probar en desktop y confirmar:
+     - Se mantiene el ancho 384px y la ubicación actual
+
+---
+
+## Criterios de aceptación
+- El botón del micrófono se ve dentro del widget en pantallas pequeñas y grandes.
+- En móvil, el widget no queda cortado fuera de pantalla.
+- Si el navegador no soporta grabación, el botón sigue visible (deshabilitado) con explicación.
+
+---
+
+## Notas técnicas
+- Archivo clave: `src/components/agent/AgentChatWidget.tsx`
+- Hook existente y reutilizable: `src/hooks/use-mobile.tsx` (`useIsMobile`)
+- No requiere cambios en backend ni en `useAgentVoice` para resolver la visibilidad; el problema es de layout/ancho/posicionamiento.
