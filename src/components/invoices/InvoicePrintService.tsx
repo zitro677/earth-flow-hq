@@ -1,8 +1,7 @@
-
 import { Invoice } from "./types";
 import { formatCurrency } from "./utils";
 import { toast } from "sonner";
-
+import { escapeHtml, escapeHtmlWithLineBreaks } from "@/lib/sanitize";
 interface InvoicePrintServiceProps {
   invoice: Invoice;
 }
@@ -71,10 +70,10 @@ const InvoicePrintService = ({ invoice }: InvoicePrintServiceProps) => {
           
           <div class="invoice-header">
             <div>
-              <div class="invoice-number">#${invoice.invoice_number}</div>
+              <div class="invoice-number">#${escapeHtml(invoice.invoice_number)}</div>
             </div>
             <div>
-              <div class="status status-${invoice.status?.toLowerCase()}">${invoice.status}</div>
+              <div class="status status-${escapeHtml(invoice.status?.toLowerCase())}">${escapeHtml(invoice.status)}</div>
             </div>
           </div>
           
@@ -87,9 +86,9 @@ const InvoicePrintService = ({ invoice }: InvoicePrintServiceProps) => {
             </div>
             <div>
               <strong>To:</strong>
-              <div>${invoice.client_name}</div>
-              ${invoice.clients?.address ? `<div>${invoice.clients.address}</div>` : ''}
-              ${invoice.clients?.email ? `<div>${invoice.clients.email}</div>` : ''}
+              <div>${escapeHtml(invoice.client_name)}</div>
+              ${invoice.clients?.address ? `<div>${escapeHtml(invoice.clients.address)}</div>` : ''}
+              ${invoice.clients?.email ? `<div>${escapeHtml(invoice.clients.email)}</div>` : ''}
             </div>
           </div>
           
@@ -111,8 +110,8 @@ const InvoicePrintService = ({ invoice }: InvoicePrintServiceProps) => {
               ${invoice.items && invoice.items.length > 0 ? 
                 invoice.items.map(item => `
                   <tr>
-                    <td>${item.description}</td>
-                    <td>${item.quantity}</td>
+                    <td>${escapeHtml(item.description)}</td>
+                    <td>${escapeHtml(String(item.quantity))}</td>
                     <td>${formatCurrency(Number(item.unit_price))}</td>
                     <td class="text-right">${formatCurrency(Number(item.quantity) * Number(item.unit_price))}</td>
                   </tr>
@@ -131,7 +130,7 @@ const InvoicePrintService = ({ invoice }: InvoicePrintServiceProps) => {
                 <td class="text-right">${formatCurrency(Number(invoice.amount))}</td>
               </tr>
               <tr>
-                <td colspan="3" class="text-right">Tax (${invoice.tax_rate}%)</td>
+                <td colspan="3" class="text-right">Tax (${escapeHtml(String(invoice.tax_rate))}%)</td>
                 <td class="text-right">${formatCurrency(Number(invoice.amount) * (Number(invoice.tax_rate) / 100))}</td>
               </tr>` : ''}
               <tr class="total-row">
@@ -150,7 +149,7 @@ const InvoicePrintService = ({ invoice }: InvoicePrintServiceProps) => {
           ${invoice.notes ? `
           <div style="margin-top: 40px;">
             <div><strong>Notes:</strong></div>
-            <div>${invoice.notes}</div>
+            <div>${escapeHtmlWithLineBreaks(invoice.notes)}</div>
           </div>` : ''}
           
           <div class="invoice-footer">
