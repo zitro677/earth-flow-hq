@@ -489,8 +489,159 @@ function executeCalculateTaxes(
   }
 }
 
-// Verificar entidad contra listas de sanciones internacionales
+// Verificar entidad contra listas de sanciones usando OpenSanctions API
 async function executeCheckSanctions(
+  supabase: SupabaseClient,
+  userId: string,
+  entityName: string,
+  entityType: "person" | "company",
+  entityDocument?: string
+): Promise<{
+  entity_name: string;
+  entity_type: string;
+  result: "clear" | "potential_match" | "error";
+  checked_lists: string[];
+  details: {
+    message: string;
+    matches?: Array<{ list: string; name: string; score: number; countries?: string[]; topics?: string[] }>;
+    recommendations?: string[];
+  };
+}> {
+  const OPENSANCTIONS_API_KEY = Deno.env.get("OPENSANCTIONS_API_KEY");
+  const SANCTIONS_LISTS = ["OFAC SDN (Lista Clinton)", "ONU Consolidada", "UE Consolidada", "OpenSanctions Global"];
+  
+  // Si no hay API key, usar verificación local como fallback
+  if (!OPENSANCTIONS_API_KEY) {
+    console.warn("OPENSANCTIONS_API_KEY no configurada, usando verificación local");
+    return executeLocalSanctionsCheck(supabase, userId, entityName, entityType, entityDocument);
+  }
+  
+  try {
+    // Llamar a la API de OpenSanctions
+    const schemaType = entityType === "person" ? "Person" : "Company";
+    
+    const response = await fetch("https://api.opensanctions.org/match/default", {
+      method: "POST",
+      headers: {
+        "Authorization": `ApiKey ${OPENSANCTIONS_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        queries: {
+          main: {
+            schema: schemaType,
+            properties: {
+              name: [entityName],
+              ...(entityDocument ? { idNumber: [entityDocument] } : {})
+            }
+          }
+        }
+      })
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("OpenSanctions API error:", response.status, errorText);
+      
+      // Fallback a verificación local si la API falla
+      if (response.status === 401 || response.status === 403) {
+        return {
+          entity_name: entityName,
+          entity_type: entityType,
+          result: "error",
+          checked_lists: SANCTIONS_LISTS,
+          details: {
+            message: "⚠️ Error de autenticación con OpenSanctions API. Verifique la API key.",
+            recommendations: ["Contactar al administrador para verificar la configuración de la API"]
+          }
+        };
+      }
+      
+      return executeLocalSanctionsCheck(supabase, userId, entityName, entityType, entityDocument);
+    }
+    
+    const data = await response.json();
+    const queryResult = data.responses?.main;
+    
+    if (!queryResult || !queryResult.results) {
+      return executeLocalSanctionsCheck(supabase, userId, entityName, entityType, entityDocument);
+    }
+    
+    // Procesar resultados de OpenSanctions
+    const matches = queryResult.results
+      .filter((r: { score: number }) => r.score >= 0.5) // Umbral de 50% similitud
+      .map((r: { 
+        score: number; 
+        caption: string; 
+        properties?: { 
+          topics?: string[]; 
+          country?: string[]; 
+        };
+        datasets?: string[];
+      }) => ({
+        list: r.datasets?.join(", ") || "OpenSanctions",
+        name: r.caption,
+        score: Math.round(r.score * 100),
+        topics: r.properties?.topics || [],
+        countries: r.properties?.country || []
+      }));
+    
+    const result: "clear" | "potential_match" = matches.length > 0 ? "potential_match" : "clear";
+    
+    const checkResult = {
+      entity_name: entityName,
+      entity_type: entityType,
+      result,
+      checked_lists: SANCTIONS_LISTS,
+      details: result === "clear" 
+        ? {
+            message: `✅ La entidad "${entityName}" NO aparece en las listas de sanciones verificadas mediante OpenSanctions API.`,
+            recommendations: [
+              "Mantener registro de la verificación para auditoría SARLAFT",
+              "Repetir verificación periódicamente (recomendado cada 6 meses)",
+              "Documentar la debida diligencia realizada"
+            ]
+          }
+        : {
+            message: `⚠️ ALERTA: Se encontraron ${matches.length} posible(s) coincidencia(s) para "${entityName}" en listas restrictivas internacionales.`,
+            matches,
+            recommendations: [
+              "NO proceder con la transacción hasta verificar manualmente",
+              "Reportar al Oficial de Cumplimiento inmediatamente",
+              "Documentar en el sistema de gestión de riesgos LAFT",
+              "Considerar reporte a la UIAF si se confirma la coincidencia",
+              "Revisar los detalles de cada coincidencia (país, tópicos)"
+            ]
+          }
+    };
+    
+    // Guardar registro de verificación en la base de datos
+    try {
+      await supabase
+        .from("sanctions_checks")
+        .insert({
+          user_id: userId,
+          entity_name: entityName,
+          entity_type: entityType,
+          entity_document: entityDocument || null,
+          result: result,
+          checked_lists: SANCTIONS_LISTS,
+          details: checkResult.details
+        });
+    } catch (e) {
+      console.error("Error guardando verificación de sanciones:", e);
+    }
+    
+    return checkResult;
+    
+  } catch (e) {
+    console.error("Error llamando OpenSanctions API:", e);
+    return executeLocalSanctionsCheck(supabase, userId, entityName, entityType, entityDocument);
+  }
+}
+
+// Verificación local de sanciones (fallback cuando no hay API)
+async function executeLocalSanctionsCheck(
   supabase: SupabaseClient,
   userId: string,
   entityName: string,
@@ -508,14 +659,9 @@ async function executeCheckSanctions(
   };
 }> {
   const SANCTIONS_LISTS = ["OFAC SDN (Lista Clinton)", "ONU Consolidada", "UE Consolidada"];
-  
-  // Normalizar nombre para búsqueda
   const normalizedName = entityName.trim().toUpperCase();
   
-  // Simular verificación contra listas (en producción usarías APIs reales como OpenSanctions)
-  // Por ahora hacemos una verificación local básica que puede ampliarse
-  
-  // Lista de nombres conocidos en sanciones (ejemplo ilustrativo)
+  // Lista de nombres conocidos en sanciones
   const knownSanctionedNames = [
     { name: "NICOLAS MADURO", list: "OFAC SDN (Lista Clinton)", type: "person" },
     { name: "MADURO MOROS, NICOLAS", list: "OFAC SDN (Lista Clinton)", type: "person" },
@@ -530,7 +676,6 @@ async function executeCheckSanctions(
     { name: "ELN", list: "ONU Consolidada", type: "company" },
   ];
   
-  // Función para calcular similitud básica (Jaccard simplificado)
   function calculateSimilarity(str1: string, str2: string): number {
     const words1 = new Set(str1.split(/\s+/));
     const words2 = new Set(str2.split(/\s+/));
@@ -543,8 +688,6 @@ async function executeCheckSanctions(
   
   for (const sanctioned of knownSanctionedNames) {
     const similarity = calculateSimilarity(normalizedName, sanctioned.name);
-    
-    // Umbral de similitud: 0.5 para coincidencia parcial, 1.0 para exacta
     if (similarity >= 0.5 || normalizedName.includes(sanctioned.name) || sanctioned.name.includes(normalizedName)) {
       potentialMatches.push({
         list: sanctioned.list,
@@ -563,11 +706,11 @@ async function executeCheckSanctions(
     checked_lists: SANCTIONS_LISTS,
     details: result === "clear" 
       ? {
-          message: `✅ La entidad "${entityName}" NO aparece en las listas de sanciones verificadas.`,
+          message: `✅ La entidad "${entityName}" NO aparece en las listas de sanciones verificadas (verificación local).`,
           recommendations: [
-            "Mantener registro de la verificación para auditoría SARLAFT",
-            "Repetir verificación periódicamente (recomendado cada 6 meses)",
-            "Documentar la debida diligencia realizada"
+            "⚠️ Esta fue una verificación local limitada",
+            "Se recomienda verificar con OpenSanctions API para resultados completos",
+            "Mantener registro para auditoría SARLAFT"
           ]
         }
       : {
@@ -576,13 +719,11 @@ async function executeCheckSanctions(
           recommendations: [
             "NO proceder con la transacción hasta verificar manualmente",
             "Reportar al Oficial de Cumplimiento inmediatamente",
-            "Documentar en el sistema de gestión de riesgos LAFT",
-            "Considerar reporte a la UIAF si se confirma la coincidencia"
+            "Documentar en el sistema de gestión de riesgos LAFT"
           ]
         }
   };
   
-  // Guardar registro de verificación en la base de datos
   try {
     await supabase
       .from("sanctions_checks")
@@ -593,10 +734,10 @@ async function executeCheckSanctions(
         entity_document: entityDocument || null,
         result: result,
         checked_lists: SANCTIONS_LISTS,
-        details: checkResult.details
+        details: { ...checkResult.details, source: "local_fallback" }
       });
   } catch (e) {
-    console.error("Error guardando verificación de sanciones:", e);
+    console.error("Error guardando verificación:", e);
   }
   
   return checkResult;
