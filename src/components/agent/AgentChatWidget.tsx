@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   MessageCircle, 
@@ -17,10 +17,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useAgentChat } from "./hooks/useAgentChat";
 import { useAgentVoice } from "./hooks/useAgentVoice";
 import { AgentMessage } from "./AgentMessage";
 import { VoiceIndicator } from "./VoiceIndicator";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
 export function AgentChatWidget() {
@@ -43,6 +45,13 @@ export function AgentChatWidget() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const lastAssistantMessageRef = useRef<string | null>(null);
+  const isMobile = useIsMobile();
+
+  // Check if browser supports voice recording
+  const supportsVoice = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    return !!(navigator.mediaDevices?.getUserMedia && window.MediaRecorder);
+  }, []);
 
   // Auto-scroll al final cuando hay nuevos mensajes
   useEffect(() => {
@@ -117,7 +126,7 @@ export function AgentChatWidget() {
   const displayError = error || voiceError;
 
   return (
-    <>
+    <TooltipProvider>
       {/* Botón flotante */}
       <AnimatePresence>
         {!isOpen && (
@@ -125,7 +134,10 @@ export function AgentChatWidget() {
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0, opacity: 0 }}
-            className="fixed bottom-6 right-6 z-50"
+            className={cn(
+              "fixed z-50",
+              isMobile ? "bottom-4 right-4" : "bottom-6 right-6"
+            )}
           >
             <Button
               size="lg"
@@ -152,7 +164,10 @@ export function AgentChatWidget() {
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
             className={cn(
-              "fixed bottom-6 right-6 z-50 w-96 bg-background border rounded-xl shadow-2xl overflow-hidden flex flex-col",
+              "fixed z-50 bg-background border rounded-xl shadow-2xl overflow-hidden flex flex-col",
+              isMobile 
+                ? "bottom-4 left-4 right-4 w-auto" 
+                : "bottom-6 right-6 w-96",
               isMinimized && "h-auto"
             )}
           >
@@ -307,36 +322,48 @@ export function AgentChatWidget() {
                   {/* Input */}
                   <form onSubmit={handleSubmit} className="p-4 border-t">
                     <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        variant={isRecording ? "destructive" : "outline"}
-                        size="icon"
-                        onClick={handleMicClick}
-                        disabled={isLoading || isTranscribing}
-                        className={cn(
-                          "shrink-0 transition-all",
-                          isRecording && "animate-pulse"
-                        )}
-                        title={isRecording ? "Detener grabación" : "Grabar mensaje de voz"}
-                      >
-                        {isRecording ? (
-                          <MicOff className="w-4 h-4" />
-                        ) : (
-                          <Mic className="w-4 h-4" />
-                        )}
-                      </Button>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            type="button"
+                            variant={isRecording ? "destructive" : "outline"}
+                            size="icon"
+                            onClick={supportsVoice ? handleMicClick : undefined}
+                            disabled={!supportsVoice || isLoading || isTranscribing}
+                            className={cn(
+                              "shrink-0 transition-all",
+                              isRecording && "animate-pulse"
+                            )}
+                          >
+                            {isRecording ? (
+                              <MicOff className="w-4 h-4" />
+                            ) : (
+                              <Mic className="w-4 h-4" />
+                            )}
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top">
+                          {!supportsVoice 
+                            ? "Tu navegador no soporta grabación de audio"
+                            : isRecording 
+                              ? "Detener grabación" 
+                              : "Grabar mensaje de voz"
+                          }
+                        </TooltipContent>
+                      </Tooltip>
                       <Input
                         ref={inputRef}
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
                         placeholder={isRecording ? "Grabando..." : "Escribe o habla tu consulta..."}
                         disabled={isLoading || isRecording || isTranscribing}
-                        className="flex-1"
+                        className="flex-1 min-w-0"
                       />
                       <Button 
                         type="submit" 
                         size="icon"
                         disabled={!inputValue.trim() || isLoading || isRecording}
+                        className="shrink-0"
                       >
                         {isLoading ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
@@ -352,6 +379,6 @@ export function AgentChatWidget() {
           </motion.div>
         )}
       </AnimatePresence>
-    </>
+    </TooltipProvider>
   );
 }
