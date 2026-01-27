@@ -104,11 +104,14 @@ export function AgentChatWidget() {
     }
   };
 
+  // Año actual dinámico para las consultas
+  const currentYear = new Date().getFullYear();
+  
   const quickActions = [
-    { label: "📊 Resumen financiero", message: "Dame un resumen financiero del año actual" },
+    { label: "📊 Resumen financiero", message: `Dame un resumen financiero completo del año ${currentYear}` },
     { label: "💰 Calcular IVA", message: "¿Cuánto IVA descontable tengo acumulado?" },
     { label: "📋 Facturas pendientes", message: "¿Cuáles son mis facturas pendientes de pago?" },
-    { label: "🧮 Calcular retenciones", message: "Calcula las retenciones para un servicio de $5.000.000" },
+    { label: "🧮 Retenciones pagadas", message: `¿Cuánto he pagado en retenciones durante ${currentYear}? Desglosa por tipo (Rete-Fuente, Rete-IVA, Rete-ICA)` },
   ];
 
   const displayError = error || voiceError;

@@ -7,7 +7,23 @@ const corsHeaders = {
 };
 
 // Sistema prompt para el agente contable colombiano
+// Fecha y año fiscal se calculan dinámicamente
+const getCurrentDateContext = () => {
+  const now = new Date();
+  const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+  const fechaActual = now.toLocaleDateString('es-CO', options);
+  const anoFiscal = now.getFullYear();
+  return { fechaActual, anoFiscal };
+};
+
+const { fechaActual, anoFiscal } = getCurrentDateContext();
+
 const SYSTEM_PROMPT = `Eres el Asistente Contable de AutoSeguro DJ, una empresa colombiana de blindaje de vehículos que también ofrece servicios de compra-venta de autos, trámites, seguros y detailing.
+
+FECHA ACTUAL: ${fechaActual}
+AÑO FISCAL VIGENTE: ${anoFiscal}
+
+IMPORTANTE: Cuando el usuario pregunte por "año actual", "este año" o períodos sin especificar, SIEMPRE usa ${anoFiscal} como referencia.
 
 TU ROL:
 - Asesorar sobre normativa tributaria colombiana (DIAN, NIIF para Pymes)
