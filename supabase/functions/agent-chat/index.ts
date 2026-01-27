@@ -878,6 +878,31 @@ async function processStream(
   return { content, toolCalls };
 }
 
+// Configuración del proveedor de IA
+// Soporta: Lovable AI Gateway (LOVABLE_API_KEY) o OpenAI directo (OPENAI_API_KEY)
+function getAIConfig(): { apiUrl: string; apiKey: string; model: string } {
+  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+  const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+  
+  if (LOVABLE_API_KEY) {
+    return {
+      apiUrl: "https://ai.gateway.lovable.dev/v1/chat/completions",
+      apiKey: LOVABLE_API_KEY,
+      model: "google/gemini-3-flash-preview"
+    };
+  }
+  
+  if (OPENAI_API_KEY) {
+    return {
+      apiUrl: "https://api.openai.com/v1/chat/completions",
+      apiKey: OPENAI_API_KEY,
+      model: "gpt-4o-mini" // Modelo económico y eficiente de OpenAI
+    };
+  }
+  
+  throw new Error("No AI provider configured. Set LOVABLE_API_KEY or OPENAI_API_KEY");
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -885,10 +910,20 @@ serve(async (req) => {
 
   try {
     const { messages } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
+    // Obtener configuración del proveedor de IA
+    let aiConfig;
+    try {
+      aiConfig = getAIConfig();
+    } catch (configError) {
+      console.error("AI config error:", configError);
+      return new Response(
+        JSON.stringify({ 
+          error: "El asistente de IA no está configurado en este servidor. Contacta al administrador.",
+          code: "AI_NOT_CONFIGURED"
+        }),
+        { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     // Obtener usuario autenticado
@@ -918,15 +953,15 @@ serve(async (req) => {
 
     const userId = userData.claims.sub as string;
 
-    // Primera llamada a Lovable AI con herramientas
-    const firstResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    // Primera llamada al AI con herramientas
+    const firstResponse = await fetch(aiConfig.apiUrl, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${aiConfig.apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: aiConfig.model,
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           ...messages
@@ -975,14 +1010,14 @@ serve(async (req) => {
     // Si no hay tool calls, hacer streaming directo de la respuesta
     if (toolCalls.length === 0) {
       // Hacer una nueva llamada y retornar el stream directamente
-      const directResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      const directResponse = await fetch(aiConfig.apiUrl, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          Authorization: `Bearer ${aiConfig.apiKey}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-3-flash-preview",
+          model: aiConfig.model,
           messages: [
             { role: "system", content: SYSTEM_PROMPT },
             ...messages
@@ -1034,14 +1069,14 @@ serve(async (req) => {
     ];
 
     // Segunda llamada al AI con los resultados de las herramientas
-    const secondResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const secondResponse = await fetch(aiConfig.apiUrl, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${aiConfig.apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: aiConfig.model,
         messages: secondCallMessages,
         stream: true
       }),
