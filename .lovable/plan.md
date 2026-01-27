@@ -1,148 +1,83 @@
 
+# Plan: Corregir Problemas del Asistente Contable
 
-# Plan: Integrar ElevenLabs para Interacción por Voz
+## Problemas Identificados
 
-## Objetivo
+### 1. Boton de Microfono No Aparece
+**Causa**: El widget de chat (`AgentChatWidget.tsx`) ya tiene el boton de microfono implementado en las lineas 307-324. Sin embargo, el hook `useAgentVoice` esta siendo importado y el boton deberia aparecer. Necesito verificar si hay algun error de renderizado o si el componente se esta mostrando correctamente.
 
-Agregar capacidades de voz al Asistente Contable para que:
-1. **El usuario pueda hablar** (Speech-to-Text) en lugar de escribir
-2. **El asistente responda con voz** (Text-to-Speech) de forma natural en español
+Revisando el codigo, el boton de microfono **si esta implementado** en el formulario (linea 307-324). El problema podria ser:
+- Un error silencioso en el hook que causa que el componente no se renderice
+- El widget no se muestra en la pagina actual
 
-## Arquitectura de la Solución
-
-```text
-┌─────────────────────────────────────────────────────────────────┐
-│                    Widget del Agente                             │
-├─────────────────────────────────────────────────────────────────┤
-│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐         │
-│  │ 🎤 Grabar   │───→│ STT Edge   │───→│ Texto para  │         │
-│  │   Audio     │    │ Function    │    │ el chat     │         │
-│  └─────────────┘    └─────────────┘    └──────┬──────┘         │
-│                                               │                 │
-│                                               ▼                 │
-│                                        agent-chat               │
-│                                               │                 │
-│                                               ▼                 │
-│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐         │
-│  │ 🔊 Reproducir│◀───│ TTS Edge   │◀───│ Respuesta   │         │
-│  │   Audio     │    │ Function    │    │ del agente  │         │
-│  └─────────────┘    └─────────────┘    └─────────────┘         │
-└─────────────────────────────────────────────────────────────────┘
+### 2. Ano Incorrecto (2024 vs 2026)
+**Causa**: En el archivo `AgentChatWidget.tsx`, linea 108, el quick action dice:
+```typescript
+{ label: "Resumen financiero", message: "Dame un resumen financiero del ano actual" }
 ```
 
-## Componentes a Crear
+El problema NO esta en la logica del backend (que usa correctamente `new Date().getFullYear()` en linea 210), sino que probablemente el AI no esta interpretando "ano actual" correctamente. La solucion es ser mas explicito en el mensaje o agregar contexto al system prompt.
 
-### 1. Edge Function: `agent-voice`
-
-Maneja tanto Speech-to-Text como Text-to-Speech con ElevenLabs.
-
-| Endpoint | Método | Función |
-|----------|--------|---------|
-| `/tts` | POST | Convierte texto a audio (voz del asistente) |
-| `/stt` | POST | Convierte audio a texto (entrada del usuario) |
-
-### 2. Hook: `useAgentVoice`
-
-Nuevo hook que maneja:
-- Grabación de audio del micrófono
-- Envío a la Edge Function para transcripción
-- Reproducción de respuestas de voz
-- Estados de carga y errores
-
-### 3. Actualizar Widget de Chat
-
-Agregar botones para:
-- 🎤 Grabar mensaje de voz
-- 🔊 Reproducir respuesta del asistente
-
-## Detalles Técnicos
-
-### Edge Function `agent-voice`
-
-```text
-Archivo: supabase/functions/agent-voice/index.ts
-
-Funcionalidades:
-├── POST /tts
-│   ├── Recibe: { text: string, voice_id?: string }
-│   ├── Llama: ElevenLabs TTS API
-│   └── Retorna: Audio MP3 binario
-│
-└── POST /stt
-    ├── Recibe: FormData con archivo de audio
-    ├── Llama: ElevenLabs STT API (scribe_v2)
-    └── Retorna: { text: string }
+### 3. Respuesta Predefinida de Retenciones
+**Causa**: En linea 111 del widget, el quick action esta configurado como:
+```typescript
+{ label: "Calcular retenciones", message: "Calcula las retenciones para un servicio de $5.000.000" }
 ```
 
-### Configuración de Voz
+Este es un mensaje **estatico** que siempre envia el mismo monto ($5.000.000). El usuario espera que el sistema consulte los gastos reales de la base de datos y estime retenciones basadas en esos datos.
 
-| Parámetro | Valor |
-|-----------|-------|
-| Modelo TTS | `eleven_multilingual_v2` (soporta español) |
-| Voz sugerida | Roger (CwhRBWXzGAHq8TQ4Fs17) - profesional |
-| Modelo STT | `scribe_v2` (alta precisión) |
-| Idioma | Español (detección automática) |
+---
 
-### Hook `useAgentVoice`
+## Cambios Propuestos
 
-```text
-Archivo: src/components/agent/hooks/useAgentVoice.ts
+### Cambio 1: Agregar contexto de fecha al System Prompt
+Modificar el `SYSTEM_PROMPT` en `agent-chat/index.ts` para incluir la fecha actual dinamicamente:
 
-Estados:
-├── isRecording: boolean
-├── isTranscribing: boolean
-├── isSpeaking: boolean
-└── error: string | null
-
-Métodos:
-├── startRecording(): Promise<void>
-├── stopRecording(): Promise<string> (retorna transcripción)
-├── speakText(text: string): Promise<void>
-└── stopSpeaking(): void
+```typescript
+const SYSTEM_PROMPT = `...
+FECHA ACTUAL: ${new Date().toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' })}
+ANO FISCAL VIGENTE: ${new Date().getFullYear()}
+...`;
 ```
 
-### Actualización del Widget
+Esto asegura que el AI siempre tenga contexto del ano actual.
 
-```text
-Archivo: src/components/agent/AgentChatWidget.tsx
+### Cambio 2: Actualizar Quick Actions
+Modificar los quick actions en `AgentChatWidget.tsx` para ser mas utiles:
 
-Nuevos elementos:
-├── Botón de micrófono (junto al input)
-├── Botón de reproducir voz (en cada respuesta)
-├── Indicador visual de grabación
-└── Control de volumen (opcional)
+| Antes | Despues |
+|-------|---------|
+| "Dame un resumen financiero del ano actual" | "Dame un resumen financiero del ano 2026" (dinamico) |
+| "Calcula las retenciones para un servicio de $5.000.000" | "Cuanto he pagado en retenciones este ano? Desglosa por tipo" |
+
+```typescript
+const currentYear = new Date().getFullYear();
+const quickActions = [
+  { label: "Resumen financiero", message: `Dame un resumen financiero completo del ano ${currentYear}` },
+  { label: "Calcular IVA", message: "Cuanto IVA descontable tengo acumulado?" },
+  { label: "Facturas pendientes", message: "Cuales son mis facturas pendientes de pago?" },
+  { label: "Retenciones pagadas", message: `Cuanto he pagado en retenciones durante ${currentYear}? Desglosa por tipo (Rete-Fuente, Rete-IVA, Rete-ICA)` },
+];
 ```
 
-## Flujo de Usuario
+### Cambio 3: Verificar renderizado del boton de microfono
+El codigo del boton de microfono existe. Verificar:
+- Si el componente `AgentChatWidget` esta incluido en el layout
+- Si hay errores de importacion del hook `useAgentVoice`
 
-### Enviar mensaje por voz:
-1. Usuario presiona 🎤
-2. Aparece indicador de grabación (onda de audio)
-3. Usuario habla su consulta
-4. Al soltar, se envía a STT
-5. Texto transcrito aparece en el input
-6. Se envía automáticamente al agente
+---
 
-### Escuchar respuesta:
-1. Respuesta del agente llega como texto
-2. Automáticamente (o con botón) se envía a TTS
-3. Se reproduce el audio
-4. Indicador visual de "hablando"
+## Archivos a Modificar
 
-## Archivos a Crear/Modificar
-
-| Archivo | Acción |
+| Archivo | Cambio |
 |---------|--------|
-| `supabase/functions/agent-voice/index.ts` | Crear |
-| `supabase/config.toml` | Actualizar (agregar función) |
-| `src/components/agent/hooks/useAgentVoice.ts` | Crear |
-| `src/components/agent/AgentChatWidget.tsx` | Modificar |
-| `src/components/agent/VoiceIndicator.tsx` | Crear (opcional) |
+| `supabase/functions/agent-chat/index.ts` | Agregar fecha actual al SYSTEM_PROMPT |
+| `src/components/agent/AgentChatWidget.tsx` | Actualizar quick actions con ano dinamico y mensaje de retenciones mejorado |
+
+---
 
 ## Resultado Esperado
 
-1. **Entrada por voz**: El usuario puede mantener presionado el botón del micrófono y hablar su consulta en español
-2. **Salida por voz**: Las respuestas del asistente se pueden escuchar con voz natural
-3. **Experiencia fluida**: Indicadores visuales claros durante grabación y reproducción
-4. **Fallback a texto**: Si hay error de voz, el chat de texto sigue funcionando
-
+1. **Microfono**: Verificar que el boton aparece correctamente (el codigo ya existe)
+2. **Ano correcto**: El AI tendra contexto explicito del ano 2026 en su prompt del sistema
+3. **Retenciones reales**: El quick action solicitara un desglose de retenciones pagadas, consultando la base de datos en lugar de calcular un monto estatico
