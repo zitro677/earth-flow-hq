@@ -1,73 +1,142 @@
 
-## Objetivo
-Hacer que el botón de micrófono sea visible siempre dentro del widget del agente (especialmente en pantallas pequeñas), sin romper la UI en desktop.
+# Plan: Solucionar Problemas del Agente y Agregar Administradores
+
+## Resumen de Problemas Detectados
+
+| Problema | Causa Raíz |
+|----------|------------|
+| Micrófono no aparece en servidor propio | Las Edge Functions (`agent-voice`, `agent-chat`) solo existen en Lovable Cloud. Tu servidor solo tiene el frontend. |
+| Chat no responsive en móvil | Los cambios responsive recientes pueden no estar desplegados en tu servidor |
+| diana1984.78@gmail.com como admin | No tiene cuenta creada todavía |
+| zitro677.lo87@gmail.com como admin | ✅ Ya está configurado como admin en la base de datos |
 
 ---
 
-## Hallazgos (qué está pasando)
-- En el código **sí existe** el botón del micrófono dentro del formulario del chat (en `AgentChatWidget.tsx`, líneas 310–327).
-- El contenedor del widget tiene un ancho fijo `w-96` (384px) y está anclado con `right-6`.
-- En móviles comunes (360px de ancho), el widget queda **parcialmente fuera de pantalla hacia la izquierda**. En ese caso, el primer elemento del input (el botón del micrófono, que va a la izquierda) es justamente lo que puede quedar “cortado”, mientras el input y el botón de enviar (a la derecha) sí se alcanzan a ver.
-- Por eso tu percepción es “no aparece el botón”, aunque técnicamente se está renderizando.
+## Parte 1: Requisitos para Self-Hosting (Servidor Propio)
+
+Para que el agente contable funcione en tu propio servidor, necesitas replicar la infraestructura de backend:
+
+### Opción A: Conectar a un Supabase externo (Recomendado)
+1. Crear proyecto en [Supabase.com](https://supabase.com)
+2. Exportar el esquema de base de datos desde Lovable Cloud
+3. Importar las Edge Functions manualmente:
+   - `agent-chat` → requiere `LOVABLE_API_KEY` (NO funciona fuera de Lovable)
+   - `agent-voice` → requiere `ELEVENLABS_API_KEY`
+4. Configurar secretos en el panel de Supabase
+
+### Opción B: Modificar el código para usar otro LLM
+Modificar `agent-chat/index.ts` para usar directamente:
+- OpenAI API (`OPENAI_API_KEY`)
+- Google AI Studio (`GOOGLE_AI_API_KEY`)  
+- O cualquier proveedor compatible con OpenAI API
+
+**Nota importante**: La `LOVABLE_API_KEY` es exclusiva de Lovable Cloud y NO funcionará en servidores externos.
 
 ---
 
-## Solución propuesta (UI responsive del widget)
-### A) Hacer el widget responsive (ancho y posición)
-Actualizar `AgentChatWidget.tsx` para que:
-- En pantallas pequeñas use `left-4 right-4` (inset horizontal) y ancho flexible (no fijo).
-- En pantallas medianas/grandes conserve el comportamiento actual (`right-6` y `w-96`).
+## Parte 2: Cambios de Código para Compatibilidad
 
-Implementación esperada (a alto nivel):
-- Importar `useIsMobile` desde `src/hooks/use-mobile.tsx`
-- Calcular `const isMobile = useIsMobile()`
-- Cambiar el `className` del contenedor principal (`motion.div`) para que sea condicional
+### Archivo 1: `supabase/functions/agent-chat/index.ts`
+**Cambio**: Agregar soporte para OpenAI API como alternativa
 
-Ejemplo de clases objetivo:
-- Mobile:
-  - `fixed bottom-4 left-4 right-4 w-auto max-w-none`
-- Desktop:
-  - `fixed bottom-6 right-6 w-96`
+```text
+// Estructura propuesta:
+const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
 
-También ajustar, si hace falta, para evitar que el contenido interno colapse:
-- Al `Input` darle `min-w-0` (o asegurar que el contenedor del input no provoque overflow raro).
-- Mantener `z-50` para que no quede detrás del sidebar.
+// Si hay OPENAI_API_KEY, usar OpenAI directamente
+// Si hay LOVABLE_API_KEY, usar el gateway de Lovable AI
+// Si no hay ninguno, retornar error descriptivo
+```
 
-### B) Asegurar que el botón se vea incluso si el navegador no soporta grabación
-En algunos dispositivos (sobre todo ciertos Safari/iOS antiguos), `MediaRecorder` puede no existir. Eso NO debería ocultar el botón; pero para una UX clara:
-- Calcular `supportsVoice`:
-  - `navigator.mediaDevices?.getUserMedia` existe
-  - `window.MediaRecorder` existe
-- Si no soporta, mostrar el botón igualmente pero deshabilitado y con tooltip tipo “Tu navegador no soporta grabación de audio”.
+### Archivo 2: `src/components/agent/AgentChatWidget.tsx`
+**Cambio**: Mejorar manejo cuando las Edge Functions no están disponibles
 
-Esto evita confusión (botón ausente vs botón deshabilitado).
+```text
+// Mostrar mensaje amigable si el backend no responde
+// En lugar de error silencioso, mostrar:
+// "El asistente de voz no está disponible en este servidor"
+```
 
----
+### Archivo 3: `src/components/agent/hooks/useAgentVoice.ts`
+**Cambio**: Agregar fallback cuando agent-voice no está disponible
 
-## Pasos de implementación (código)
-1. Editar `src/components/agent/AgentChatWidget.tsx`
-   - Importar `useIsMobile`
-   - Calcular `isMobile`
-   - Modificar clases del contenedor principal del widget para mobile/desktop
-   - (Opcional recomendado) agregar `supportsVoice` y deshabilitar el botón con un mensaje claro si no hay soporte
-
-2. Verificación visual rápida
-   - Probar en viewport angosto (simular móvil) y confirmar:
-     - Se ve el botón de micrófono a la izquierda del input
-     - No se corta el widget horizontalmente
-   - Probar en desktop y confirmar:
-     - Se mantiene el ancho 384px y la ubicación actual
+```text
+// Intentar conectar al endpoint
+// Si falla, deshabilitar el botón de voz con mensaje explicativo
+// En lugar de fallar silenciosamente
+```
 
 ---
 
-## Criterios de aceptación
-- El botón del micrófono se ve dentro del widget en pantallas pequeñas y grandes.
-- En móvil, el widget no queda cortado fuera de pantalla.
-- Si el navegador no soporta grabación, el botón sigue visible (deshabilitado) con explicación.
+## Parte 3: Asignar Rol de Administrador a diana1984.78@gmail.com
+
+### Prerrequisito
+Diana debe primero:
+1. Ir a la página de login de la aplicación
+2. Registrarse con su email `diana1984.78@gmail.com`
+3. Iniciar sesión al menos una vez
+
+### Una vez registrada
+Ejecutar en la base de datos:
+
+```sql
+-- Buscar el user_id de Diana
+SELECT u.id, u.email 
+FROM auth.users u 
+WHERE u.email = 'diana1984.78@gmail.com';
+
+-- Actualizar su rol a admin (reemplazar 'diana-user-id' con el ID real)
+UPDATE public.user_roles 
+SET role = 'admin', updated_at = now() 
+WHERE user_id = 'diana-user-id';
+```
+
+O bien, tú (zitro677.lo87@gmail.com) puedes hacerlo desde la sección **Configuración → Gestión de usuarios** una vez que Diana tenga cuenta.
 
 ---
 
-## Notas técnicas
-- Archivo clave: `src/components/agent/AgentChatWidget.tsx`
-- Hook existente y reutilizable: `src/hooks/use-mobile.tsx` (`useIsMobile`)
-- No requiere cambios en backend ni en `useAgentVoice` para resolver la visibilidad; el problema es de layout/ancho/posicionamiento.
+## Parte 4: Verificar Cambios Responsive
+
+El código responsive **ya está implementado** en `AgentChatWidget.tsx`:
+- Móvil: `left-4 right-4 w-auto`
+- Desktop: `right-6 w-96`
+
+### Para que funcione en tu servidor
+1. **Hacer git pull** de los últimos cambios
+2. **Rebuild** del frontend con los nuevos archivos
+3. **Redesplegar** en tu servidor
+
+---
+
+## Archivos a Modificar
+
+| Archivo | Propósito |
+|---------|-----------|
+| `supabase/functions/agent-chat/index.ts` | Agregar soporte para OpenAI API como alternativa a Lovable AI |
+| `src/components/agent/AgentChatWidget.tsx` | Mostrar mensaje cuando el backend no está disponible |
+| `src/components/agent/hooks/useAgentVoice.ts` | Manejar graciosamente cuando agent-voice no responde |
+
+---
+
+## Decisión Requerida
+
+Para proceder necesito saber:
+
+**¿Quieres que modifique el código para que sea compatible con OpenAI API directamente?**
+
+Esto te permitiría:
+- Obtener una API key de OpenAI ($5-20 USD/mes típico)
+- Configurarla como `OPENAI_API_KEY` en tu servidor
+- Que el agente funcione sin depender de Lovable Cloud
+
+Si prefieres seguir usando solo Lovable Cloud (preview/published), no necesitas estos cambios y el agente seguirá funcionando normalmente aquí.
+
+---
+
+## Estado Actual de Administradores
+
+| Email | Estado | Rol |
+|-------|--------|-----|
+| zitro677.lo87@gmail.com | ✅ Cuenta activa | admin |
+| diana1984.78@gmail.com | ⚠️ No ha creado cuenta | pendiente |
