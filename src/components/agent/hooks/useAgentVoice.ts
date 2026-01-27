@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
@@ -8,6 +8,8 @@ interface UseAgentVoiceReturn {
   isTranscribing: boolean;
   isSpeaking: boolean;
   error: string | null;
+  isVoiceAvailable: boolean;
+  voiceUnavailableReason: string | null;
   startRecording: () => Promise<void>;
   stopRecording: () => Promise<string | null>;
   speakText: (text: string) => Promise<void>;
@@ -20,10 +22,40 @@ export function useAgentVoice(): UseAgentVoiceReturn {
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isVoiceAvailable, setIsVoiceAvailable] = useState(true);
+  const [voiceUnavailableReason, setVoiceUnavailableReason] = useState<string | null>(null);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const hasCheckedAvailability = useRef(false);
+
+  // Check if the voice endpoint is available (for self-hosted scenarios)
+  useEffect(() => {
+    if (hasCheckedAvailability.current) return;
+    hasCheckedAvailability.current = true;
+
+    const checkVoiceAvailability = async () => {
+      try {
+        // Quick OPTIONS check to see if endpoint exists
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/agent-voice`, {
+          method: 'OPTIONS',
+        });
+        
+        // If we get any response (even 4xx), the endpoint exists
+        if (!response.ok && response.status >= 500) {
+          setIsVoiceAvailable(false);
+          setVoiceUnavailableReason('El servicio de voz no está disponible en este servidor');
+        }
+      } catch {
+        // Network error or CORS issue - endpoint might not exist
+        setIsVoiceAvailable(false);
+        setVoiceUnavailableReason('El servicio de voz no está disponible en este servidor');
+      }
+    };
+
+    checkVoiceAvailability();
+  }, []);
 
   const clearError = useCallback(() => setError(null), []);
 
@@ -181,6 +213,8 @@ export function useAgentVoice(): UseAgentVoiceReturn {
     isTranscribing,
     isSpeaking,
     error,
+    isVoiceAvailable,
+    voiceUnavailableReason,
     startRecording,
     stopRecording,
     speakText,

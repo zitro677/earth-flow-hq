@@ -36,6 +36,8 @@ export function AgentChatWidget() {
     isTranscribing, 
     isSpeaking, 
     error: voiceError,
+    isVoiceAvailable,
+    voiceUnavailableReason,
     startRecording, 
     stopRecording, 
     speakText,
@@ -47,11 +49,26 @@ export function AgentChatWidget() {
   const lastAssistantMessageRef = useRef<string | null>(null);
   const isMobile = useIsMobile();
 
-  // Check if browser supports voice recording
+  // Check if browser supports voice recording AND voice service is available
   const supportsVoice = useMemo(() => {
     if (typeof window === 'undefined') return false;
-    return !!(navigator.mediaDevices?.getUserMedia && window.MediaRecorder);
-  }, []);
+    const browserSupport = !!(navigator.mediaDevices?.getUserMedia && window.MediaRecorder);
+    return browserSupport && isVoiceAvailable;
+  }, [isVoiceAvailable]);
+
+  // Determine the voice tooltip message
+  const voiceTooltipMessage = useMemo(() => {
+    if (!isVoiceAvailable) {
+      return voiceUnavailableReason || 'El servicio de voz no está disponible';
+    }
+    if (typeof window !== 'undefined' && !(navigator.mediaDevices?.getUserMedia && window.MediaRecorder)) {
+      return 'Tu navegador no soporta grabación de audio';
+    }
+    if (isRecording) {
+      return 'Detener grabación';
+    }
+    return 'Grabar mensaje de voz';
+  }, [isVoiceAvailable, voiceUnavailableReason, isRecording]);
 
   // Auto-scroll al final cuando hay nuevos mensajes
   useEffect(() => {
@@ -343,12 +360,7 @@ export function AgentChatWidget() {
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent side="top">
-                          {!supportsVoice 
-                            ? "Tu navegador no soporta grabación de audio"
-                            : isRecording 
-                              ? "Detener grabación" 
-                              : "Grabar mensaje de voz"
-                          }
+                          {voiceTooltipMessage}
                         </TooltipContent>
                       </Tooltip>
                       <Input
