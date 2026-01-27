@@ -8,22 +8,41 @@ import {
   Trash2,
   Minimize2,
   Maximize2,
-  Bot
+  Bot,
+  Mic,
+  MicOff,
+  Volume2,
+  VolumeX,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAgentChat } from "./hooks/useAgentChat";
+import { useAgentVoice } from "./hooks/useAgentVoice";
 import { AgentMessage } from "./AgentMessage";
+import { VoiceIndicator } from "./VoiceIndicator";
 import { cn } from "@/lib/utils";
 
 export function AgentChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [inputValue, setInputValue] = useState("");
+  const [autoSpeak, setAutoSpeak] = useState(true);
   const { messages, isLoading, error, sendMessage, clearMessages } = useAgentChat();
+  const { 
+    isRecording, 
+    isTranscribing, 
+    isSpeaking, 
+    error: voiceError,
+    startRecording, 
+    stopRecording, 
+    speakText,
+    stopSpeaking,
+    clearError: clearVoiceError,
+  } = useAgentVoice();
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const lastAssistantMessageRef = useRef<string | null>(null);
 
   // Auto-scroll al final cuando hay nuevos mensajes
   useEffect(() => {
@@ -39,6 +58,21 @@ export function AgentChatWidget() {
     }
   }, [isOpen, isMinimized]);
 
+  // Auto-speak new assistant messages
+  useEffect(() => {
+    if (!autoSpeak || messages.length === 0) return;
+    
+    const lastMessage = messages[messages.length - 1];
+    if (
+      lastMessage.role === 'assistant' && 
+      lastMessage.content !== lastAssistantMessageRef.current &&
+      !isLoading
+    ) {
+      lastAssistantMessageRef.current = lastMessage.content;
+      speakText(lastMessage.content);
+    }
+  }, [messages, autoSpeak, isLoading, speakText]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputValue.trim() || isLoading) return;
@@ -48,12 +82,36 @@ export function AgentChatWidget() {
     await sendMessage(message);
   };
 
+  const handleMicClick = async () => {
+    if (isRecording) {
+      const transcription = await stopRecording();
+      if (transcription) {
+        setInputValue(transcription);
+        // Auto-send the transcribed message
+        await sendMessage(transcription);
+      }
+    } else {
+      clearVoiceError();
+      await startRecording();
+    }
+  };
+
+  const handleSpeakMessage = (content: string) => {
+    if (isSpeaking) {
+      stopSpeaking();
+    } else {
+      speakText(content);
+    }
+  };
+
   const quickActions = [
     { label: "📊 Resumen financiero", message: "Dame un resumen financiero del año actual" },
     { label: "💰 Calcular IVA", message: "¿Cuánto IVA descontable tengo acumulado?" },
     { label: "📋 Facturas pendientes", message: "¿Cuáles son mis facturas pendientes de pago?" },
     { label: "🧮 Calcular retenciones", message: "Calcula las retenciones para un servicio de $5.000.000" },
   ];
+
+  const displayError = error || voiceError;
 
   return (
     <>
@@ -103,10 +161,31 @@ export function AgentChatWidget() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-sm">Asistente Contable</h3>
-                  <p className="text-xs text-muted-foreground">AutoSeguro DJ</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs text-muted-foreground">AutoSeguro DJ</p>
+                    {(isRecording || isSpeaking) && (
+                      <VoiceIndicator 
+                        isActive={true} 
+                        type={isRecording ? 'recording' : 'speaking'} 
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
               <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setAutoSpeak(!autoSpeak)}
+                  title={autoSpeak ? "Desactivar voz automática" : "Activar voz automática"}
+                >
+                  {autoSpeak ? (
+                    <Volume2 className="w-4 h-4" />
+                  ) : (
+                    <VolumeX className="w-4 h-4" />
+                  )}
+                </Button>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -159,6 +238,9 @@ export function AgentChatWidget() {
                             Puedo ayudarte con consultas fiscales, 
                             cálculos de retenciones y más.
                           </p>
+                          <p className="text-xs mt-2 text-muted-foreground/70">
+                            🎤 Mantén presionado el micrófono para hablar
+                          </p>
                         </div>
                         <div className="grid grid-cols-2 gap-2">
                           {quickActions.map((action, index) => (
@@ -177,7 +259,24 @@ export function AgentChatWidget() {
                     ) : (
                       <div className="space-y-3">
                         {messages.map((message) => (
-                          <AgentMessage key={message.id} message={message} />
+                          <div key={message.id} className="group relative">
+                            <AgentMessage message={message} />
+                            {message.role === 'assistant' && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="absolute top-0 right-0 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={() => handleSpeakMessage(message.content)}
+                                title={isSpeaking ? "Detener" : "Escuchar"}
+                              >
+                                {isSpeaking ? (
+                                  <VolumeX className="w-3 h-3" />
+                                ) : (
+                                  <Volume2 className="w-3 h-3" />
+                                )}
+                              </Button>
+                            )}
+                          </div>
                         ))}
                         {isLoading && (
                           <div className="flex items-center gap-2 text-muted-foreground">
@@ -185,32 +284,56 @@ export function AgentChatWidget() {
                             <span className="text-sm">Pensando...</span>
                           </div>
                         )}
+                        {isTranscribing && (
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <span className="text-sm">Transcribiendo...</span>
+                          </div>
+                        )}
                       </div>
                     )}
                   </ScrollArea>
 
                   {/* Error */}
-                  {error && (
+                  {displayError && (
                     <div className="px-4 py-2 bg-destructive/10 text-destructive text-sm">
-                      {error}
+                      {displayError}
                     </div>
                   )}
 
                   {/* Input */}
                   <form onSubmit={handleSubmit} className="p-4 border-t">
                     <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant={isRecording ? "destructive" : "outline"}
+                        size="icon"
+                        onClick={handleMicClick}
+                        disabled={isLoading || isTranscribing}
+                        className={cn(
+                          "shrink-0 transition-all",
+                          isRecording && "animate-pulse"
+                        )}
+                        title={isRecording ? "Detener grabación" : "Grabar mensaje de voz"}
+                      >
+                        {isRecording ? (
+                          <MicOff className="w-4 h-4" />
+                        ) : (
+                          <Mic className="w-4 h-4" />
+                        )}
+                      </Button>
                       <Input
                         ref={inputRef}
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
-                        placeholder="Escribe tu consulta..."
-                        disabled={isLoading}
+                        placeholder={isRecording ? "Grabando..." : "Escribe o habla tu consulta..."}
+                        disabled={isLoading || isRecording || isTranscribing}
                         className="flex-1"
                       />
                       <Button 
                         type="submit" 
                         size="icon"
-                        disabled={!inputValue.trim() || isLoading}
+                        disabled={!inputValue.trim() || isLoading || isRecording}
                       >
                         {isLoading ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
