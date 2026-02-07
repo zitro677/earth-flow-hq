@@ -1,4 +1,3 @@
-
 import React from "react";
 import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -9,6 +8,7 @@ import {
   BarChart3,
   FolderKanban,
   Users,
+  Truck,
 } from "lucide-react";
 
 interface NavItem {
@@ -47,6 +47,11 @@ const navItems: NavItem[] = [
     name: "Clientes",
     path: "/clients",
     icon: <Users className="h-5 w-5" />,
+  },
+  {
+    name: "Proveedores",
+    path: "/suppliers",
+    icon: <Truck className="h-5 w-5" />,
   },
 ];
 

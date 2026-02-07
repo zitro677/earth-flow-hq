@@ -20,6 +20,8 @@ import LoginPage from "./components/auth/LoginPage";
 import { AuthProvider, useAuth } from "./components/auth/AuthProvider";
 import ClientsPage from "./components/clients/ClientsPage";
 import ClientForm from "./components/clients/ClientForm";
+import SuppliersPage from "./components/suppliers/SuppliersPage";
+import SupplierForm from "./components/suppliers/SupplierForm";
 import SettingsPage from "./components/settings/SettingsPage";
 import { Loader2 } from "lucide-react";
 import React from "react";
@@ -126,6 +128,9 @@ const AppRoutes = () => (
         <Route path="projects/new" element={<ProjectForm />} />
         <Route path="projects/edit/:id" element={<ProjectForm />} />
         <Route path="projects/:id" element={<ProjectDetail />} />
+        <Route path="suppliers" element={<SuppliersPage />} />
+        <Route path="suppliers/new" element={<SupplierForm />} />
+        <Route path="suppliers/edit/:id" element={<SupplierForm />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
       
