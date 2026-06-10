@@ -29,7 +29,7 @@ export function AgentChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [inputValue, setInputValue] = useState("");
-  const [autoSpeak, setAutoSpeak] = useState(true);
+  const [autoSpeak, setAutoSpeak] = useState(false);
   const { messages, isLoading, error, sendMessage, clearMessages } = useAgentChat();
   const { 
     isRecording, 
