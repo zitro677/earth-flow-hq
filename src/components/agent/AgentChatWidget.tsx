@@ -29,7 +29,7 @@ export function AgentChatWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [inputValue, setInputValue] = useState("");
-  const [autoSpeak, setAutoSpeak] = useState(true);
+  const [autoSpeak, setAutoSpeak] = useState(false);
   const { messages, isLoading, error, sendMessage, clearMessages } = useAgentChat();
   const { 
     isRecording, 
@@ -212,13 +212,26 @@ export function AgentChatWidget() {
                   variant="ghost"
                   size="icon"
                   className="h-8 w-8"
-                  onClick={() => setAutoSpeak(!autoSpeak)}
-                  title={autoSpeak ? "Desactivar voz automática" : "Activar voz automática"}
+                  onClick={() => {
+                    const next = !autoSpeak;
+                    setAutoSpeak(next);
+                    if (!next && isSpeaking) {
+                      stopSpeaking();
+                    }
+                    if (next) {
+                      // Marcar el último mensaje como ya "visto" para no leerlo de golpe al activar
+                      const last = messages[messages.length - 1];
+                      if (last?.role === 'assistant') {
+                        lastAssistantMessageRef.current = last.content;
+                      }
+                    }
+                  }}
+                  title={autoSpeak ? "Desactivar voz automática (silenciar)" : "Activar voz automática"}
                 >
                   {autoSpeak ? (
                     <Volume2 className="w-4 h-4" />
                   ) : (
-                    <VolumeX className="w-4 h-4" />
+                    <VolumeX className="w-4 h-4 text-destructive" />
                   )}
                 </Button>
                 <Button
