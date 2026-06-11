@@ -576,6 +576,7 @@ export type Database = {
     }
     Functions: {
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      is_workspace_member: { Args: { _uid: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
