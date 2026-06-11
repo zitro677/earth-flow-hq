@@ -80,8 +80,7 @@ export const useProjectForm = () => {
           // Also check static project data
           if (!foundProject) {
             try {
-              const { projects } = require("./useProjects");
-              foundProject = projects.find((p: any) => String(p.id) === String(id));
+              // Static projects fallback removed (dynamic require not supported in browser)
             } catch (error) {
               console.error("Error loading static projects:", error);
             }
