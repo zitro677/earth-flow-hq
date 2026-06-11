@@ -10,8 +10,9 @@ import { createProposalRecord, calculateTotalAmount, formatProposalContent } fro
  */
 export const createProposal = async (proposalData: ProposalFormData): Promise<Proposal | null> => {
   try {
-    // Get the authenticated user ID
-    const userId = await getAuthenticatedUserId();
+    // Get the authenticated user ID (remapped to shared workspace owner if applicable)
+    const { getWorkspaceUserId } = await import("@/lib/workspace");
+    const userId = getWorkspaceUserId(await getAuthenticatedUserId());
     console.log('Creating proposal for user:', userId);
     console.log('Proposal data:', proposalData);
     

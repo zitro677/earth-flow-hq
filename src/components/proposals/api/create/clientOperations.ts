@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { getWorkspaceUserId } from "@/lib/workspace";
 
 /**
  * Finds a client by email for the specified user
@@ -9,7 +10,7 @@ export const findClientByEmail = async (email: string, userId: string) => {
     .from('clients')
     .select('id, name, email, phone, address')
     .eq('email', email)
-    .eq('user_id', userId);
+    .eq('user_id', getWorkspaceUserId(userId));
   
   if (error) {
     console.error('Error fetching existing clients:', error);
@@ -37,7 +38,7 @@ export const updateClient = async (clientId: string, clientData: {
       address: clientData.address
     })
     .eq('id', clientId)
-    .eq('user_id', userId)
+    .eq('user_id', getWorkspaceUserId(userId))
     .select('id, name, email, phone, address')
     .single();
     
@@ -65,7 +66,7 @@ export const createClient = async (clientData: {
       email: clientData.email,
       phone: clientData.phone,
       address: clientData.address,
-      user_id: userId
+      user_id: getWorkspaceUserId(userId)
     })
     .select('id, name, email, phone, address')
     .single();

@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { getWorkspaceUserId } from "@/lib/workspace";
 
 export const useInventory = () => {
   const [inventory, setInventory] = useState<any[]>([]);
@@ -23,7 +24,7 @@ export const useInventory = () => {
         const { data: inventoryData, error } = await supabase
           .from('inventory')
           .select('*')
-          .eq('user_id', session.user.id)
+          .eq('user_id', getWorkspaceUserId(session.user.id))
           .order('name', { ascending: true });
 
         if (error) {
@@ -67,7 +68,7 @@ export const useInventory = () => {
       const { data: newItem, error } = await supabase
         .from('inventory')
         .insert({
-          user_id: session.user.id,
+          user_id: getWorkspaceUserId(session.user.id),
           name: data.name,
           category: data.category,
           unit_cost: parseFloat(data.unit_cost?.toString() || '0'),

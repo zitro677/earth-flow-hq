@@ -2,6 +2,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { getWorkspaceUserId } from "@/lib/workspace";
 
 export interface Project {
   id: string;
@@ -35,7 +36,7 @@ export const useProjects = () => {
       const { data, error } = await supabase
         .from('projects')
         .select('*')
-        .eq('user_id', session.user.id)
+        .eq('user_id', getWorkspaceUserId(session.user.id))
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -69,7 +70,7 @@ export const useProjects = () => {
         .from('projects')
         .insert({
           ...projectData,
-          user_id: session.user.id,
+          user_id: getWorkspaceUserId(session.user.id),
         })
         .select()
         .single();
