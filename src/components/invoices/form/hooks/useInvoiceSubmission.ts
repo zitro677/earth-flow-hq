@@ -7,6 +7,7 @@ import { z } from "zod";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useCreateInvoice, useUpdateInvoice } from "../../useInvoices";
 import { formSchema, InvoiceFormValues } from "../formSchema";
+import { getWorkspaceUserId } from "@/lib/workspace";
 
 export const useInvoiceSubmission = (
   form: UseFormReturn<z.infer<typeof formSchema>>, 
@@ -43,7 +44,7 @@ export const useInvoiceSubmission = (
       );
       
       const invoiceData = {
-        user_id: user.id,
+        user_id: getWorkspaceUserId(user.id),
         client_id: values.client_id,
         invoice_number: isEditMode ? undefined : generateInvoiceNumber(),
         issue_date: values.invoiceDate,

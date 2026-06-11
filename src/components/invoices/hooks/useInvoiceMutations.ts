@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Invoice } from "../types";
+import { getWorkspaceUserId } from "@/lib/workspace";
 
 // Create invoice mutation
 export const useCreateInvoice = () => {
@@ -26,7 +27,7 @@ export const useCreateInvoice = () => {
       // Make sure required fields are present for insert
       const invoiceToInsert = {
         ...invoice,
-        user_id: session.user.id,
+        user_id: getWorkspaceUserId(session.user.id),
         // Ensure required fields have values
         amount: invoice.amount || 0,
         issue_date: invoice.issue_date || new Date().toISOString().split('T')[0],

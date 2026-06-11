@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { getWorkspaceUserId } from "@/lib/workspace";
 
 export const updateProject = async (id: string, updates: any) => {
   try {
@@ -42,7 +43,7 @@ export const addProject = async (projectData: any) => {
       budget: projectData.budget ? parseFloat(projectData.budget) : null,
       start_date: projectData.startDate,
       end_date: projectData.dueDate,
-      user_id: session.user.id,
+      user_id: getWorkspaceUserId(session.user.id),
       // client_id would need to be a UUID from clients table, not a string name
       // For now we'll leave it null - user should select from existing clients
     };

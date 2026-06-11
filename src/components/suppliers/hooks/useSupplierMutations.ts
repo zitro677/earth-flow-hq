@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { NewSupplierData, Supplier } from "../types";
+import { getWorkspaceUserId } from "@/lib/workspace";
 
 export const useSupplierMutations = () => {
   const queryClient = useQueryClient();
@@ -20,7 +21,7 @@ export const useSupplierMutations = () => {
         .from("suppliers")
         .insert({
           ...supplierData,
-          user_id: session.session.user.id,
+          user_id: getWorkspaceUserId(session.session.user.id),
         })
         .select()
         .single();

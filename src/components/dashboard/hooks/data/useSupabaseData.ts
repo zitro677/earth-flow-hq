@@ -18,8 +18,9 @@ export const useSupabaseData = (lastUpdate: number) => {
           setIsLoading(false);
           return;
         }
-        
-        const userId = sessionData.session.user.id;
+
+        const { getWorkspaceUserId } = await import("@/lib/workspace");
+        const userId = getWorkspaceUserId(sessionData.session.user.id);
 
         // Load proposals from Supabase
         const fetchProposals = async () => {

@@ -19,10 +19,11 @@ export const useProjectsData = (lastUpdate: number) => {
         }
 
         console.log("Loading real projects data for user:", session.user.email);
+        const { getWorkspaceUserId } = await import("@/lib/workspace");
         const { data: projectsData, error } = await supabase
           .from('projects')
           .select('*')
-          .eq('user_id', session.user.id)
+          .eq('user_id', getWorkspaceUserId(session.user.id))
           .order('created_at', { ascending: false });
 
         if (error) {

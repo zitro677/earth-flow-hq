@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { getWorkspaceUserId } from "@/lib/workspace";
 
 export const getAllProjects = async () => {
   try {
@@ -13,7 +14,7 @@ export const getAllProjects = async () => {
     const { data: projects, error } = await supabase
       .from('projects')
       .select('*')
-      .eq('user_id', session.user.id)
+      .eq('user_id', getWorkspaceUserId(session.user.id))
       .order('created_at', { ascending: false });
 
     if (error) {

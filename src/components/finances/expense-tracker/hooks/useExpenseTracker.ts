@@ -3,6 +3,7 @@ import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { calculateColombianTaxes, calculateAggregateTaxStats } from "./useColombianTaxCalculations";
+import { getWorkspaceUserId } from "@/lib/workspace";
 
 export interface Expense {
   id: string;
@@ -73,7 +74,7 @@ export const useExpenseTracker = () => {
         const { data: expensesData, error } = await supabase
           .from('expenses')
           .select('*')
-          .eq('user_id', session.user.id)
+          .eq('user_id', getWorkspaceUserId(session.user.id))
           .order('expense_date', { ascending: false });
 
         if (error) {
@@ -202,7 +203,7 @@ export const useExpenseTracker = () => {
         const { data, error } = await supabase
           .from('expenses')
           .insert({
-            user_id: session.user.id,
+            user_id: getWorkspaceUserId(session.user.id),
             expense_date: newExpense.date,
             category: newExpense.category,
             subcategory: newExpense.subcategory,

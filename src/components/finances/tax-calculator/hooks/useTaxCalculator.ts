@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
+import { getWorkspaceUserId } from "@/lib/workspace";
 
 export interface TaxExpenses {
   materials: number;
@@ -55,7 +56,7 @@ export const useTaxCalculator = () => {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session?.user?.id) return;
 
-        const userId = session.user.id;
+        const userId = getWorkspaceUserId(session.user.id);
         const yearStart = `${yearFilter}-01-01`;
         const yearEnd = `${yearFilter}-12-31`;
 

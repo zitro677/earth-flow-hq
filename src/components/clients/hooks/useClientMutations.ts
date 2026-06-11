@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { NewClientData } from "../types";
+import { getWorkspaceUserId } from "@/lib/workspace";
 
 // Client mutations (create, update, delete)
 export const useClientMutations = () => {
@@ -34,7 +35,7 @@ export const useClientMutations = () => {
           email: client.email || null,
           phone: client.phone || null,
           address: client.address || null,
-          user_id: session.user.id
+          user_id: getWorkspaceUserId(session.user.id)
         };
 
         console.log("Inserting client data:", clientData);

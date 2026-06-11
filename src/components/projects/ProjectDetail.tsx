@@ -44,11 +44,12 @@ const ProjectDetail: React.FC = () => {
       }
 
       // Fetch project from Supabase
+      const { getWorkspaceUserId } = await import("@/lib/workspace");
       const { data: projectData, error } = await supabase
         .from('projects')
         .select('*')
         .eq('id', id)
-        .eq('user_id', session.user.id)
+        .eq('user_id', getWorkspaceUserId(session.user.id))
         .single();
 
       if (error) {

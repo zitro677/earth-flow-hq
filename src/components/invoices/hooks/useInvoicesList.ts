@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Invoice } from "../types";
+import { getWorkspaceUserId } from "@/lib/workspace";
 
 export const useInvoicesList = () => {
   const { 
@@ -32,7 +33,7 @@ export const useInvoicesList = () => {
                 email
               )
             `)
-            .eq('user_id', session.user.id)
+            .eq('user_id', getWorkspaceUserId(session.user.id))
             .order("issue_date", { ascending: false });
 
           if (error) {
@@ -53,7 +54,7 @@ export const useInvoicesList = () => {
             const { data: invoicesData, error: invoicesError } = await supabase
               .from("invoices")
               .select("*")
-              .eq('user_id', session.user.id)
+              .eq('user_id', getWorkspaceUserId(session.user.id))
               .order("issue_date", { ascending: false });
 
             if (invoicesError) {

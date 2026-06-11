@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Proposal } from "../../types";
+import { getWorkspaceUserId } from "@/lib/workspace";
 
 export const getProposals = async (): Promise<Proposal[]> => {
   try {
@@ -23,7 +24,7 @@ export const getProposals = async (): Promise<Proposal[]> => {
             email
           )
         `)
-        .eq('user_id', session.user.id)
+        .eq('user_id', getWorkspaceUserId(session.user.id))
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -46,7 +47,7 @@ export const getProposals = async (): Promise<Proposal[]> => {
         const { data: proposalsData, error: proposalsError } = await supabase
           .from('proposals')
           .select('*')
-          .eq('user_id', session.user.id)
+          .eq('user_id', getWorkspaceUserId(session.user.id))
           .order('created_at', { ascending: false });
 
         if (proposalsError) {
