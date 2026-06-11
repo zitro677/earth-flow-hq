@@ -13,7 +13,7 @@ export const useCreateInvoice = () => {
       invoice, 
       items 
     }: { 
-      invoice: Partial<Invoice>; 
+      invoice: Omit<Partial<Invoice>, 'clients' | 'items' | 'client_name'>; 
       items: Array<{ description: string; quantity: number; unit_price: number }>;
     }) => {
       // Get the current session
