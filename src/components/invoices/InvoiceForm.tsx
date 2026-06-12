@@ -93,7 +93,7 @@ const InvoiceForm: React.FC = () => {
             isLoading={isLoading} 
           />
           <InvoiceDetailsSection form={form} />
-          <SummarySection subtotal={subtotal} tax={tax} total={total} />
+          <SummarySection subtotal={subtotal} tax={tax} total={total} category={category} />
         </div>
 
         <InvoiceItemsSection 
