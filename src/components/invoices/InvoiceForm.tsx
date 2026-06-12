@@ -27,6 +27,7 @@ const InvoiceForm: React.FC = () => {
     subtotal,
     tax,
     total,
+    category,
     handleClientChange,
     onSubmit,
     addItem,
