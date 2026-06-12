@@ -21,6 +21,7 @@ export const useInvoiceForm = (invoiceId?: string) => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       client_id: "",
+      category: "aliaddo",
       client: "",
       email: "",
       address: "",
@@ -39,7 +40,8 @@ export const useInvoiceForm = (invoiceId?: string) => {
 
   const { clients, isLoading: clientsLoading, handleClientChange } = useInvoiceClients(form);
   const { items, addItem, removeItem, setItems } = useInvoiceItems(form);
-  const { subtotal, tax, total } = useInvoiceCalculations(items);
+  const category = form.watch("category") as "aliaddo" | "efectivo";
+  const { subtotal, tax, total } = useInvoiceCalculations(items, category);
   const { onSubmit, isLoading: submissionLoading, authError } = useInvoiceSubmission(form, invoiceId);
   
   const { refetch: fetchInvoice } = useInvoice(invoiceId);
@@ -53,6 +55,7 @@ export const useInvoiceForm = (invoiceId?: string) => {
         
         // Update form with invoice data
         form.setValue("client_id", invoice.client_id || "");
+        form.setValue("category", ((invoice as any).category as "aliaddo" | "efectivo") || "aliaddo");
         form.setValue("client", invoice.clients?.name || "");
         form.setValue("email", invoice.clients?.email || "");
         form.setValue("address", invoice.clients?.address || "");
@@ -87,6 +90,7 @@ export const useInvoiceForm = (invoiceId?: string) => {
     subtotal,
     tax,
     total,
+    category,
     handleClientChange,
     onSubmit,
     addItem,

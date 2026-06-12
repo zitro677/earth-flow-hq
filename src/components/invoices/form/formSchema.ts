@@ -5,6 +5,7 @@ export const formSchema = z.object({
   client_id: z.string().min(1, {
     message: "Please select a client.",
   }),
+  category: z.enum(["aliaddo", "efectivo"]).default("aliaddo"),
   client: z.string().min(2, {
     message: "Client name must be at least 2 characters.",
   }),

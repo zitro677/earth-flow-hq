@@ -38,19 +38,23 @@ export const useInvoiceSubmission = (
         return;
       }
       
-      const totalAmount = values.items.reduce(
+      const category = (values as any).category === "efectivo" ? "efectivo" : "aliaddo";
+      const taxRate = category === "efectivo" ? 0 : 0.19;
+      const subtotal = values.items.reduce(
         (sum, item) => sum + item.quantity * item.unitPrice,
         0
       );
-      
-      const invoiceData = {
+      const totalAmount = subtotal + subtotal * taxRate;
+
+      const invoiceData: any = {
         user_id: getWorkspaceUserId(user.id),
         client_id: values.client_id,
         invoice_number: isEditMode ? undefined : generateInvoiceNumber(),
         issue_date: values.invoiceDate,
         due_date: values.dueDate,
         amount: totalAmount,
-        tax_rate: 0.19,  // 19% IVA
+        tax_rate: taxRate,
+        category,
         notes: values.notes,
         status: isEditMode ? undefined : "Pending",
       };

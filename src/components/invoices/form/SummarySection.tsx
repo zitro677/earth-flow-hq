@@ -8,12 +8,14 @@ interface SummarySectionProps {
   subtotal: number;
   tax: number;
   total: number;
+  category?: "aliaddo" | "efectivo";
 }
 
 const SummarySection: React.FC<SummarySectionProps> = ({
   subtotal,
   tax,
   total,
+  category = "aliaddo",
 }) => {
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('es-CO', {
@@ -35,13 +37,21 @@ const SummarySection: React.FC<SummarySectionProps> = ({
           <h3 className="text-lg font-semibold mb-4">Resumen</h3>
           <div className="space-y-4">
             <div className="flex justify-between">
+              <span className="text-muted-foreground">Categoría</span>
+              <span className="font-medium">
+                {category === "aliaddo" ? "Aliaddo (FE DIAN)" : "Efectivo"}
+              </span>
+            </div>
+            <div className="flex justify-between">
               <span className="text-muted-foreground">Subtotal</span>
               <span>{formatCurrency(subtotal)}</span>
             </div>
-            <div className="flex justify-between">
-              <span className="text-muted-foreground">IVA (19%)</span>
-              <span>{formatCurrency(tax)}</span>
-            </div>
+            {category === "aliaddo" && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">IVA (19%)</span>
+                <span>{formatCurrency(tax)}</span>
+              </div>
+            )}
             <Separator />
             <div className="flex justify-between font-semibold">
               <span>Total</span>

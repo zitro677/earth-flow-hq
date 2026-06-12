@@ -18,9 +18,15 @@ export const useOverviewStats = (projects: any[], invoices: any[], proposals: an
     const totalRevenue = invoices?.filter(inv => inv.status === 'Paid')
       .reduce((sum, inv) => sum + parseFloat(inv.amount?.toString() || '0'), 0) || 0;
 
+    // Totals per category (all invoices, regardless of status)
+    const aliaddoInvoices = invoices?.filter(inv => (inv.category || 'aliaddo') === 'aliaddo') || [];
+    const efectivoInvoices = invoices?.filter(inv => inv.category === 'efectivo') || [];
+    const aliaddoTotal = aliaddoInvoices.reduce((sum, inv) => sum + parseFloat(inv.amount?.toString() || '0'), 0);
+    const efectivoTotal = efectivoInvoices.reduce((sum, inv) => sum + parseFloat(inv.amount?.toString() || '0'), 0);
+
     // Calculate real pending invoices
     const pendingInvoicesData = invoices?.filter(inv => inv.status === 'Pending') || [];
-    const pendingInvoices = pendingInvoicesData.reduce((sum, inv) => 
+    const pendingInvoices = pendingInvoicesData.reduce((sum, inv) =>
       sum + parseFloat(inv.amount?.toString() || '0'), 0);
     const pendingInvoicesCount = pendingInvoicesData.length;
 
@@ -69,7 +75,11 @@ export const useOverviewStats = (projects: any[], invoices: any[], proposals: an
       pendingProposals,
       pendingProposalsAmount,
       approvedProposals,
-      approvedProposalsAmount
+      approvedProposalsAmount,
+      aliaddoTotal,
+      aliaddoCount: aliaddoInvoices.length,
+      efectivoTotal,
+      efectivoCount: efectivoInvoices.length,
     };
   }, [projects, invoices, proposals]);
 };

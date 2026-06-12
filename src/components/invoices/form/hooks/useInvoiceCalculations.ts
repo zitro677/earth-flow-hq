@@ -1,13 +1,16 @@
 
 import { InvoiceItemType } from "../formSchema";
 
-export const useInvoiceCalculations = (items: InvoiceItemType[]) => {
+export const useInvoiceCalculations = (
+  items: InvoiceItemType[],
+  category: "aliaddo" | "efectivo" = "aliaddo"
+) => {
   const subtotal = items.reduce(
     (sum, item) => sum + (item.quantity || 0) * (item.unitPrice || 0),
     0
   );
-  
-  const taxRate = 0.19; // IVA 19%
+
+  const taxRate = category === "efectivo" ? 0 : 0.19;
   const tax = subtotal * taxRate;
   const total = subtotal + tax;
 

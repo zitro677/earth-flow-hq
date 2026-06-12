@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { motion } from "framer-motion";
 import { UseFormReturn } from "react-hook-form";
 import { z } from "zod";
@@ -42,6 +43,38 @@ const InvoiceDetailsSection: React.FC<InvoiceDetailsSectionProps> = ({
         <CardContent className="p-6">
           <h3 className="text-lg font-semibold mb-4">Detalles de Factura</h3>
           <div className="space-y-4">
+            <FormField
+              control={form.control}
+              name="category"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Categoría de Factura</FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      className="grid grid-cols-1 gap-2"
+                    >
+                      <label className="flex items-start gap-3 rounded-md border p-3 cursor-pointer hover:bg-accent">
+                        <RadioGroupItem value="aliaddo" id="cat-aliaddo" className="mt-0.5" />
+                        <div>
+                          <div className="font-medium">Aliaddo (FE DIAN)</div>
+                          <div className="text-xs text-muted-foreground">Factura electrónica con IVA 19%</div>
+                        </div>
+                      </label>
+                      <label className="flex items-start gap-3 rounded-md border p-3 cursor-pointer hover:bg-accent">
+                        <RadioGroupItem value="efectivo" id="cat-efectivo" className="mt-0.5" />
+                        <div>
+                          <div className="font-medium">Efectivo</div>
+                          <div className="text-xs text-muted-foreground">Sin IVA</div>
+                        </div>
+                      </label>
+                    </RadioGroup>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <div className="flex items-center justify-between mb-2">
               <span className="text-lg font-medium">Factura #</span>
               <span className="font-mono">{invoiceNumber}</span>
