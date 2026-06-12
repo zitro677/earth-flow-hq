@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable } from "../ui/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { BarChart3, PenTool, FileText, FolderKanban, Clock, CheckCircle } from "lucide-react";
+import { BarChart3, PenTool, FileText, FolderKanban, Clock, CheckCircle, Receipt, Banknote } from "lucide-react";
 import { useDashboardData } from "./hooks/useDashboardData";
 
 const DashboardPage: React.FC = () => {
@@ -152,6 +152,24 @@ const DashboardPage: React.FC = () => {
             icon={CheckCircle}
             trend={0}
             delay={5}
+            isLoading={isLoading}
+          />
+          <OverviewCard
+            title="Facturas Aliaddo (FE DIAN)"
+            value={formatCurrency(overviewStats.aliaddoTotal)}
+            description={`${overviewStats.aliaddoCount} facturas con IVA`}
+            icon={Receipt}
+            trend={0}
+            delay={6}
+            isLoading={isLoading}
+          />
+          <OverviewCard
+            title="Facturas en Efectivo"
+            value={formatCurrency(overviewStats.efectivoTotal)}
+            description={`${overviewStats.efectivoCount} facturas sin IVA`}
+            icon={Banknote}
+            trend={0}
+            delay={7}
             isLoading={isLoading}
           />
         </div>
