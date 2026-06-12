@@ -1,0 +1,1 @@
+ALTER TABLE public.invoices ADD COLUMN IF NOT EXISTS category TEXT NOT NULL DEFAULT 'aliaddo' CHECK (category IN ('aliaddo','efectivo'));
