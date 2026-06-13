@@ -28,25 +28,25 @@ const NoteDialog: React.FC<NoteDialogProps> = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add Project Note</DialogTitle>
+          <DialogTitle>Agregar Nota al Proyecto</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
-            <Label htmlFor="note-content">Note</Label>
+            <Label htmlFor="note-content">Nota</Label>
             <Textarea 
               id="note-content" 
               value={newNote.content} 
               onChange={e => setNewNote({...newNote, content: e.target.value})}
-              placeholder="Enter your project note" 
+              placeholder="Ingresa la nota del proyecto" 
               rows={4}
             />
           </div>
         </div>
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
+            <Button variant="outline">Cancelar</Button>
           </DialogClose>
-          <Button onClick={handleAddNote} disabled={!newNote.content}>Add Note</Button>
+          <Button onClick={handleAddNote} disabled={!newNote.content}>Agregar Nota</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

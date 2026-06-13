@@ -14,21 +14,21 @@ const InvoiceStatusManager = ({ invoice }: InvoiceStatusManagerProps) => {
   const markAsPaid = async () => {
     try {
       await updateInvoiceStatus.mutateAsync({ id: invoice.id, status: "Paid" });
-      toast.success(`Invoice ${invoice.invoice_number} marked as paid`);
+      toast.success(`Factura ${invoice.invoice_number} marcada como pagada`);
     } catch (error) {
       console.error("Error marking invoice as paid:", error);
-      toast.error("Failed to update invoice status");
+      toast.error("Error al actualizar el estado de la factura");
     }
   };
 
   const deleteInvoiceHandler = async () => {
-    if (window.confirm("Are you sure you want to delete this invoice?")) {
+    if (window.confirm("¿Estás seguro de eliminar esta factura?")) {
       try {
         await deleteInvoice.mutateAsync(invoice.id);
-        toast.success(`Invoice ${invoice.invoice_number} deleted`);
+        toast.success(`Factura ${invoice.invoice_number} eliminada`);
       } catch (error) {
         console.error("Error deleting invoice:", error);
-        toast.error("Failed to delete invoice");
+        toast.error("Error al eliminar la factura");
       }
     }
   };

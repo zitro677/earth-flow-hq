@@ -29,14 +29,14 @@ export const ItemsSection: React.FC<ItemsSectionProps> = ({ form, items, addItem
       <Card>
         <CardContent className="p-6">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold">Items & Services</h3>
+            <h3 className="text-lg font-semibold">Ítems y Servicios</h3>
             <Button
               type="button"
               onClick={addItem}
               variant="outline"
               size="sm"
             >
-              <Plus className="h-4 w-4 mr-1" /> Add Item
+              <Plus className="h-4 w-4 mr-1" /> Agregar Ítem
             </Button>
           </div>
 
@@ -52,10 +52,10 @@ export const ItemsSection: React.FC<ItemsSectionProps> = ({ form, items, addItem
                     name={`items.${index}.description`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Description</FormLabel>
+                        <FormLabel>Descripción</FormLabel>
                         <FormControl>
                           <Input
-                            placeholder="Item description"
+                            placeholder="Descripción del ítem"
                             {...field}
                           />
                         </FormControl>
@@ -70,7 +70,7 @@ export const ItemsSection: React.FC<ItemsSectionProps> = ({ form, items, addItem
                     name={`items.${index}.quantity`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Quantity</FormLabel>
+                        <FormLabel>Cantidad</FormLabel>
                         <FormControl>
                           <Input
                             type="number"
@@ -90,7 +90,7 @@ export const ItemsSection: React.FC<ItemsSectionProps> = ({ form, items, addItem
                     name={`items.${index}.unitPrice`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Unit Price ($)</FormLabel>
+                        <FormLabel>Precio Unitario ($)</FormLabel>
                         <FormControl>
                           <Input
                             type="number"

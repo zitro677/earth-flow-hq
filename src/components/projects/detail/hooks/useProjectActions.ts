@@ -16,16 +16,14 @@ export const useProjectActions = (projectId: string, projectName: string) => {
 
   const handleShareProject = () => {
     toast({
-      title: "Share Project",
-      description: "Project sharing link copied to clipboard.",
+      title: "Compartir Proyecto",
+      description: "Enlace del proyecto copiado al portapapeles.",
     });
     
-    // In a real app, this would generate a sharing link
-    // For now, just simulate copying to clipboard
     navigator.clipboard.writeText(`${window.location.origin}/projects/${projectId}`).catch(() => {
       toast({
-        title: "Clipboard Error",
-        description: "Failed to copy link to clipboard.",
+        title: "Error de Portapapeles",
+        description: "No se pudo copiar el enlace al portapapeles.",
         variant: "destructive"
       });
     });
@@ -33,81 +31,68 @@ export const useProjectActions = (projectId: string, projectName: string) => {
 
   const handleExportProject = (project: any, extraData: any, teamMembers: any[]) => {
     toast({
-      title: "Export Project",
-      description: "Generating project PDF...",
+      title: "Exportar Proyecto",
+      description: "Generando PDF del proyecto...",
     });
     
     try {
-      console.log("Starting PDF generation with:", { project, extraData, teamMembers });
-      
-      // Make sure we have the required data
       if (!project || !project.id) {
-        console.error("Project data is missing or invalid");
         toast({
-          title: "Export Failed",
-          description: "Project data is missing or invalid.",
+          title: "Error al Exportar",
+          description: "Los datos del proyecto son inválidos.",
           variant: "destructive"
         });
         return;
       }
       
-      // Create the PDF generator instance
       const pdfGenerator = ProjectPdfGenerator({ project, extraData, teamMembers });
-      
-      // Generate the PDF
       const success = pdfGenerator.generatePDF();
       
       if (success) {
         toast({
-          title: "Export Complete",
-          description: "Project PDF has been downloaded.",
+          title: "Exportación Completa",
+          description: "Se descargó el PDF del proyecto.",
         });
       } else {
         toast({
-          title: "Export Failed",
-          description: "Failed to generate project PDF.",
+          title: "Error al Exportar",
+          description: "No se pudo generar el PDF del proyecto.",
           variant: "destructive"
         });
       }
     } catch (error) {
       console.error("Error in handleExportProject:", error);
       toast({
-        title: "Export Failed",
-        description: "Unexpected error during PDF generation.",
+        title: "Error al Exportar",
+        description: "Ocurrió un error inesperado durante la generación del PDF.",
         variant: "destructive"
       });
     }
   };
 
-  // Updated function to handle progress changes
   const handleUpdateProgress = async (newProgress: number) => {
     if (newProgress < 0 || newProgress > 100) {
       toast({
-        title: "Invalid Progress Value",
-        description: "Progress must be between 0 and 100.",
+        title: "Valor de Progreso Inválido",
+        description: "El progreso debe estar entre 0 y 100.",
         variant: "destructive"
       });
       return false;
     }
 
-    console.log("Updating project progress:", projectId, newProgress);
-
     try {
-      // Update the project with the new progress
       const result = await updateProject(projectId, { progress: newProgress });
       
       if (result) {
         toast({
-          title: "Project Updated",
-          description: `Project progress updated to ${newProgress}%.`,
+          title: "Proyecto Actualizado",
+          description: `Progreso actualizado a ${newProgress}%.`,
         });
-        
-        // Return true to indicate success - this allows the component to update UI accordingly
         return true;
       } else {
         toast({
-          title: "Update Failed",
-          description: "Failed to update project progress.",
+          title: "Error al Actualizar",
+          description: "No se pudo actualizar el progreso del proyecto.",
           variant: "destructive"
         });
         return false;
@@ -115,8 +100,8 @@ export const useProjectActions = (projectId: string, projectName: string) => {
     } catch (error) {
       console.error("Error updating project progress:", error);
       toast({
-        title: "Update Error",
-        description: "An error occurred while updating progress.",
+        title: "Error al Actualizar",
+        description: "Ocurrió un error al actualizar el progreso.",
         variant: "destructive"
       });
       return false;

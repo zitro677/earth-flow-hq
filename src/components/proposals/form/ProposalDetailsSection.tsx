@@ -21,7 +21,7 @@ export const ProposalDetailsSection: React.FC<ProposalDetailsSectionProps> = ({
   isEditMode = false
 }) => {
   // Ensure we have a stable status value
-  const statusValue = isEditMode ? "Edit Mode" : "Draft";
+  const statusValue = isEditMode ? "Modo Edición" : "Borrador";
   const statusClass = isEditMode ? "bg-blue-100 text-blue-800" : "bg-amber-100 text-amber-800";
 
   return (
@@ -33,10 +33,10 @@ export const ProposalDetailsSection: React.FC<ProposalDetailsSectionProps> = ({
     >
       <Card>
         <CardContent className="p-6">
-          <h3 className="text-lg font-semibold mb-4">Proposal Details</h3>
+          <h3 className="text-lg font-semibold mb-4">Detalles de la Propuesta</h3>
           <div className="space-y-4">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-lg font-medium">Proposal Status</span>
+              <span className="text-lg font-medium">Estado de la Propuesta</span>
               <span className={`px-2 py-1 rounded text-sm font-medium ${statusClass}`}>
                 {statusValue}
               </span>
@@ -46,7 +46,7 @@ export const ProposalDetailsSection: React.FC<ProposalDetailsSectionProps> = ({
               name="proposalDate"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Proposal Date</FormLabel>
+                  <FormLabel>Fecha de la Propuesta</FormLabel>
                   <FormControl>
                     <Input type="date" {...field} />
                   </FormControl>
@@ -59,7 +59,7 @@ export const ProposalDetailsSection: React.FC<ProposalDetailsSectionProps> = ({
               name="expirationDate"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Expiration Date</FormLabel>
+                  <FormLabel>Fecha de Vencimiento</FormLabel>
                   <FormControl>
                     <Input type="date" {...field} />
                   </FormControl>
@@ -68,16 +68,16 @@ export const ProposalDetailsSection: React.FC<ProposalDetailsSectionProps> = ({
               )}
             />
             <FormItem>
-              <FormLabel>Status</FormLabel>
+              <FormLabel>Estado</FormLabel>
               <Select defaultValue="Draft" disabled={isEditMode}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
+                  <SelectValue placeholder="Selecciona estado" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Draft">Draft</SelectItem>
-                  <SelectItem value="Sent">Sent</SelectItem>
-                  <SelectItem value="Approved">Approved</SelectItem>
-                  <SelectItem value="Rejected">Rejected</SelectItem>
+                  <SelectItem value="Draft">Borrador</SelectItem>
+                  <SelectItem value="Sent">Enviada</SelectItem>
+                  <SelectItem value="Approved">Aprobada</SelectItem>
+                  <SelectItem value="Rejected">Rechazada</SelectItem>
                 </SelectContent>
               </Select>
             </FormItem>

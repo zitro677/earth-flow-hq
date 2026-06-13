@@ -31,10 +31,10 @@ const FinancialStats: React.FC<FinancialStatsProps> = ({
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
       {[
-        { label: "Total Income", value: totalIncome, delay: 0.1 },
-        { label: "Total Expenses", value: totalExpenses, delay: 0.2 },
-        { label: "Net Income", value: netIncome, delay: 0.3 },
-        { label: "Profit Margin", value: parseFloat(profitMargin), isPercent: true, delay: 0.4 }
+        { label: "Ingresos Totales", value: totalIncome, delay: 0.1 },
+        { label: "Gastos Totales", value: totalExpenses, delay: 0.2 },
+        { label: "Ingreso Neto", value: netIncome, delay: 0.3 },
+        { label: "Margen de Ganancia", value: parseFloat(profitMargin), isPercent: true, delay: 0.4 }
       ].map(({ label, value, delay, isPercent }) => (
         <motion.div
           key={label}
@@ -52,7 +52,7 @@ const FinancialStats: React.FC<FinancialStatsProps> = ({
               {isPercent ? `${value.toFixed(1)}%` : formatCurrency(value)}
             </p>
           </div>
-          <p className="text-xs text-muted-foreground mt-1">For {yearFilter}</p>
+          <p className="text-xs text-muted-foreground mt-1">Para {yearFilter}</p>
         </motion.div>
       ))}
     </div>

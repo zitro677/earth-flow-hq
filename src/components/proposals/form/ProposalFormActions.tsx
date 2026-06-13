@@ -34,10 +34,10 @@ export const ProposalFormActions: React.FC<ProposalFormActionsProps> = ({
           onClick={() => navigate("/proposals")}
           className="flex items-center gap-1"
         >
-          <ArrowLeft className="h-4 w-4" /> Back to Proposals
+          <ArrowLeft className="h-4 w-4" /> Volver a Propuestas
         </Button>
         <h1 className="text-2xl font-bold">
-          {isEditMode ? "Edit Proposal" : "Create New Proposal"}
+          {isEditMode ? "Editar Propuesta" : "Crear Nueva Propuesta"}
         </h1>
       </div>
     );
@@ -47,10 +47,10 @@ export const ProposalFormActions: React.FC<ProposalFormActionsProps> = ({
   return (
     <div className="flex justify-end gap-2 mt-8">
       <Button type="button" variant="outline" onClick={() => navigate("/proposals")}>
-        Cancel
+        Cancelar
       </Button>
       <Button type="submit" disabled={isPending}>
-        {isPending ? "Saving..." : isEditMode ? "Update Proposal" : "Save Proposal"}
+        {isPending ? "Guardando..." : isEditMode ? "Actualizar Propuesta" : "Guardar Propuesta"}
       </Button>
     </div>
   );

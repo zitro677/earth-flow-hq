@@ -59,13 +59,13 @@ const InvoiceActions: React.FC<InvoiceActionsProps> = ({ invoice }) => {
     <>
       <div className="flex gap-2">
         <Button size="sm" variant="outline" onClick={handleViewInvoice}>
-          <Eye className="h-4 w-4 mr-1" /> View
+          <Eye className="h-4 w-4 mr-1" /> Ver
         </Button>
         <Button size="sm" variant="outline" onClick={handleDownloadPDF}>
           <Download className="h-4 w-4 mr-1" /> PDF
         </Button>
         <Button size="sm" variant="outline" onClick={handleSendEmail}>
-          <Mail className="h-4 w-4 mr-1" /> Email
+          <Mail className="h-4 w-4 mr-1" /> Correo
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -76,20 +76,20 @@ const InvoiceActions: React.FC<InvoiceActionsProps> = ({ invoice }) => {
           <DropdownMenuContent align="end">
             {invoice.status !== "Paid" && (
               <DropdownMenuItem onClick={statusManager.markAsPaid}>
-                <CheckCircle className="h-4 w-4 mr-2" /> Mark as Paid
+                <CheckCircle className="h-4 w-4 mr-2" /> Marcar como Pagada
               </DropdownMenuItem>
             )}
             <DropdownMenuItem onClick={handlePrintInvoice}>
-              <Printer className="h-4 w-4 mr-2" /> Print
+              <Printer className="h-4 w-4 mr-2" /> Imprimir
             </DropdownMenuItem>
             <DropdownMenuItem onClick={handleEditInvoice}>
-              <Edit className="h-4 w-4 mr-2" /> Edit
+              <Edit className="h-4 w-4 mr-2" /> Editar
             </DropdownMenuItem>
             <DropdownMenuItem 
               className="text-red-500"
               onClick={statusManager.deleteInvoiceHandler}
             >
-              Delete
+              Eliminar
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

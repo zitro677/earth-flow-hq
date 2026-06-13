@@ -33,7 +33,7 @@ const ProposalStatusManager = ({ proposal }: ProposalStatusManagerProps) => {
   };
 
   const deleteProposal = async () => {
-    if (!confirm("Are you sure you want to delete this proposal?")) {
+    if (!confirm("¿Estás seguro de eliminar esta propuesta?")) {
       return;
     }
 
@@ -47,10 +47,10 @@ const ProposalStatusManager = ({ proposal }: ProposalStatusManagerProps) => {
       if (error) throw error;
 
       await queryClient.invalidateQueries({ queryKey: ["proposals"] });
-      toast.success("Proposal deleted successfully");
+      toast.success("Propuesta eliminada correctamente");
     } catch (error: any) {
       console.error("Error deleting proposal:", error);
-      toast.error(error.message || "Failed to delete proposal");
+      toast.error(error.message || "Error al eliminar la propuesta");
     } finally {
       setIsDeleting(false);
     }
@@ -60,11 +60,11 @@ const ProposalStatusManager = ({ proposal }: ProposalStatusManagerProps) => {
     mutationFn: updateProposalStatus,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["proposals"] });
-      toast.success("Proposal status updated successfully");
+      toast.success("Estado de la propuesta actualizado");
     },
     onError: (error: any) => {
       console.error("Status update error:", error);
-      toast.error(`Failed to update status: ${error.message}`);
+      toast.error(`Error al actualizar estado: ${error.message}`);
     }
   });
 

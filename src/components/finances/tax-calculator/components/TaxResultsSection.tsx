@@ -30,12 +30,12 @@ export const TaxResultsSection: React.FC<TaxResultsSectionProps> = ({ taxResults
 
   const taxBreakdown = [
     {
-      name: "Tax Paid",
+      name: "Impuesto Pagado",
       value: taxResults.estimatedTax,
       color: "#f43f5e",
     },
     {
-      name: "After-Tax Income",
+      name: "Ingreso Después de Impuestos",
       value: taxResults.totalIncome - taxResults.estimatedTax,
       color: "#10b981",
     },
@@ -44,16 +44,16 @@ export const TaxResultsSection: React.FC<TaxResultsSectionProps> = ({ taxResults
   return (
     <Card className="card-shadow">
       <CardHeader>
-        <CardTitle>Tax Calculation Results</CardTitle>
+        <CardTitle>Resultados del Cálculo de Impuestos</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {[
-          { label: "Total Income", value: taxResults.totalIncome },
-          { label: "Total Deductions", value: taxResults.totalDeductions, className: "text-green-600 dark:text-green-400" },
-          { label: "Taxable Income", value: taxResults.taxableIncome },
-          { label: "Estimated Tax", value: taxResults.estimatedTax, className: "text-red-600 dark:text-red-400" },
-          { label: "Effective Tax Rate", value: taxResults.effectiveTaxRate, isPercent: true },
-          { label: "After-Tax Income", value: taxResults.totalIncome - taxResults.estimatedTax, isBold: true }
+          { label: "Ingreso Total", value: taxResults.totalIncome },
+          { label: "Deducciones Totales", value: taxResults.totalDeductions, className: "text-green-600 dark:text-green-400" },
+          { label: "Ingreso Gravable", value: taxResults.taxableIncome },
+          { label: "Impuesto Estimado", value: taxResults.estimatedTax, className: "text-red-600 dark:text-red-400" },
+          { label: "Tasa Efectiva de Impuesto", value: taxResults.effectiveTaxRate, isPercent: true },
+          { label: "Ingreso Después de Impuestos", value: taxResults.totalIncome - taxResults.estimatedTax, isBold: true }
         ].map(({ label, value, className, isPercent, isBold }) => (
           <div key={label}>
             <Label className="text-muted-foreground">{label}</Label>

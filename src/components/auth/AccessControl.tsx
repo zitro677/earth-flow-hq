@@ -17,7 +17,7 @@ const AccessControl: React.FC<AccessControlProps> = ({
   const { userRole, loading } = useAuth();
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div>Cargando...</div>;
   }
 
   // Admin users have access to everything
@@ -38,7 +38,7 @@ const AccessControl: React.FC<AccessControlProps> = ({
   return (
     <Alert>
       <AlertDescription>
-        You don't have permission to access this feature. Contact an administrator for access.
+        No tienes permisos para acceder a esta función. Contacta a un administrador.
       </AlertDescription>
     </Alert>
   );

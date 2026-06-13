@@ -30,9 +30,9 @@ export const InventoryPage = () => {
     >
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-xl font-semibold">Inventory Management</h2>
+          <h2 className="text-xl font-semibold">Gestión de Inventario</h2>
           <p className="text-muted-foreground">
-            Manage your equipment, tools, and machinery
+            Administra tus equipos, herramientas y maquinaria
           </p>
         </div>
         <Button
@@ -40,7 +40,7 @@ export const InventoryPage = () => {
           className="flex items-center gap-2"
         >
           <Plus className="h-4 w-4" />
-          Add Item
+          Agregar Artículo
         </Button>
       </div>
 
@@ -50,7 +50,7 @@ export const InventoryPage = () => {
             columns={inventoryColumns}
             data={inventory}
             searchColumns={["name", "category"]}
-            searchPlaceholder="Search by name or category..."
+            searchPlaceholder="Buscar por nombre o categoría..."
           />
         </CardContent>
       </Card>

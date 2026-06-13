@@ -46,7 +46,7 @@ const ProposalsPage: React.FC = () => {
   useEffect(() => {
     if (!authLoading && !user) {
       console.log("ProposalsPage - User not authenticated, redirecting to auth page");
-      toast.error("You need to be logged in to view proposals");
+      toast.error("Debes iniciar sesión para ver las propuestas");
       navigate("/auth");
     }
   }, [user, authLoading, navigate]);
@@ -59,7 +59,7 @@ const ProposalsPage: React.FC = () => {
     }
     
     console.log("ProposalsPage - Loading proposals...");
-    const loadingToast = toast.loading("Loading proposals...");
+    const loadingToast = toast.loading("Cargando propuestas...");
     
     try {
       await refetch();
@@ -67,16 +67,16 @@ const ProposalsPage: React.FC = () => {
       
       if (!isError && proposals) {
         if (proposals.length > 0) {
-          toast.success(`Loaded ${proposals.length} proposals`);
+          toast.success(`Se cargaron ${proposals.length} propuestas`);
         } else {
-          toast.info("No proposals found");
+          toast.info("No se encontraron propuestas");
         }
       } else {
-        toast.error("Failed to load proposals");
+        toast.error("No se pudieron cargar las propuestas");
       }
     } catch (err) {
       toast.dismiss(loadingToast);
-      toast.error("Failed to load proposals");
+      toast.error("No se pudieron cargar las propuestas");
       console.error("ProposalsPage - Error refetching proposals:", err);
     }
   }, [refetch, user, proposals, isError]);
@@ -131,7 +131,7 @@ const ProposalsPage: React.FC = () => {
           <Alert variant="destructive" className="mt-4">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              Error loading proposals. Please try again.
+              Error al cargar las propuestas. Inténtalo de nuevo.
               {error instanceof Error && (
                 <div className="mt-2 text-xs opacity-80">
                   {error.message}
@@ -143,7 +143,7 @@ const ProposalsPage: React.FC = () => {
             onClick={() => loadProposals()} 
             className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
           >
-            Try again
+            Reintentar
           </Button>
         </div>
       </AnimatedPage>
