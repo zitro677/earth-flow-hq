@@ -17,27 +17,27 @@ const InvoiceEmailService = ({ invoice }: InvoiceEmailServiceProps) => {
       const pageWidth = doc.internal.pageSize.width;
       
       let yPosition = 20;
-      yPosition = await addHeaderSection(doc, "INVOICE", yPosition, pageWidth);
+      yPosition = await addHeaderSection(doc, "FACTURA", yPosition, pageWidth);
       
       doc.setFontSize(12);
-      doc.text(`Invoice #: ${invoice.invoice_number}`, 20, yPosition);
+      doc.text(`Factura #: ${invoice.invoice_number}`, 20, yPosition);
       
-      const statusText = `Status: ${invoice.status}`;
+      const statusText = `Estado: ${invoice.status}`;
       doc.text(statusText, 190, yPosition, { align: "right" });
       yPosition += 10;
       
       doc.setFontSize(12);
-      doc.text("Client Information:", 20, yPosition);
+      doc.text("Información del Cliente:", 20, yPosition);
       yPosition += 7;
       doc.setFontSize(10);
-      doc.text(`To: ${invoice.client_name || "Client"}`, 20, yPosition);
+      doc.text(`Para: ${invoice.client_name || "Cliente"}`, 20, yPosition);
       yPosition += 6;
-      doc.text(`Date: ${new Date(invoice.issue_date).toLocaleDateString()}`, 20, yPosition);
+      doc.text(`Fecha: ${new Date(invoice.issue_date).toLocaleDateString('es-CO')}`, 20, yPosition);
       yPosition += 6;
-      doc.text(`Due Date: ${new Date(invoice.due_date).toLocaleDateString()}`, 20, yPosition);
+      doc.text(`Fecha de Vencimiento: ${new Date(invoice.due_date).toLocaleDateString('es-CO')}`, 20, yPosition);
       yPosition += 15;
       
-      const headers = [["Description", "Quantity", "Unit Price", "Amount"]];
+      const headers = [["Descripción", "Cantidad", "Precio Unitario", "Importe"]];
       let data = [];
       
       if (invoice.items && invoice.items.length > 0) {
@@ -48,7 +48,7 @@ const InvoiceEmailService = ({ invoice }: InvoiceEmailServiceProps) => {
           formatCurrency(Number(item.quantity) * Number(item.unit_price))
         ]);
       } else {
-        data = [["Services", "1", formatCurrency(Number(invoice.amount)), formatCurrency(Number(invoice.amount))]];
+        data = [["Servicios", "1", formatCurrency(Number(invoice.amount)), formatCurrency(Number(invoice.amount))]];
       }
       
       autoTable(doc, {
@@ -73,8 +73,8 @@ const InvoiceEmailService = ({ invoice }: InvoiceEmailServiceProps) => {
       }
       
       if (invoice.notes) {
-        doc.text("Notes:", 20, currentY + 15);
-        doc.text(invoice.notes || 'No additional notes', 20, currentY + 22);
+        doc.text("Notas:", 20, currentY + 15);
+        doc.text(invoice.notes || 'Sin notas adicionales', 20, currentY + 22);
       }
       
       const pageHeight = doc.internal.pageSize.height;
@@ -88,7 +88,7 @@ const InvoiceEmailService = ({ invoice }: InvoiceEmailServiceProps) => {
       return doc;
     } catch (error) {
       console.error("Error creating PDF:", error);
-      toast.error("Failed to create invoice PDF");
+      toast.error("No se pudo crear el PDF de la factura");
       return null;
     }
   };
@@ -101,7 +101,7 @@ const InvoiceEmailService = ({ invoice }: InvoiceEmailServiceProps) => {
 
 Gracias por elegir AutoseguroDJ S.A.S. Adjunto encontrará la factura ${invoice.invoice_number} por ${formatCurrency(Number(invoice.amount))}.
 
-Fecha de vencimiento: ${new Date(invoice.due_date).toLocaleDateString()}
+Fecha de vencimiento: ${new Date(invoice.due_date).toLocaleDateString('es-CO')}
 
 Si tiene alguna pregunta sobre esta factura, no dude en contactarnos.
 
@@ -115,18 +115,18 @@ Web: www.autosegurodj.com`;
       
       const doc = await createPdf();
       if (doc) {
-        doc.save(`Invoice_${invoice.invoice_number}.pdf`);
+        doc.save(`Factura_${invoice.invoice_number}.pdf`);
       }
       
       toast.success(
-        "PDF invoice has been downloaded. Opening email client...", 
+        "Se descargó el PDF de la factura. Abriendo cliente de correo...", 
         { duration: 5000 }
       );
       
       window.location.href = `mailto:${invoice.clients?.email || ''}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}&from=${encodeURIComponent(companyEmail)}`;
     } catch (err) {
       console.error("Error in sendEmail:", err);
-      toast.error("Failed to prepare email");
+      toast.error("No se pudo preparar el correo");
     }
   };
 

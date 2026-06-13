@@ -19,17 +19,17 @@ const InvoicePdfGenerator = ({ invoice }: InvoicePdfGeneratorProps) => {
       let yPosition = 20;
       
       // Use the shared header section with the new logo (now async)
-      yPosition = await addHeaderSection(doc, "INVOICE", yPosition, pageWidth);
+      yPosition = await addHeaderSection(doc, "FACTURA", yPosition, pageWidth);
       
       doc.setFontSize(12);
-      doc.text(`Invoice #: ${invoice.invoice_number}`, 20, yPosition);
-      doc.text(`Status: ${invoice.status}`, pageWidth - 20, yPosition, { align: "right" });
+      doc.text(`Factura #: ${invoice.invoice_number}`, 20, yPosition);
+      doc.text(`Estado: ${invoice.status}`, pageWidth - 20, yPosition, { align: "right" });
       yPosition += 10;
       
-      doc.text("Bill To:", 20, yPosition);
+      doc.text("Facturar a:", 20, yPosition);
       yPosition += 7;
       doc.setFontSize(10);
-      doc.text(`${invoice.client_name || "Client"}`, 20, yPosition);
+      doc.text(`${invoice.client_name || "Cliente"}`, 20, yPosition);
       yPosition += 6;
       if (invoice.clients?.address) {
         doc.text(`${invoice.clients.address}`, 20, yPosition);
@@ -41,11 +41,11 @@ const InvoicePdfGenerator = ({ invoice }: InvoicePdfGeneratorProps) => {
       }
       
       doc.setFontSize(10);
-      doc.text(`Issue Date: ${new Date(invoice.issue_date).toLocaleDateString()}`, pageWidth - 20, yPosition - 12, { align: "right" });
-      doc.text(`Due Date: ${new Date(invoice.due_date).toLocaleDateString()}`, pageWidth - 20, yPosition - 6, { align: "right" });
+      doc.text(`Fecha de Emisión: ${new Date(invoice.issue_date).toLocaleDateString('es-CO')}`, pageWidth - 20, yPosition - 12, { align: "right" });
+      doc.text(`Fecha de Vencimiento: ${new Date(invoice.due_date).toLocaleDateString('es-CO')}`, pageWidth - 20, yPosition - 6, { align: "right" });
       yPosition += 15;
       
-      const headers = [["Description", "Quantity", "Unit Price", "Amount"]];
+      const headers = [["Descripción", "Cantidad", "Precio Unitario", "Importe"]];
       let data = [];
       
       if (invoice.items && invoice.items.length > 0) {
@@ -56,7 +56,7 @@ const InvoicePdfGenerator = ({ invoice }: InvoicePdfGeneratorProps) => {
           formatCurrency(Number(item.quantity) * Number(item.unit_price))
         ]);
       } else {
-        data = [["Services", "1", formatCurrency(Number(invoice.amount)), formatCurrency(Number(invoice.amount))]];
+        data = [["Servicios", "1", formatCurrency(Number(invoice.amount)), formatCurrency(Number(invoice.amount))]];
       }
       
       autoTable(doc, {
@@ -81,8 +81,8 @@ const InvoicePdfGenerator = ({ invoice }: InvoicePdfGeneratorProps) => {
       }
       
       if (invoice.notes) {
-        doc.text("Notes:", 20, currentY + 15);
-        doc.text(invoice.notes || 'No additional notes', 20, currentY + 22);
+        doc.text("Notas:", 20, currentY + 15);
+        doc.text(invoice.notes || 'Sin notas adicionales', 20, currentY + 22);
       }
       
       const pageHeight = doc.internal.pageSize.height;
@@ -93,13 +93,13 @@ const InvoicePdfGenerator = ({ invoice }: InvoicePdfGeneratorProps) => {
       doc.text("Web: www.autosegurodj.com", 20, pageHeight - 10);
       doc.setTextColor(0, 0, 0);
       
-      doc.save(`Invoice_${invoice.invoice_number}.pdf`);
+      doc.save(`Factura_${invoice.invoice_number}.pdf`);
       
-      toast.success("Invoice PDF downloaded successfully");
+      toast.success("PDF de la factura descargado correctamente");
       return doc;
     } catch (error) {
       console.error("Error generating PDF:", error);
-      toast.error("Failed to generate invoice PDF");
+      toast.error("No se pudo generar el PDF de la factura");
       return null;
     }
   };
