@@ -11,15 +11,14 @@ const InvoicePrintService = ({ invoice }: InvoicePrintServiceProps) => {
     // Create a printable version of the invoice
     const printWindow = window.open('', '_blank');
     if (!printWindow) {
-      toast.error("Pop-up blocked. Please allow pop-ups for this site.");
+      toast.error("Ventana emergente bloqueada. Permite las ventanas emergentes en este sitio.");
       return;
     }
     
-    // Create invoice HTML content with print-optimized styling and company information
     printWindow.document.write(`
       <html>
         <head>
-          <title>Print Invoice ${invoice.invoice_number}</title>
+          <title>Imprimir Factura ${invoice.invoice_number}</title>
           <style>
             body { font-family: Arial, sans-serif; margin: 30px; }
             .company-header { margin-bottom: 20px; text-align: center; }
@@ -40,33 +39,22 @@ const InvoicePrintService = ({ invoice }: InvoicePrintServiceProps) => {
             .status-paid { background: #d1fae5; color: #047857; }
             .status-pending { background: #fef3c7; color: #92400e; }
             .status-overdue { background: #fee2e2; color: #b91c1c; }
-            
-            /* Print-specific styles */
-            @media print {
-              body { margin: 0.5cm; }
-              .no-print { display: none; }
-            }
-            
-            /* Page break styles */
+            @media print { body { margin: 0.5cm; } .no-print { display: none; } }
             .page-break { page-break-before: always; }
-            
-            /* Company details and client info in two columns */
             .entity-info { display: flex; justify-content: space-between; margin-bottom: 30px; }
             .entity-info > div { width: 48%; }
-            
-            /* Footer */
             .invoice-footer { margin-top: 40px; font-size: 12px; color: #666; text-align: center; }
           </style>
         </head>
         <body>
           <div class="company-header">
-            <div class="company-name">Green Landscape Irrigation</div>
-            <div class="company-info">Phone: (727) 484-5516</div>
-            <div class="company-info">Email: greenplanetlandscaping01@gmail.com</div>
-            <div class="company-info">Web: www.greenlandscapeirrigation.com</div>
+            <div class="company-name">AutoseguroDJ S.A.S</div>
+            <div class="company-info">Teléfono: +57 304 257 61 04</div>
+            <div class="company-info">Email: gerencia@autosegurodj.com</div>
+            <div class="company-info">Web: www.autosegurodj.com</div>
           </div>
           
-          <div class="invoice-title">INVOICE</div>
+          <div class="invoice-title">FACTURA</div>
           
           <div class="invoice-header">
             <div>
@@ -79,13 +67,13 @@ const InvoicePrintService = ({ invoice }: InvoicePrintServiceProps) => {
           
           <div class="entity-info">
             <div>
-              <strong>From:</strong>
-              <div>Green Landscape Irrigation</div>
-              <div>Phone: (727) 484-5516</div>
-              <div>Email: greenplanetlandscaping01@gmail.com</div>
+              <strong>De:</strong>
+              <div>AutoseguroDJ S.A.S</div>
+              <div>Teléfono: +57 304 257 61 04</div>
+              <div>Email: gerencia@autosegurodj.com</div>
             </div>
             <div>
-              <strong>To:</strong>
+              <strong>Para:</strong>
               <div>${escapeHtml(invoice.client_name)}</div>
               ${invoice.clients?.address ? `<div>${escapeHtml(invoice.clients.address)}</div>` : ''}
               ${invoice.clients?.email ? `<div>${escapeHtml(invoice.clients.email)}</div>` : ''}
@@ -93,17 +81,17 @@ const InvoicePrintService = ({ invoice }: InvoicePrintServiceProps) => {
           </div>
           
           <div class="invoice-meta">
-            <div><strong>Issue Date:</strong> ${new Date(invoice.issue_date).toLocaleDateString()}</div>
-            <div><strong>Due Date:</strong> ${new Date(invoice.due_date).toLocaleDateString()}</div>
+            <div><strong>Fecha de Emisión:</strong> ${new Date(invoice.issue_date).toLocaleDateString('es-CO')}</div>
+            <div><strong>Fecha de Vencimiento:</strong> ${new Date(invoice.due_date).toLocaleDateString('es-CO')}</div>
           </div>
           
           <table>
             <thead>
               <tr>
-                <th>Description</th>
-                <th>Quantity</th>
-                <th>Unit Price</th>
-                <th style="text-align: right;">Amount</th>
+                <th>Descripción</th>
+                <th>Cantidad</th>
+                <th>Precio Unitario</th>
+                <th style="text-align: right;">Importe</th>
               </tr>
             </thead>
             <tbody>
@@ -118,7 +106,7 @@ const InvoicePrintService = ({ invoice }: InvoicePrintServiceProps) => {
                 `).join('') 
                 : 
                 `<tr>
-                  <td>Services</td>
+                  <td>Servicios</td>
                   <td>1</td>
                   <td>${formatCurrency(Number(invoice.amount))}</td>
                   <td class="text-right">${formatCurrency(Number(invoice.amount))}</td>
@@ -130,7 +118,7 @@ const InvoicePrintService = ({ invoice }: InvoicePrintServiceProps) => {
                 <td class="text-right">${formatCurrency(Number(invoice.amount))}</td>
               </tr>
               <tr>
-                <td colspan="3" class="text-right">Tax (${escapeHtml(String(invoice.tax_rate))}%)</td>
+                <td colspan="3" class="text-right">IVA (${escapeHtml(String(invoice.tax_rate))}%)</td>
                 <td class="text-right">${formatCurrency(Number(invoice.amount) * (Number(invoice.tax_rate) / 100))}</td>
               </tr>` : ''}
               <tr class="total-row">
@@ -148,22 +136,19 @@ const InvoicePrintService = ({ invoice }: InvoicePrintServiceProps) => {
           
           ${invoice.notes ? `
           <div style="margin-top: 40px;">
-            <div><strong>Notes:</strong></div>
+            <div><strong>Notas:</strong></div>
             <div>${escapeHtmlWithLineBreaks(invoice.notes)}</div>
           </div>` : ''}
           
           <div class="invoice-footer">
-            Green Landscape Irrigation<br>
-            Phone: (727) 484-5516 | Email: greenplanetlandscaping01@gmail.com<br>
-            Web: www.greenlandscapeirrigation.com<br>
-            Thank you for your business!
+            AutoseguroDJ S.A.S<br>
+            Teléfono: +57 304 257 61 04 | Email: gerencia@autosegurodj.com<br>
+            Web: www.autosegurodj.com<br>
+            ¡Gracias por su preferencia!
           </div>
           
           <script>
-            // Auto-trigger print dialog when loaded
-            window.onload = function() {
-              window.print();
-            }
+            window.onload = function() { window.print(); }
           </script>
         </body>
       </html>
@@ -171,7 +156,7 @@ const InvoicePrintService = ({ invoice }: InvoicePrintServiceProps) => {
     
     printWindow.document.close();
     
-    toast.success("Invoice sent to printer");
+    toast.success("Factura enviada a la impresora");
   };
 
   return { printInvoice };
