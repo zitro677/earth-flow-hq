@@ -24,15 +24,15 @@ const ProjectActions: React.FC<ProjectActionsProps> = ({
     >
       <Button variant="outline" size="sm" className="gap-1" onClick={onShare}>
         <Share className="h-4 w-4" />
-        <span>Share</span>
+        <span>Compartir</span>
       </Button>
       <Button variant="outline" size="sm" className="gap-1" onClick={onExport}>
         <Download className="h-4 w-4" />
-        <span>Export</span>
+        <span>Exportar</span>
       </Button>
       <Button size="sm" className="gap-1" onClick={onEdit}>
         <Edit className="h-4 w-4" />
-        <span>Edit Project</span>
+        <span>Editar Proyecto</span>
       </Button>
     </motion.div>
   );

@@ -61,7 +61,7 @@ const ProgressSection: React.FC<ProgressSectionProps> = ({
       <div className="flex justify-between items-center mb-2">
         <h3 className="font-medium flex items-center gap-2">
           <CirclePercent className="h-5 w-5 text-primary" />
-          Progress
+          Progreso
         </h3>
         <Button 
           variant="outline" 
@@ -69,7 +69,7 @@ const ProgressSection: React.FC<ProgressSectionProps> = ({
           onClick={() => setShowProgressEdit(!showProgressEdit)}
           disabled={isUpdating}
         >
-          {showProgressEdit ? "Cancel" : "Edit Progress"}
+          {showProgressEdit ? "Cancelar" : "Editar Progreso"}
         </Button>
       </div>
       
@@ -95,7 +95,7 @@ const ProgressSection: React.FC<ProgressSectionProps> = ({
               onClick={saveProgress} 
               disabled={isUpdating}
             >
-              {isUpdating ? "Saving..." : "Save Progress"}
+              {isUpdating ? "Guardando..." : "Guardar Progreso"}
             </Button>
             <Button 
               size="sm" 
@@ -103,7 +103,7 @@ const ProgressSection: React.FC<ProgressSectionProps> = ({
               onClick={cancelEdit}
               disabled={isUpdating}
             >
-              Cancel
+              Cancelar
             </Button>
           </div>
         </div>
@@ -111,7 +111,7 @@ const ProgressSection: React.FC<ProgressSectionProps> = ({
         <div className="space-y-1">
           <Progress value={displayProgress} className="h-2" />
           <p className="text-xs text-muted-foreground text-right">
-            {displayProgress}% Complete
+            {displayProgress}% Completado
           </p>
         </div>
       )}

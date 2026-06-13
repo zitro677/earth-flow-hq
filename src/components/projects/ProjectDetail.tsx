@@ -84,7 +84,7 @@ const ProjectDetail: React.FC = () => {
         project.team.map((member: any) => {
           if (typeof member === 'string') {
             // Convert string team members to objects
-            return { name: member, role: "Team Member", avatar: "" };
+            return { name: member, role: "Miembro del Equipo", avatar: "" };
           }
           return member;
         })
@@ -111,7 +111,7 @@ const ProjectDetail: React.FC = () => {
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
-            <h1 className="text-3xl font-bold">Loading Project...</h1>
+            <h1 className="text-3xl font-bold">Cargando Proyecto...</h1>
           </div>
         </div>
       </AnimatedPage>
@@ -131,16 +131,16 @@ const ProjectDetail: React.FC = () => {
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>
-            <h1 className="text-3xl font-bold">Project Not Found</h1>
+          <h1 className="text-3xl font-bold">Proyecto No Encontrado</h1>
           </div>
           <Card>
             <CardContent className="pt-6">
-              <p>The project you're looking for doesn't exist or has been removed.</p>
+              <p>El proyecto que buscas no existe o fue eliminado.</p>
               <Button 
                 className="mt-4" 
                 onClick={() => navigate("/projects")}
               >
-                Return to Projects
+                Volver a Proyectos
               </Button>
             </CardContent>
           </Card>

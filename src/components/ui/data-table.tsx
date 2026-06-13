@@ -38,7 +38,7 @@ export function DataTable<TData, TValue>({
   data,
   searchColumn,
   searchColumns,
-  searchPlaceholder = "Search...",
+  searchPlaceholder = "Buscar...",
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);

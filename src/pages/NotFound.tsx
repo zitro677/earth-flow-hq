@@ -18,21 +18,21 @@ const NotFound = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="text-center p-8 bg-white rounded-lg shadow-md max-w-md">
         <h1 className="text-5xl font-bold mb-4 text-red-500">404</h1>
-        <p className="text-xl text-gray-800 mb-6">Oops! Page not found</p>
+        <p className="text-xl text-gray-800 mb-6">¡Ups! Página no encontrada</p>
         <p className="text-gray-600 mb-6">
-          The page you're looking for ({location.pathname}) doesn't exist or has been moved.
+          La página que buscas ({location.pathname}) no existe o fue movida.
         </p>
         <Button 
           onClick={() => navigate("/projects")} 
           className="bg-blue-500 hover:bg-blue-600 mr-2"
         >
-          Return to Projects
+          Volver a Proyectos
         </Button>
         <Button 
           onClick={() => navigate("/")} 
           variant="outline"
         >
-          Go to Dashboard
+          Ir al Panel
         </Button>
       </div>
     </div>

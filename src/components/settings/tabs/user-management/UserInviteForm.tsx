@@ -23,7 +23,7 @@ const UserInviteForm: React.FC<UserInviteFormProps> = ({ onInvite }) => {
 
   const handleInvite = async () => {
     if (!newUserEmail.trim()) {
-      toast.error("Please enter an email address");
+      toast.error("Por favor ingresa un correo electrónico");
       return;
     }
 
@@ -43,10 +43,10 @@ const UserInviteForm: React.FC<UserInviteFormProps> = ({ onInvite }) => {
 
   return (
     <div className="mb-6">
-      <h4 className="text-sm font-medium mb-4">Invite New User</h4>
+      <h4 className="text-sm font-medium mb-4">Invitar Nuevo Usuario</h4>
       <div className="flex gap-4 flex-col sm:flex-row">
         <Input
-          placeholder="Email address"
+          placeholder="Correo electrónico"
           value={newUserEmail}
           onChange={(e) => setNewUserEmail(e.target.value)}
           className="sm:flex-1"
@@ -56,11 +56,11 @@ const UserInviteForm: React.FC<UserInviteFormProps> = ({ onInvite }) => {
           onValueChange={(value) => setNewUserRole(value as 'admin' | 'read_only')}
         >
           <SelectTrigger className="w-full sm:w-[180px]">
-            <SelectValue placeholder="Select role" />
+            <SelectValue placeholder="Selecciona rol" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="admin">Administrator</SelectItem>
-            <SelectItem value="read_only">Read Only</SelectItem>
+            <SelectItem value="admin">Administrador</SelectItem>
+            <SelectItem value="read_only">Solo Lectura</SelectItem>
           </SelectContent>
         </Select>
         <Button 
@@ -72,7 +72,7 @@ const UserInviteForm: React.FC<UserInviteFormProps> = ({ onInvite }) => {
           ) : (
             <UserPlus className="mr-2 h-4 w-4" />
           )}
-          Invite
+          Invitar
         </Button>
       </div>
     </div>

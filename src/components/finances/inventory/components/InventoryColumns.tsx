@@ -6,11 +6,11 @@ import { Pencil, Trash2 } from "lucide-react";
 export const inventoryColumns: ColumnDef<any>[] = [
   {
     accessorKey: "name",
-    header: "Item Name",
+    header: "Nombre del Artículo",
   },
   {
     accessorKey: "category",
-    header: "Category",
+    header: "Categoría",
   },
   {
     accessorKey: "unit_cost",
@@ -28,16 +28,16 @@ export const inventoryColumns: ColumnDef<any>[] = [
   },
   {
     accessorKey: "quantity",
-    header: "Quantity",
+    header: "Cantidad",
   },
   {
     accessorKey: "life_span",
-    header: "Life Span",
-    cell: ({ row }) => `${row.original.life_span} years`,
+    header: "Vida Útil",
+    cell: ({ row }) => `${row.original.life_span} años`,
   },
   {
     accessorKey: "depreciation_rate",
-    header: "Depreciation Rate",
+    header: "Tasa de Depreciación",
     cell: ({ row }) => `${row.original.depreciation_rate}%`,
   },
   {

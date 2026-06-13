@@ -45,7 +45,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
     <DialogContent className="sm:max-w-[425px]">
       <DialogHeader>
         <DialogTitle>
-          {selectedItem ? "Edit Inventory Item" : "Add Inventory Item"}
+          {selectedItem ? "Editar Artículo de Inventario" : "Agregar Artículo de Inventario"}
         </DialogTitle>
       </DialogHeader>
       <Form {...form}>
@@ -55,9 +55,9 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Name</FormLabel>
+                <FormLabel>Nombre</FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder="Enter item name" />
+                  <Input {...field} placeholder="Ingrese el nombre del artículo" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -69,17 +69,17 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
             name="category"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Category</FormLabel>
+                <FormLabel>Categoría</FormLabel>
                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select category" />
+                      <SelectValue placeholder="Selecciona una categoría" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="machinery">Machinery</SelectItem>
-                    <SelectItem value="tools">Tools</SelectItem>
-                    <SelectItem value="appliances">Appliances</SelectItem>
+                    <SelectItem value="machinery">Maquinaria</SelectItem>
+                    <SelectItem value="tools">Herramientas</SelectItem>
+                    <SelectItem value="appliances">Equipos</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -93,7 +93,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
               name="unit_cost"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Unit Cost</FormLabel>
+                  <FormLabel>Costo Unitario</FormLabel>
                   <FormControl>
                     <Input {...field} type="number" placeholder="0.00" />
                   </FormControl>
@@ -107,7 +107,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
               name="quantity"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Quantity</FormLabel>
+                  <FormLabel>Cantidad</FormLabel>
                   <FormControl>
                     <Input {...field} type="number" min="1" />
                   </FormControl>
@@ -123,7 +123,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
               name="life_span"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Life Span (years)</FormLabel>
+                  <FormLabel>Vida Útil (años)</FormLabel>
                   <FormControl>
                     <Input {...field} type="number" min="0" />
                   </FormControl>
@@ -137,7 +137,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
               name="depreciation_rate"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Depreciation Rate (%)</FormLabel>
+                  <FormLabel>Tasa de Depreciación (%)</FormLabel>
                   <FormControl>
                     <Input {...field} type="number" min="0" max="100" />
                   </FormControl>
@@ -149,10 +149,10 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({
 
           <div className="flex justify-end gap-3 pt-4">
             <Button type="button" variant="outline" onClick={onCancel}>
-              Cancel
+              Cancelar
             </Button>
             <Button type="submit">
-              {selectedItem ? "Update" : "Add"} Item
+              {selectedItem ? "Actualizar" : "Agregar"} Artículo
             </Button>
           </div>
         </form>

@@ -30,12 +30,12 @@ const ProjectFormHeader: React.FC<ProjectFormHeaderProps> = ({
           transition={{ duration: 0.5 }}
         >
           <h1 className="text-3xl font-bold">
-            {isEditMode ? "Edit Project" : "Create New Project"}
+            {isEditMode ? "Editar Proyecto" : "Crear Nuevo Proyecto"}
           </h1>
           <p className="text-muted-foreground mt-1">
             {isEditMode 
-              ? "Update your landscape project details below"
-              : "Fill out the form below to create a new landscape project"}
+              ? "Actualiza los detalles del proyecto a continuación"
+              : "Completa el formulario para crear un nuevo proyecto"}
           </p>
         </motion.div>
       </div>

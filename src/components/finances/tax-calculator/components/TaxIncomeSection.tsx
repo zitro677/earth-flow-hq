@@ -31,11 +31,11 @@ export const TaxIncomeSection: React.FC<TaxIncomeSectionProps> = ({
   return (
     <Card className="card-shadow">
       <CardHeader>
-        <CardTitle>Income & Filing Information</CardTitle>
+        <CardTitle>Ingresos e Información Fiscal</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
-          <Label htmlFor="income">Annual Business Income ($)</Label>
+          <Label htmlFor="income">Ingreso Anual del Negocio ($)</Label>
           <Input
             id="income"
             type="number"
@@ -48,25 +48,25 @@ export const TaxIncomeSection: React.FC<TaxIncomeSectionProps> = ({
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="filing-status">Filing Status</Label>
+            <Label htmlFor="filing-status">Régimen Tributario</Label>
             <Select value={filingStatus} onValueChange={setFilingStatus}>
               <SelectTrigger id="filing-status" className="mt-1">
-                <SelectValue placeholder="Select status" />
+                <SelectValue placeholder="Selecciona régimen" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="single">Single</SelectItem>
-                <SelectItem value="married-joint">Married Filing Jointly</SelectItem>
-                <SelectItem value="married-separate">Married Filing Separately</SelectItem>
-                <SelectItem value="head">Head of Household</SelectItem>
+                <SelectItem value="single">Persona Natural</SelectItem>
+                <SelectItem value="married-joint">Régimen Común</SelectItem>
+                <SelectItem value="married-separate">Régimen Simplificado</SelectItem>
+                <SelectItem value="head">Régimen Simple</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div>
-            <Label htmlFor="tax-year">Tax Year</Label>
+            <Label htmlFor="tax-year">Año Fiscal</Label>
             <Select value={yearFilter} onValueChange={setYearFilter}>
               <SelectTrigger className="mt-1">
-                <SelectValue placeholder="Select Year" />
+                <SelectValue placeholder="Selecciona año" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="2024">2024</SelectItem>

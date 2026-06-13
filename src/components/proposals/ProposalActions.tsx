@@ -37,7 +37,7 @@ const ProposalActions: React.FC<ProposalActionsProps> = ({ proposal }) => {
       setViewDialogOpen(true);
     } catch (error) {
       console.error("Error opening preview dialog:", error);
-      toast.error("Error opening preview");
+      toast.error("Error al abrir la vista previa");
     }
   };
 
@@ -46,7 +46,7 @@ const ProposalActions: React.FC<ProposalActionsProps> = ({ proposal }) => {
       pdfGenerator.generatePDF();
     } catch (error) {
       console.error("Error generating PDF:", error);
-      toast.error("Error generating PDF");
+      toast.error("Error al generar PDF");
     }
   };
 
@@ -55,7 +55,7 @@ const ProposalActions: React.FC<ProposalActionsProps> = ({ proposal }) => {
       printService.printProposal();
     } catch (error) {
       console.error("Error printing proposal:", error);
-      toast.error("Error printing proposal");
+      toast.error("Error al imprimir la propuesta");
     }
   };
 
@@ -64,7 +64,7 @@ const ProposalActions: React.FC<ProposalActionsProps> = ({ proposal }) => {
       emailService.sendEmail();
     } catch (error) {
       console.error("Error sending email:", error);
-      toast.error("Error sending email");
+      toast.error("Error al enviar el correo");
     }
   };
 
@@ -74,7 +74,7 @@ const ProposalActions: React.FC<ProposalActionsProps> = ({ proposal }) => {
       navigate(`/proposals/edit/${proposal.id}`);
     } catch (error) {
       console.error("Error navigating to edit page:", error);
-      toast.error("Error navigating to edit page");
+      toast.error("Error al navegar a la edición");
     }
   };
 
@@ -82,13 +82,13 @@ const ProposalActions: React.FC<ProposalActionsProps> = ({ proposal }) => {
     <>
       <div className="flex gap-2">
         <Button size="sm" variant="outline" onClick={handleViewProposal}>
-          <Eye className="h-4 w-4 mr-1" /> View
+          <Eye className="h-4 w-4 mr-1" /> Ver
         </Button>
         <Button size="sm" variant="outline" onClick={handleDownloadPDF}>
           <Download className="h-4 w-4 mr-1" /> PDF
         </Button>
         <Button size="sm" variant="outline" onClick={handleSendEmail}>
-          <Mail className="h-4 w-4 mr-1" /> Email
+          <Mail className="h-4 w-4 mr-1" /> Correo
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -99,30 +99,30 @@ const ProposalActions: React.FC<ProposalActionsProps> = ({ proposal }) => {
           <DropdownMenuContent align="end">
             {proposal.status !== "Approved" && (
               <DropdownMenuItem onClick={statusManager.markAsApproved}>
-                <CheckCircle className="h-4 w-4 mr-2" /> Mark as Approved
+                <CheckCircle className="h-4 w-4 mr-2" /> Marcar como Aprobada
               </DropdownMenuItem>
             )}
             {proposal.status !== "Rejected" && (
               <DropdownMenuItem onClick={statusManager.markAsRejected}>
-                <X className="h-4 w-4 mr-2" /> Mark as Rejected
+                <X className="h-4 w-4 mr-2" /> Marcar como Rechazada
               </DropdownMenuItem>
             )}
             {proposal.status !== "Sent" && (
               <DropdownMenuItem onClick={statusManager.markAsSent}>
-                <Mail className="h-4 w-4 mr-2" /> Mark as Sent
+                <Mail className="h-4 w-4 mr-2" /> Marcar como Enviada
               </DropdownMenuItem>
             )}
             <DropdownMenuItem onClick={handlePrintProposal}>
-              <Printer className="h-4 w-4 mr-2" /> Print
+              <Printer className="h-4 w-4 mr-2" /> Imprimir
             </DropdownMenuItem>
             <DropdownMenuItem onClick={handleEditProposal}>
-              <Edit className="h-4 w-4 mr-2" /> Edit
+              <Edit className="h-4 w-4 mr-2" /> Editar
             </DropdownMenuItem>
             <DropdownMenuItem 
               className="text-red-500"
               onClick={statusManager.deleteProposalHandler}
             >
-              Delete
+              Eliminar
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

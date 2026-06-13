@@ -27,13 +27,13 @@ const TeamMembers: React.FC<TeamMembersProps> = ({ teamMembers, setTeamMembers, 
 
   const handleAddTeamMember = () => {
     if (newTeamMember.name.trim() === "") {
-      toast.error("Team member name is required");
+      toast.error("El nombre del miembro es obligatorio");
       return;
     }
     
     const newMember = {
       name: newTeamMember.name,
-      role: newTeamMember.role || "Team Member",
+      role: newTeamMember.role || "Miembro del Equipo",
       avatar: ""
     };
     
@@ -48,7 +48,7 @@ const TeamMembers: React.FC<TeamMembersProps> = ({ teamMembers, setTeamMembers, 
     setNewTeamMember({ name: "", role: "" });
     setDialogOpen(false);
     
-    toast.success("Team member added successfully");
+    toast.success("Miembro agregado correctamente");
   };
 
   const handleRemoveTeamMember = (index: number) => {
@@ -61,7 +61,7 @@ const TeamMembers: React.FC<TeamMembersProps> = ({ teamMembers, setTeamMembers, 
     // Persist to database
     saveTeamToProject(updatedTeam);
     
-    toast.success("Team member removed");
+    toast.success("Miembro eliminado");
   };
 
   return (
@@ -74,7 +74,7 @@ const TeamMembers: React.FC<TeamMembersProps> = ({ teamMembers, setTeamMembers, 
       >
         <Card className="card-shadow">
           <CardHeader className="flex flex-row justify-between items-start">
-            <CardTitle>Team Members</CardTitle>
+            <CardTitle>Miembros del Equipo</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -108,7 +108,7 @@ const TeamMembers: React.FC<TeamMembersProps> = ({ teamMembers, setTeamMembers, 
               ))}
               
               {teamMembers.length === 0 && (
-                <p className="text-muted-foreground text-center py-2">No team members assigned yet</p>
+                <p className="text-muted-foreground text-center py-2">Aún no hay miembros asignados</p>
               )}
             </div>
           </CardContent>
@@ -119,7 +119,7 @@ const TeamMembers: React.FC<TeamMembersProps> = ({ teamMembers, setTeamMembers, 
               onClick={() => setDialogOpen(true)}
             >
               <UserPlus className="h-4 w-4" />
-              <span>Add Team Member</span>
+              <span>Agregar Miembro</span>
             </Button>
           </CardFooter>
         </Card>
@@ -129,28 +129,28 @@ const TeamMembers: React.FC<TeamMembersProps> = ({ teamMembers, setTeamMembers, 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add Team Member</DialogTitle>
+            <DialogTitle>Agregar Miembro del Equipo</DialogTitle>
             <DialogDescription>
-              Add a new team member to this project.
+              Agrega un nuevo miembro a este proyecto.
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <label htmlFor="name" className="text-sm font-medium">Name</label>
+              <label htmlFor="name" className="text-sm font-medium">Nombre</label>
               <Input
                 id="name"
-                placeholder="John Doe"
+                placeholder="Juan Pérez"
                 value={newTeamMember.name}
                 onChange={(e) => setNewTeamMember({...newTeamMember, name: e.target.value})}
               />
             </div>
             
             <div className="space-y-2">
-              <label htmlFor="role" className="text-sm font-medium">Role</label>
+              <label htmlFor="role" className="text-sm font-medium">Rol</label>
               <Input
                 id="role"
-                placeholder="Landscape Designer"
+                placeholder="Técnico de Blindaje"
                 value={newTeamMember.role}
                 onChange={(e) => setNewTeamMember({...newTeamMember, role: e.target.value})}
               />
@@ -159,10 +159,10 @@ const TeamMembers: React.FC<TeamMembersProps> = ({ teamMembers, setTeamMembers, 
           
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
-              Cancel
+              Cancelar
             </Button>
             <Button onClick={handleAddTeamMember}>
-              Add Team Member
+              Agregar Miembro
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -32,7 +32,7 @@ const InvoicesList: React.FC<InvoicesListProps> = ({
           animate={{ opacity: 1 }}
           className="text-center py-12"
         >
-          <p className="text-muted-foreground">Loading invoices...</p>
+          <p className="text-muted-foreground">Cargando facturas...</p>
         </motion.div>
       </div>
     );
@@ -44,7 +44,7 @@ const InvoicesList: React.FC<InvoicesListProps> = ({
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            {errorMessage || "Error loading invoices. Please try again."}
+            {errorMessage || "Error al cargar las facturas. Inténtalo de nuevo."}
           </AlertDescription>
         </Alert>
         <motion.div
@@ -52,7 +52,7 @@ const InvoicesList: React.FC<InvoicesListProps> = ({
           animate={{ opacity: 1 }}
           className="text-center py-8"
         >
-          <p className="text-red-500">There was a problem retrieving invoice data.</p>
+          <p className="text-red-500">Hubo un problema al obtener los datos de facturas.</p>
         </motion.div>
       </div>
     );
@@ -70,7 +70,7 @@ const InvoicesList: React.FC<InvoicesListProps> = ({
           animate={{ opacity: 1 }}
           className="text-center py-12"
         >
-          <p className="text-muted-foreground">No invoices found.</p>
+          <p className="text-muted-foreground">No se encontraron facturas.</p>
         </motion.div>
       )}
     </div>

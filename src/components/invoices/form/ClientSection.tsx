@@ -50,14 +50,14 @@ const ClientSection: React.FC<ClientSectionProps> = ({
       <Card>
         <CardContent className="p-6">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold">Client Information</h3>
+            <h3 className="text-lg font-semibold">Información del Cliente</h3>
             <Button 
               size="sm" 
               variant="outline" 
               onClick={() => navigate("/clients/new")}
               className="flex items-center gap-1"
             >
-              <PlusCircle className="h-4 w-4" /> New Client
+              <PlusCircle className="h-4 w-4" /> Nuevo Cliente
             </Button>
           </div>
 
@@ -67,7 +67,7 @@ const ClientSection: React.FC<ClientSectionProps> = ({
               name="client_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Select Client</FormLabel>
+                  <FormLabel>Seleccionar Cliente</FormLabel>
                   <Select
                     onValueChange={handleClientChange}
                     value={field.value}
@@ -76,14 +76,14 @@ const ClientSection: React.FC<ClientSectionProps> = ({
                   >
                     <FormControl>
                       <SelectTrigger className="w-full bg-white">
-                        <SelectValue placeholder="Select a client" />
+                        <SelectValue placeholder="Selecciona un cliente" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent className="bg-white z-50">
                       {clients.length === 0 ? (
                         <div className="p-2 text-center text-gray-500">
-                          <p>No clients available</p>
-                          <p className="text-sm mt-1">Please add a client first</p>
+                          <p>No hay clientes disponibles</p>
+                          <p className="text-sm mt-1">Por favor agrega un cliente primero</p>
                         </div>
                       ) : (
                         clients.map((client) => (
@@ -106,9 +106,9 @@ const ClientSection: React.FC<ClientSectionProps> = ({
               name="client"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Client Name</FormLabel>
+                  <FormLabel>Nombre del Cliente</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter client name" {...field} />
+                    <Input placeholder="Ingresa el nombre del cliente" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -119,11 +119,11 @@ const ClientSection: React.FC<ClientSectionProps> = ({
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel>Correo</FormLabel>
                   <FormControl>
                     <Input
                       type="email"
-                      placeholder="client@example.com"
+                      placeholder="cliente@ejemplo.com"
                       {...field}
                     />
                   </FormControl>
@@ -136,10 +136,10 @@ const ClientSection: React.FC<ClientSectionProps> = ({
               name="address"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Address</FormLabel>
+                  <FormLabel>Dirección</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="Enter client address"
+                      placeholder="Ingresa la dirección del cliente"
                       {...field}
                     />
                   </FormControl>

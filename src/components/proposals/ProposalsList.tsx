@@ -22,7 +22,7 @@ const ProposalsList: React.FC<ProposalsListProps> = ({
   if (isLoading) {
     return (
       <div className="text-center py-12">
-        <p className="text-muted-foreground">Loading proposals...</p>
+        <p className="text-muted-foreground">Cargando propuestas...</p>
       </div>
     );
   }
@@ -30,7 +30,7 @@ const ProposalsList: React.FC<ProposalsListProps> = ({
   if (isError) {
     return (
       <div className="text-center py-12">
-        <p className="text-red-500">Error loading proposals. Please try again.</p>
+        <p className="text-red-500">Error al cargar las propuestas. Inténtalo de nuevo.</p>
       </div>
     );
   }
@@ -42,7 +42,7 @@ const ProposalsList: React.FC<ProposalsListProps> = ({
         animate={{ opacity: 1 }}
         className="text-center py-12"
       >
-        <p className="text-muted-foreground">No proposals found.</p>
+        <p className="text-muted-foreground">No se encontraron propuestas.</p>
       </motion.div>
     );
   }
