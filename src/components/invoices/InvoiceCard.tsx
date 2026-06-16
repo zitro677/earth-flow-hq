@@ -16,6 +16,7 @@ const InvoiceCard: React.FC<InvoiceCardProps> = ({ invoice, index }) => {
   const formattedAmount = formatCurrency(Number(invoice.amount));
   const formattedIssueDate = new Date(invoice.issue_date).toLocaleDateString();
   const formattedDueDate = new Date(invoice.due_date).toLocaleDateString();
+  const categoryLabel = invoice.category === "efectivo" ? "Efectivo · Sin IVA" : "Aliaddo · FE DIAN con IVA";
 
   return (
     <motion.div
@@ -35,13 +36,16 @@ const InvoiceCard: React.FC<InvoiceCardProps> = ({ invoice, index }) => {
                 <StatusBadge status={invoice.status || "Pending"} />
               </div>
               <p className="text-muted-foreground mt-1">{invoice.client_name}</p>
+              <span className="mt-2 w-fit rounded-md border bg-muted px-2 py-1 text-xs font-medium">
+                {categoryLabel}
+              </span>
               <div className="mt-2 flex flex-col sm:flex-row sm:gap-4 text-sm">
                 <span>
-                  <span className="text-muted-foreground">Issued:</span>{" "}
+                  <span className="text-muted-foreground">Emitida:</span>{" "}
                   {formattedIssueDate}
                 </span>
                 <span>
-                  <span className="text-muted-foreground">Due:</span>{" "}
+                  <span className="text-muted-foreground">Vence:</span>{" "}
                   {formattedDueDate}
                 </span>
               </div>
