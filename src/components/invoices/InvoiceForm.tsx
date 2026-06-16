@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { useInvoiceForm } from "./form/useInvoiceForm";
 import ClientSection from "./form/ClientSection";
+import InvoiceCategorySection from "./form/InvoiceCategorySection";
 import InvoiceDetailsSection from "./form/InvoiceDetailsSection";
 import SummarySection from "./form/SummarySection";
 import InvoiceItemsSection from "./form/InvoiceItemsSection";
@@ -84,6 +85,8 @@ const InvoiceForm: React.FC = () => {
             </Button>
           </div>
         </div>
+
+        <InvoiceCategorySection form={form} />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <ClientSection 
