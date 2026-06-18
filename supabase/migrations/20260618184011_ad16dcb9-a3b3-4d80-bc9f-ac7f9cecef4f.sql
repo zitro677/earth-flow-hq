@@ -1,0 +1,2 @@
+ALTER TABLE public.expenses ADD COLUMN IF NOT EXISTS project_id UUID REFERENCES public.projects(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS idx_expenses_project_id ON public.expenses(project_id);
