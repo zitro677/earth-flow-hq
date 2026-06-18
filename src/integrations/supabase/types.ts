@@ -85,6 +85,7 @@ export type Database = {
           iva: number | null
           neto_pagar: number | null
           notes: string | null
+          project_id: string | null
           proveedor_responsable_iva: boolean | null
           rete_fuente: number | null
           rete_ica: number | null
@@ -106,6 +107,7 @@ export type Database = {
           iva?: number | null
           neto_pagar?: number | null
           notes?: string | null
+          project_id?: string | null
           proveedor_responsable_iva?: boolean | null
           rete_fuente?: number | null
           rete_ica?: number | null
@@ -127,6 +129,7 @@ export type Database = {
           iva?: number | null
           neto_pagar?: number | null
           notes?: string | null
+          project_id?: string | null
           proveedor_responsable_iva?: boolean | null
           rete_fuente?: number | null
           rete_ica?: number | null
@@ -138,7 +141,15 @@ export type Database = {
           valor_bruto?: number | null
           vendor?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "expenses_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       inventory: {
         Row: {
